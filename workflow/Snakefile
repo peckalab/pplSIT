@@ -1,0 +1,16 @@
+import os
+
+# include rules here
+include: "rules/pack.smk"
+
+
+# this builds final targets
+dst_path = config['dst_path']
+sessions = config['sessions']
+
+def build_file_path(where, session, file_name):
+    return os.path.join(where, session.split('_')[0], session, file_name)
+
+rule all:
+    input:
+        [build_file_path(dst_path, s, 'meta.h5') for s in sessions]
