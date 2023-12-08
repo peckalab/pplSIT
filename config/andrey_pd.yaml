@@ -1,0 +1,5 @@
+src_path: "/home/sobolev/nevermind/Andrey/sandbox/data/"
+dst_path: "/home/sobolev/nevermind/Michael/processed_data/"
+ndm_path: "/home/sobolev/nevermind/Andrey/apps/ndm/usr/bin/"
+sessions:
+  - "009266_hippoSIT_2023-04-17_17-04-17"

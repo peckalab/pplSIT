@@ -2,30 +2,20 @@ import os
 
 src_path = config['src_path']
 dst_path = config['dst_path']
-sessions = config['sessions']
+session  = config['sessions'][0]
 
-def build_file_path(where, session, file_name):
-    return os.path.join(where, session.split('_')[0], session, file_name)
-
-# raw session files
-raw_files = [
-    build_file_path(src_path, s, '%s.csv' % ds_name)\
-        for ds_name in ['positions', 'events', 'sounds', 'islands']\
-        for s in sessions
-]
-
-# raw config files
-cfg_files = [build_file_path(src_path, s, '%s.json' % s) for s in sessions]
-
-
-# output files
-out_files = [build_file_path(dst_path, s, 'meta.h5') for s in sessions]
+# wrappers to build absolute paths to source / destination folders
+abs_src = lambda file_name: os.path.join(src_path, session.split('_')[0], session, file_name)
+abs_dst = lambda file_name: os.path.join(dst_path, session.split('_')[0], session, file_name)
 
 
 rule pack:
     input:
-        raw_files + cfg_files
+        abs_src("positions.csv"),
+        abs_src("events.csv"),
+        abs_src("sounds.csv"),
+        abs_src("%s.json" % session)
     output:
-        out_files
+        abs_dst("meta.h5")
     script:
         "../scripts/pack.py"
