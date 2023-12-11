@@ -12,14 +12,13 @@ src_path = config['src_path']
 dst_path = config['dst_path']
 session  = config['sessions'][0]
 
-def build_file_path(where, session, file_name):
-    return os.path.join(where, session.split('_')[0], session, file_name)
-
+# wrappers to build absolute paths to source / destination folders
+abs_dst = lambda file_name: os.path.join(dst_path, session.split('_')[0], session, file_name)
 
 # rule for 
 # - complete spike sorting with neurosuite / klustakwik
 # - pack main metadata into HDF5
 rule all:
     input:
-        build_file_path(dst_path, session, '%s.fil' % session),
-        build_file_path(dst_path, session, 'meta.h5')
+        [abs_dst('%s.clu.%d' % (session, el)) for el in channel_groups.keys()],
+        abs_dst("meta.h5")
