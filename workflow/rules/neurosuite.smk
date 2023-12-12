@@ -4,14 +4,6 @@ import xml.etree.ElementTree as ET
 
 # ------ configuration ----------------------
 
-src_path = config['src_path']
-dst_path = config['dst_path']
-session  = config['sessions'][0]
-
-# wrappers to build absolute paths to source / destination folders
-abs_src = lambda file_name: os.path.join(src_path, session.split('_')[0], session, file_name)
-abs_dst = lambda file_name: os.path.join(dst_path, session.split('_')[0], session, file_name)
-
 # parse original .xml file to get channel groups for spikesorting
 xml_path = abs_src('%s.xml' % session)
 root = ET.parse(xml_path).getroot()
@@ -48,7 +40,7 @@ rule hipass:
         xml=abs_dst('%s.xml' % session),
         dat=abs_dst('%s.dat' % session)
     output:
-        abs_dst('%s.fil' % session)
+        temp(abs_dst('%s.fil' % session))
     shell:
         "cd %s; %s %s" % (
             abs_dst(''),
@@ -100,6 +92,8 @@ rule kkwik:
             fet
         ) for el, fet in zip(electrodes, num_fet)])
 
-# do some clean up!
-
-
+# TODO test the clean up!
+# TODO empty channel groups handling
+# TODO put all in subfolder!
+#  TODO    params:
+#                fet_num to compute as a function

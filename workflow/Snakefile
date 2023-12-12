@@ -3,21 +3,21 @@ import os
 # examples of Snakemake workflows:
 # https://snakemake.github.io/snakemake-workflow-catalog/
 
-
-# include rules here
-include: "rules/pack.smk"
-include: "rules/neurosuite.smk"
+# wrappers to build absolute paths to source / destination folders
+abs_src = lambda file_name: os.path.join(src_path, session.split('_')[0], session, file_name)
+abs_dst = lambda file_name: os.path.join(dst_path, session.split('_')[0], session, file_name)
 
 src_path = config['src_path']
 dst_path = config['dst_path']
 session  = config['sessions'][0]
 
-# wrappers to build absolute paths to source / destination folders
-abs_dst = lambda file_name: os.path.join(dst_path, session.split('_')[0], session, file_name)
+# include rules here
+include: "rules/pack.smk"
+include: "rules/neurosuite.smk"
 
-# rule for 
-# - complete spike sorting with neurosuite / klustakwik
-# - pack main metadata into HDF5
+# TODO label all raw files as read-only
+
+# rule to assemble all 
 rule all:
     input:
         [abs_dst('%s.clu.%d' % (session, el)) for el in channel_groups.keys()],

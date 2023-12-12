@@ -1,5 +1,13 @@
+blocks:  # blocks of pipeline to run
+  meta: True         # pack main metadata into HDF5
+  DLC: False         # Deep lab cut
+  MoSeq: False        # MoSeq
+  Audio: False       # process audio data
+  LFP: False          # extract LFP
+  SS_SI: False       # run sikesorting with spike interface
+  SS_kwik: True      # complete spike sorting with neurosuite / klustakwik
 src_path: "/home/sobolev/nevermind/Andrey/sandbox/data/"
-dst_path: "/home/sobolev/nevermind/Michael/processed_data/"
+dst_path: "/home/sobolev/nevermind/AG_Pecka/data/processed/"
 ndm_path: "/home/sobolev/apps/ndm/usr/bin/"
 kkwik_path: "/home/sobolev/apps/kkwik/"
 kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"

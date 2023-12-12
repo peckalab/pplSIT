@@ -38,7 +38,7 @@ def head_direction(tl, hd_update_speed=0.04):
     return hd
 
 
-def pack(src_session_path, dst_file_path):
+def pack(src_session_path, dst_file_path, drift_coeff=0.000025):  # 15 ms per 10 minutes default drift
     """
     Pack independent raw session datasets into a single HDF5 file.
     
@@ -54,7 +54,7 @@ def pack(src_session_path, dst_file_path):
                           data is smoothed using gaussian kernels,
                           inter-trial intervals have trial_no = 0
         /trial_idxs     - matrix of trial indices to timeline
-        /sound_idxs     - matrix of sound indices to timeline
+        /sound_events     - matrix of sound times and indices to timeline
         
     each dataset has an attribute 'headers' with the description of columns.
     """
@@ -81,11 +81,11 @@ def pack(src_session_path, dst_file_path):
             ds.attrs['headers'] = headers
         
         # read raw data and normalize to session start
-        positions = np.array(f['raw']['positions'])
-        s_start, s_end = positions[:, 0][0], positions[:, 0][-1]
-        positions[:, 0] = positions[:, 0] - s_start
         events = np.array(f['raw']['events'])
+        s_start, s_end = events[:, 0][0], events[:, 0][-1]
         events[:, 0] = events[:, 0] - s_start
+        positions = np.array(f['raw']['positions'])
+        positions[:, 0] = positions[:, 0] - s_start
         sounds = np.array(f['raw']['sounds'])
         sounds[:, 0] = sounds[:, 0] - s_start
 
@@ -139,8 +139,12 @@ def pack(src_session_path, dst_file_path):
         trial_idxs = proc.create_dataset('trial_idxs', data=trials)
         trial_idxs.attrs['headers'] = 't_start_idx, t_end_idx, target_x, target_y, target_r, fail_or_success'
 
+        # adjust for a drift
+        drift = s_end * drift_coeff
+        sounds[:, 0] = sounds[:, 0] + np.arange(len(sounds)) * drift/len(sounds)
+
         # save sounds
-        sound_idxs = np.zeros((len(sounds), 2))
+        sound_events = np.zeros((len(sounds), 3))
         left_idx = 0
         delta = 10**5
         for i in range(len(sounds)):
@@ -149,11 +153,11 @@ def pack(src_session_path, dst_file_path):
                 delta = np.abs(sounds[i][0] - pos_at_freq[:, 0][left_idx])
                 left_idx += 1
 
-            sound_idxs[i] = (left_idx, sounds[i][1])
+            sound_events[i] = (sounds[i][0], sounds[i][1], left_idx)
             delta = 10**5
 
-        sound_idxs = proc.create_dataset('sound_idxs', data=sound_idxs)
-        sound_idxs.attrs['headers'] = 'timeline_idx, sound_id'
+        sound_events = proc.create_dataset('sound_events', data=sound_events)
+        sound_events.attrs['headers'] = 'sound_time, sound_id, timeline_idx'
 
         # building timeline
         width = 50  # 100 points ~= 1 sec with at 100Hz
