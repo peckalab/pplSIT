@@ -38,9 +38,17 @@ def head_direction(tl, hd_update_speed=0.04):
     return hd
 
 
-def pack(src_session_path, dst_file_path, drift_coeff=0.000025):  # 15 ms per 10 minutes default drift
+def pack(pos_file, ev_file, snd_file, cfg_file, dst_file, drift_coeff=0.000025):  
     """
     Pack independent raw session datasets into a single HDF5 file.
+
+    args:
+        pos_file    - path to positions file
+        ev_file     - path to events file
+        snd_file    - path to sounds file
+        cfg_file    - path to config file
+        dst_file    - destination HDF5 file
+        drift_coeff - 15 ms per 10 minutes default sound drift
     
     File has the following structure:
     
@@ -58,24 +66,24 @@ def pack(src_session_path, dst_file_path, drift_coeff=0.000025):  # 15 ms per 10
         
     each dataset has an attribute 'headers' with the description of columns.
     """
-    params_file = [x for x in os.listdir(src_session_path) if x.endswith('.json')][0]
-    with open(os.path.join(src_session_path, params_file)) as json_file:
+    with open(os.path.join(cfg_file)) as json_file:
         parameters = json.load(json_file)
     
-    with h5py.File(dst_file_path, 'w') as f:  # overwrite mode
+    with h5py.File(dst_file, 'w') as f:  # overwrite mode
 
         # -------- save raw data ------------
         raw = f.create_group('raw')
         raw.attrs['parameters'] = json.dumps(parameters)
 
-        for ds_name in ['positions', 'events', 'sounds', 'islands']:
-            filename = os.path.join(src_session_path, '%s.csv' % ds_name)
-            if not os.path.exists(filename):
+        ds_names = ['positions', 'events', 'sounds', 'islands']
+        for i, f_path  in enumerate([pos_file, ev_file, snd_file]):
+            ds_name = ds_names[i]
+            if not os.path.exists(f_path):
                 continue
                 
-            with open(filename) as ff:
+            with open(f_path) as ff:
                 headers = ff.readline()
-            data = np.loadtxt(filename, delimiter=',', skiprows=1)
+            data = np.loadtxt(f_path, delimiter=',', skiprows=1)
 
             ds = raw.create_dataset(ds_name, data=data)
             ds.attrs['headers'] = headers
@@ -200,10 +208,10 @@ def pack(src_session_path, dst_file_path, drift_coeff=0.000025):  # 15 ms per 10
 
 
 # actual execution
-src_path = snakemake.config['src_path']
-sessions = snakemake.config['sessions']
-
-for i, session in enumerate(sessions):
-    src_session_path = os.path.join(src_path, session.split('_')[0], session)
-    dst_file_path    = snakemake.output[i]
-    pack(src_session_path, dst_file_path)
+pack(
+    snakemake.input[0], 
+    snakemake.input[1], 
+    snakemake.input[2], 
+    snakemake.input[3], 
+    snakemake.output[0]
+)

@@ -3,22 +3,32 @@ import os
 # examples of Snakemake workflows:
 # https://snakemake.github.io/snakemake-workflow-catalog/
 
-# wrappers to build absolute paths to source / destination folders
-abs_src = lambda file_name: os.path.join(src_path, session.split('_')[0], session, file_name)
-abs_dst = lambda file_name: os.path.join(dst_path, session.split('_')[0], session, file_name)
-
-src_path = config['src_path']
-dst_path = config['dst_path']
-session  = config['sessions'][0]
 
 # include rules here
+#include: "rules/foo.smk"
 include: "rules/pack.smk"
-include: "rules/neurosuite.smk"
+#include: "rules/lfp.smk"
+#include: "rules/neurosuite.smk"
 
 # TODO label all raw files as read-only
 
-# rule to assemble all 
+
+def get_targets(wildcards):
+    # add more target files here
+    target_names = ['meta.h5'] #, 'lfp.h5']
+
+    sessions = expand("{session}", session=config["session_IDs"])
+    animals  = expand("{animal}", animal=[s.split('_')[0] for s in config["session_IDs"]])
+
+    # build target map
+    targets = []
+    build_target = lambda animal, session, name: os.path.join(config['dst_path'], animal, session, name)
+    for animal, session in zip(animals, sessions):
+        for name in target_names:
+            targets.append(build_target(animal, session, name))
+
+    return targets
+
 rule all:
     input:
-        [abs_dst('%s.clu.%d' % (session, el)) for el in channel_groups.keys()],
-        abs_dst("meta.h5")
+        get_targets

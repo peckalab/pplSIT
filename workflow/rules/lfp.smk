@@ -17,7 +17,7 @@ rule update_lfp_rate:
         ndm_idx = filedata.find('ndm_lfp')
         vl_idx = filedata[ndm_idx:].find('<value>')
         vr_idx = filedata[ndm_idx:].find('</value>')
-        f_upd = filedata[:ndm_idx + vl_idx + 7] + str(config['lfp_s_rate']) + filedata[ndm_idx + vr_idx:]
+        f_upd = filedata[:ndm_idx + vl_idx + 7] + str(config['lfp']['s_rate']) + filedata[ndm_idx + vr_idx:]
 
         # update existing and create a new temp file
         with open(input.xml, 'w') as f:
@@ -41,7 +41,7 @@ rule extract_lfp:
         )
 
 
-# convert from binary to HDF5 format
+# convert from binary to HDF5 format, shift by offset
 rule lfp2hdf5:
     input:
         xml=abs_dst(session, '%s.xml' % session),
