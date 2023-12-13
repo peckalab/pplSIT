@@ -7,9 +7,9 @@ import xml.etree.ElementTree as ET
 # Replace the sampling rate value for ndm lfp
 rule update_lfp_rate:
     input:
-        xml=abs_dst(session, '%s.xml' % session)
+        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.xml')
     output:
-        xml=temp(abs_dst(session, '%s.lfp.xml' % session))
+        xml=temp(os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.lfp.xml'))
     run:
         with open(input.xml, 'r') as f:
             filedata = f.read()
@@ -29,31 +29,36 @@ rule update_lfp_rate:
 # extract LFP using neurosuite
 rule extract_lfp:
     input:
-        xml=abs_dst(session, '%s.lfp.xml' % session),
-        dat=abs_dst(session, '%s.dat' % session)
+        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.lfp.xml'),
+        dat=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.dat')
     output:
-        abs_dst(session, '%s.lfp' % session)
+        lfp=temp(os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.lfp'))
+    params:
+        session="{session}",
+        animal="{animal}"
     shell:
         "cd %s; %s %s" % (
-            abs_dst(session, ''),
+            os.path.join(config['dst_path'], '{params.animal}', '{params.session}'),
             os.path.join(config['ndm_path'], "ndm_lfp"),
-            session + '.xml'
+            '{params.session}.xml'
         )
 
 
 # convert from binary to HDF5 format, shift by offset
 rule lfp2hdf5:
     input:
-        xml=abs_dst(session, '%s.xml' % session),
-        lfp=abs_dst(session, '%s.lfp' % session)
+        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.xml'),
+        lfp=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.lfp')
     output:
-        lfp_h5=abs_dst(session, 'lfp.h5')
+        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5')
     run:
         # determine channel numbers
         ch_num = int(ET.parse(input.xml).getroot().findall('acquisitionSystem')[0].findall('nChannels')[0].text)
 
         # read all LFP in one block
         block = np.fromfile(input.lfp, dtype=np.int16)
+
+        # TODO shift by an offset!
 
         with h5py.File(output.lfp_h5, 'w') as f:
             lfp_ds = f.create_dataset('lfp', data=block.reshape(int(block.shape[0]/ch_num), ch_num))
