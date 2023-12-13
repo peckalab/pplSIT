@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 # parse original .xml file to get channel groups for spikesorting
 def get_channel_groups(animal, session):
-    xml_path = os.path.join(config['dst_path'], animal, session, '%s.xml' % session)
+    xml_path = os.path.join(config['src_path'], animal, session, '%s.xml' % session)
     root = ET.parse(xml_path).getroot()
     ch_groups_xml = root.findall('spikeDetection')[0].findall('channelGroups')[0]
 
@@ -30,9 +30,11 @@ def get_fet_string(animal, session, electrode):
     el_idx = electrodes.index(int(electrode))
     return get_features(animal, session)[el_idx]
 
+
+# main function to create all inputs and wildcards
 def get_clu_inputs(w):
     electrodes = get_electrodes(w.animal, w.session)
-    return expand(os.path.join(config['dst_path'], w.animal, w.session, w.session + '.clu.' + '{electrode}'), electrode=electrodes)
+    return expand(n_path(w.animal, w.session, w.session + '.clu_copy.' + '{electrode}'), electrode=electrodes)
 
 
 # -------- rules ----------------------
@@ -41,16 +43,16 @@ def get_clu_inputs(w):
 # high-pass filtering
 rule hipass:
     input:
-        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.xml'),
-        dat=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.dat')
+        xml=n_path('{animal}', '{session}', '{session}.xml'),
+        dat=n_path('{animal}', '{session}', '{session}.dat')
     output:
-        temp(os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.fil'))
+        temp(n_path('{animal}', '{session}', '{session}.fil'))
     params:
         session="{session}",
         animal="{animal}"
     shell:
         "cd %s; %s %s" % (
-            os.path.join(config['dst_path'], '{params.animal}', '{params.session}'),
+            n_path('{params.animal}', '{params.session}', ''),
             os.path.join(config['ndm_path'], "ndm_hipass"),
             '{params.session}.xml'
         )
@@ -58,17 +60,17 @@ rule hipass:
 # extract spikes
 rule extractspikes:
     input:
-        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.xml'),
-        fil=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.fil')
+        xml=n_path('{animal}', '{session}', '{session}.xml'),
+        fil=n_path('{animal}', '{session}', '{session}.fil')
     output:
-        os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.spk.{electrode}'),
-        os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.res.{electrode}')
+        n_path('{animal}', '{session}', '{session}.spk.{electrode}'),
+        n_path('{animal}', '{session}', '{session}.res.{electrode}')
     params:
         session="{session}",
         animal="{animal}"
     shell:
         "cd %s; %s %s" % (
-            os.path.join(config['dst_path'], '{params.animal}', '{params.session}'),
+            n_path('{params.animal}', '{params.session}', ''),
             os.path.join(config['ndm_path'], "ndm_extractspikes"),
             '{params.session}.xml'
         )
@@ -76,15 +78,15 @@ rule extractspikes:
 # compute PCA
 rule PCA:
     input:
-        os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.spk.{electrode}')
+        n_path('{animal}', '{session}', '{session}.spk.{electrode}')
     output:
-        os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.fet.{electrode}')
+        n_path('{animal}', '{session}', '{session}.fet.{electrode}')
     params:
         session="{session}",
         animal="{animal}"
     shell:
         "cd %s; %s %s" % (
-            os.path.join(config['dst_path'], '{params.animal}', '{params.session}'),
+            n_path('{params.animal}', '{params.session}', ''),
             os.path.join(config['ndm_path'], "ndm_pca"),
             '{params.session}.xml'
         )
@@ -93,10 +95,10 @@ rule PCA:
 # sort clusters with KlustaKwik
 rule kkwik:
     input:
-        os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.fet.{electrode}'),
-        os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.res.{electrode}')
+        n_path('{animal}', '{session}', '{session}.fet.{electrode}'),
+        n_path('{animal}', '{session}', '{session}.res.{electrode}')
     output:
-        os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.clu.{electrode}')
+        n_path('{animal}', '{session}', '{session}.clu.{electrode}')
     params:
         session="{session}",
         animal="{animal}",
@@ -104,13 +106,23 @@ rule kkwik:
         fet_string=lambda w, output: get_fet_string(w.animal, w.session, w.electrode)
     shell:
         "cd %s; %s %s %s %s %s" % (
-            os.path.join(config['dst_path'], '{params.animal}', '{params.session}'),
+            n_path('{params.animal}', '{params.session}', ''),
             os.path.join(config['kkwik_path'], "KlustaKwik"),
             '{params.session}',
             '{params.electrode}',
             config['kwik_args'],
             '{params.fet_string}'
         )
+
+
+# backup .clu files
+rule clu_backup:
+    input:
+        n_path('{animal}', '{session}', '{session}.clu.{electrode}')
+    output:
+        n_path('{animal}', '{session}', '{session}.clu_copy.{electrode}')
+    shell:
+        "cp {input} {output}"
 
 
  # dump units to HDF5
@@ -123,10 +135,4 @@ rule dump_units:
         "touch {output}"
 
 
-
-# TODO test the clean up!
-# TODO put all in subfolder!
-# TODO create clu backups
 # TODO export spikes to units.h5
-#  TODO    params:
-#                fet_num to compute as a function

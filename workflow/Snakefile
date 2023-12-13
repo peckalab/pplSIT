@@ -6,6 +6,9 @@ import os
 # dance with params and functions
 # https://github.com/snakemake/snakemake/issues/1122
 
+# shortcut for neurosuite file paths
+n_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal, session, 'neurosuite', fname)
+
 
 # include rules here
 #include: "rules/foo.smk"

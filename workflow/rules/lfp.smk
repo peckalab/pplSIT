@@ -7,9 +7,9 @@ import xml.etree.ElementTree as ET
 # Replace the sampling rate value for ndm lfp
 rule update_lfp_rate:
     input:
-        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.xml')
+        xml=n_path('{animal}', '{session}', '{session}.xml')
     output:
-        xml=temp(os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.lfp.xml'))
+        xml=temp(n_path('{animal}', '{session}', '{session}.lfp.xml'))
     run:
         with open(input.xml, 'r') as f:
             filedata = f.read()
@@ -29,16 +29,16 @@ rule update_lfp_rate:
 # extract LFP using neurosuite
 rule extract_lfp:
     input:
-        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.lfp.xml'),
-        dat=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.dat')
+        xml=n_path('{animal}', '{session}', '{session}.lfp.xml'),
+        dat=n_path('{animal}', '{session}', '{session}.dat')
     output:
-        lfp=temp(os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.lfp'))
+        lfp=temp(n_path('{animal}', '{session}', '{session}.lfp'))
     params:
         session="{session}",
         animal="{animal}"
     shell:
         "cd %s; %s %s" % (
-            os.path.join(config['dst_path'], '{params.animal}', '{params.session}'),
+            n_path('{params.animal}', '{params.session}', ''),
             os.path.join(config['ndm_path'], "ndm_lfp"),
             '{params.session}.xml'
         )
@@ -47,8 +47,8 @@ rule extract_lfp:
 # convert from binary to HDF5 format, shift by offset
 rule lfp2hdf5:
     input:
-        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.xml'),
-        lfp=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}.lfp')
+        xml=n_path('{animal}', '{session}', '{session}.xml'),
+        lfp=n_path('{animal}', '{session}', '{session}.lfp')
     output:
         lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5')
     run:

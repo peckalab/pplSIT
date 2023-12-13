@@ -9,7 +9,7 @@ rule copy:
         xml=os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.xml'),
         dat=os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.dat')
     output:
-        xml=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}' + '.xml'),
-        dat=os.path.join(config['dst_path'], '{animal}', '{session}', '{session}' + '.dat')
+        xml=n_path('{animal}', '{session}', '{session}.xml'),
+        dat=n_path('{animal}', '{session}', '{session}.dat')
     shell:
         "cp {input.xml} {output.xml}; cp {input.dat} {output.dat}"
