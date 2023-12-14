@@ -30,6 +30,9 @@ def get_fet_string(animal, session, electrode):
     el_idx = electrodes.index(int(electrode))
     return get_features(animal, session)[el_idx]
 
+def build_ndm_targets(f_type, animal, session):
+    return [n_path(animal, session, '%s.%s.%s' % (session, f_type, el)) for el in [1, 2, 3, 4, 5, 6, 7, 8]]
+
 
 # main function to create all inputs and wildcards
 def get_clu_inputs(w):
@@ -58,45 +61,61 @@ rule hipass:
         )
 
 # extract spikes
+# to run the rule only once, we require only one dummy 
+# output file 'spk.ready' as output instead of all .spk / .res
+# files. No better way to run it with snakemake found
 rule extractspikes:
     input:
         xml=n_path('{animal}', '{session}', '{session}.xml'),
         fil=n_path('{animal}', '{session}', '{session}.fil')
     output:
-        n_path('{animal}', '{session}', '{session}.spk.{electrode}'),
-        n_path('{animal}', '{session}', '{session}.res.{electrode}')
+        temp(n_path('{animal}', '{session}', 'spk.ready'))
+        #expand(n_path('{animal}', '{session}', '{session}.spk.{el}'), el=ACTUALS['electrodes']),
+        #expand(n_path('{animal}', '{session}', '{session}.res.{el}'), el=ACTUALS['electrodes'])
+        #build_ndm_targets('spk', '{animal}', '{session}'),
+        #build_ndm_targets('res', '{animal}', '{session}')
+        #n_path('{animal}', '{session}', '{session}.spk.{electrode}'),  # this works, but makes the 
+        #n_path('{animal}', '{session}', '{session}.res.{electrode}')   # rule be executed multiple times
     params:
         session="{session}",
         animal="{animal}"
     shell:
-        "cd %s; %s %s" % (
+        "cd %s; %s %s; touch %s" % (
             n_path('{params.animal}', '{params.session}', ''),
             os.path.join(config['ndm_path'], "ndm_extractspikes"),
-            '{params.session}.xml'
+            '{params.session}.xml',
+            n_path('{params.animal}', '{params.session}', 'spk.ready')
         )
 
 # compute PCA
+# to run the rule only once, we require only one dummy 
+# output file 'fet.ready' as output instead of all .fet
+# files. No better way to run it with snakemake found
 rule PCA:
     input:
-        n_path('{animal}', '{session}', '{session}.spk.{electrode}')
+        #n_path('{animal}', '{session}', '{session}.spk.{electrode}')
+        n_path('{animal}', '{session}', 'spk.ready')
     output:
-        n_path('{animal}', '{session}', '{session}.fet.{electrode}')
+        #n_path('{animal}', '{session}', '{session}.fet.{electrode}')
+        temp(n_path('{animal}', '{session}', 'fet.ready'))
     params:
         session="{session}",
         animal="{animal}"
     shell:
-        "cd %s; %s %s" % (
+        "cd %s; %s %s; touch %s" % (
             n_path('{params.animal}', '{params.session}', ''),
             os.path.join(config['ndm_path'], "ndm_pca"),
-            '{params.session}.xml'
+            '{params.session}.xml',
+            n_path('{params.animal}', '{params.session}', 'fet.ready')
         )
 
 
 # sort clusters with KlustaKwik
 rule kkwik:
     input:
-        n_path('{animal}', '{session}', '{session}.fet.{electrode}'),
-        n_path('{animal}', '{session}', '{session}.res.{electrode}')
+        #n_path('{animal}', '{session}', '{session}.fet.{electrode}'),
+        #n_path('{animal}', '{session}', '{session}.res.{electrode}')
+        n_path('{animal}', '{session}', 'fet.ready')
     output:
         n_path('{animal}', '{session}', '{session}.clu.{electrode}')
     params:
@@ -133,6 +152,7 @@ rule dump_units:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'units.txt')
     shell:
         "touch {output}"
+
 
 
 # TODO export spikes to units.h5
