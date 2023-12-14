@@ -6,23 +6,27 @@ import os
 # dance with params and functions
 # https://github.com/snakemake/snakemake/issues/1122
 
-# shortcut for neurosuite file paths
+# shortcut for neurosuite file paths (LFP, spikes, ephys files)
 n_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal, session, 'neurosuite', fname)
 
-
 # include rules here
-#include: "rules/foo.smk"
 include: "rules/copy.smk"
 include: "rules/pack.smk"
 include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
+include: "rules/aeps.smk"
 
 # TODO label all raw files as read-only
 
 
 def get_targets(wildcards):
     # add more target files here
-    target_names = ['meta.h5', 'lfp.h5', 'units.txt']
+    target_names = [
+        'meta.h5', 
+        'lfp.h5', 
+        'AEPs.h5', 
+        #'units.txt'
+    ]
 
     sessions = expand("{session}", session=config["session_IDs"])
     animals  = expand("{animal}", animal=[s.split('_')[0] for s in config["session_IDs"]])

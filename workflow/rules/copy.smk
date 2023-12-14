@@ -4,7 +4,7 @@ import os
 # TODO: mark all raw data files as read-only
 
 # copying raw data to destination folder
-rule copy:
+rule copy_ephys:
     input:
         xml=os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.xml'),
         dat=os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.dat')
