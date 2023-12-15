@@ -5,7 +5,7 @@ import os, sys
 parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 sys.path.append(parent_dir)
 sys.path.append(os.path.join(parent_dir, 'utils'))
-from utils.neurosuite import get_electrodes, get_fet_string
+from utils.neurosuite import XMLHero
 
 
 #def build_ndm_targets(f_type, animal, session):
@@ -13,9 +13,13 @@ from utils.neurosuite import get_electrodes, get_fet_string
 
 # main function to create all inputs and wildcards
 def get_clu_inputs(w):
-    electrodes = get_electrodes(config['src_path'], w.animal, w.session)
+    xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
+    electrodes = XMLHero(xml_path).get_electrodes()
     return expand(n_path(w.animal, w.session, w.session + '.clu_copy.' + '{electrode}'), electrode=electrodes)
 
+def get_fet_param(w):
+    xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
+    return XMLHero(xml_path).get_fet_string(w.electrode)
 
 # -------- rules ----------------------
 
@@ -99,7 +103,7 @@ rule kkwik:
         session="{session}",
         animal="{animal}",
         electrode="{electrode}",
-        fet_string=lambda w, output: get_fet_string(config['src_path'], w.animal, w.session, w.electrode)
+        fet_string=lambda w, output: get_fet_param(w)
     shell:
         "cd %s; %s %s %s %s %s" % (
             n_path('{params.animal}', '{params.session}', ''),
