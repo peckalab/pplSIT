@@ -40,6 +40,27 @@ class XMLHero:
         return int(sampling_rate.text)
 
 
+class DatHero:
+    # class to work with the Neurosuite DAT file
+    
+    def __init__(self, dat_path, s_rate=30000, ch_no=64):
+        if not os.path.exists(dat_path):
+            raise ValueError('Given DAT file does not exist')
+        self.s_rate = s_rate
+        self.ch_no = ch_no
+        self.dat_path = dat_path
+        
+    def read_block(self, duration, offset):
+        """
+        duration      in seconds
+        offset        in seconds
+        """
+        count = self.s_rate * self.ch_no * duration  # number of values to read
+        offset_in_bytes = offset * self.s_rate * self.ch_no * 2  # assuming int16 is 2 bytes
+        block = np.fromfile(self.dat_path, dtype=np.int16, count=int(count), offset=int(offset_in_bytes))
+        return block.reshape([int(self.s_rate * duration), self.ch_no])
+
+
 def load_clu_res(where):
     """
     Neurosuite files:
@@ -56,11 +77,12 @@ def load_clu_res(where):
     :param where:       path to the session folder
     :return:            a dict in a form like {<clustered_unit_no>: <spike_times>, ...}
     """
-    filebase = os.path.basename(where)
-    clu_files = [f for f in os.listdir(where) if f.find('.clu.') > 0]
-    if not len(clu_files) > 0:
-        return {}
     
+    clu_files = [f for f in os.listdir(where) if f.find('.clu.') > 0]
+    if len(clu_files) == 0:
+        raise ValueError('No CLU files found')
+
+    filebase = os.path.basename(clu_files[0]).split('.')[0]
     idxs = [int(x.split('.')[2]) for x in clu_files]  # electrode indexes
     
     all_units = {}

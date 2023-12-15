@@ -19,8 +19,6 @@ include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
 include: "rules/aeps.smk"
 
-# TODO label all raw files as read-only
-
 
 def get_targets(wildcards):
     # add more target files here

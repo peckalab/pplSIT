@@ -128,7 +128,9 @@ rule clu_backup:
  # dump units to HDF5
 rule dump_units:
     input:
-        get_clu_inputs
+        xml=n_path('{animal}', '{session}', '{session}.xml'),
+        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        clu=get_clu_inputs
     output:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
     script:

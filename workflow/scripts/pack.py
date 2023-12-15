@@ -123,7 +123,6 @@ def pack(pos_file, ev_file, snd_file, cfg_file, dst_file, drift_coeff=0.000025):
 
         # convert timeline to 100 Hz
         time_freq = 100  # at 100Hz
-        s_start, s_end = positions[:, 0][0], positions[:, 0][-1]
         times = np.linspace(s_start, s_end, int((s_end - s_start) * time_freq))
         pos_at_freq = np.zeros((len(times), 3))
 
