@@ -7,7 +7,7 @@ blocks:  # blocks of pipeline to run
   SS_SI: False       # run sikesorting with spike interface
   SS_kwik: True      # complete spike sorting with neurosuite / klustakwik
 #src_path: "/home/sobolev/nevermind/Andrey/sandbox/data/"
-src_path: "/home/sobolev/nevermind/Andrey/data/"
+src_path: "/home/sobolev/nevermind/Andrey/sandbox/data/"
 dst_path: "/home/sobolev/nevermind/AG_Pecka/data/processed/"
 ndm_path: "/home/sobolev/apps/ndm/usr/bin/"
 kkwik_path: "/home/sobolev/apps/kkwik/"

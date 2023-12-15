@@ -6,6 +6,9 @@ import os
 # dance with params and functions
 # https://github.com/snakemake/snakemake/issues/1122
 
+# generate DAG in PDF
+# snakemake --forceall --dag --configfile="../config/andrey_pd.yaml" --cores=1 | dot -Tpdf > dag.pdf
+
 # shortcut for neurosuite file paths (LFP, spikes, ephys files)
 n_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal, session, 'neurosuite', fname)
 
@@ -25,7 +28,7 @@ def get_targets(wildcards):
         'meta.h5', 
         'lfp.h5', 
         'AEPs.h5', 
-        #'units.txt'
+        'units.h5'
     ]
 
     sessions = expand("{session}", session=config["session_IDs"])

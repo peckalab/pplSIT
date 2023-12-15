@@ -1,6 +1,8 @@
 import os
 import json
 
+# TODO: move this to pack - make first 'meta_nosync.h5'
+# and then just 'meta.h5'?
 
 # that's the rule to synchronize events to actual ephys
 rule calibrate_event_sync:
