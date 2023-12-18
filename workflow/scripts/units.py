@@ -14,8 +14,6 @@ from utils.hdf import create_dataset, H5NAMES
 
 session_path = os.path.dirname(snakemake.input[0])
 
-print('SESSION: %s ' % session_path)
-
 # loading unit data
 units = load_clu_res(session_path)  # spikes are in samples, not seconds
 sampling_rate = XMLHero(snakemake.input[0]).get_sampling_rate()

@@ -6,6 +6,9 @@ import os
 # dance with params and functions
 # https://github.com/snakemake/snakemake/issues/1122
 
+# issue with providing old files instead of letting snakemake compute them (metadata cleanup)
+# https://github.com/snakemake/snakemake/issues/828
+
 # generate DAG in PDF
 # snakemake --forceall --dag --configfile="../config/andrey_pd.yaml" --cores=1 | dot -Tpdf > dag.pdf
 
