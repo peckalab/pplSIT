@@ -38,6 +38,41 @@ def head_direction(tl, hd_update_speed=0.04):
     return hd
 
 
+def build_tgt_matrix(sound_events, trials):
+    # compute timeline / sound indices of entrances / exits to the target
+    tgt_start_idxs = []
+    tgt_end_idxs = []
+    
+    for i, event in enumerate(sound_events[:-1]):
+        if sound_events[i][1] < 2 and sound_events[i+1][1] == 2:
+            tgt_start_idxs.append(i+1)
+        if sound_events[i][1] == 2 and sound_events[i+1][1] < 2:
+            tgt_end_idxs.append(i)
+    
+    # ignore first/last target if not ended
+    if tgt_start_idxs[-1] > tgt_end_idxs[-1]:
+        tgt_start_idxs = tgt_start_idxs[:-1]
+    if tgt_end_idxs[0] < tgt_start_idxs[0]:
+        tgt_end_idxs = tgt_end_idxs[1:]
+    tgt_start_idxs = np.array(tgt_start_idxs)
+    tgt_end_idxs   = np.array(tgt_end_idxs)
+    
+    # successful / missed
+    tgt_results = np.zeros(len(tgt_start_idxs))
+    for idx_tl_success_end in trials[trials[:, 5] == 1][:, 1]:
+        idx_succ = np.abs(sound_events[tgt_end_idxs][:, 2] - idx_tl_success_end).argmin()
+        tgt_results[idx_succ] = 1
+        
+    # tl_idx_start, tl_idx_end, aep_idx_start, aer_idx_end, success / miss
+    return np.column_stack([
+        tgt_start_idxs,
+        tgt_end_idxs,
+        sound_events[tgt_start_idxs][:, 2],
+        sound_events[tgt_end_idxs][:, 2],
+        tgt_results
+    ]).astype(np.int32)
+
+
 def pack(pos_file, ev_file, snd_file, cfg_file, dst_file, drift_coeff=0.000025):  
     """
     Pack independent raw session datasets into a single HDF5 file.
@@ -140,7 +175,7 @@ def pack(pos_file, ev_file, snd_file, cfg_file, dst_file, drift_coeff=0.000025):
         for i in range(t_count):
             t_start_idx = (np.abs(pos_at_freq[:, 0] - events[2*i][0])).argmin()
             t_end_idx = (np.abs(pos_at_freq[:, 0] - events[2*i + 1][0])).argmin()
-            state = 0 if events[2*i + 1][-1] > 1 else 1
+            state = 1 if events[2*i + 1][-1] == 1 else 0
 
             trials[i] = (t_start_idx, t_end_idx, events[2*i][1], events[2*i][2], events[2*i][3], state)
 
@@ -164,8 +199,8 @@ def pack(pos_file, ev_file, snd_file, cfg_file, dst_file, drift_coeff=0.000025):
             sound_events[i] = (sounds[i][0], sounds[i][1], left_idx)
             delta = 10**5
 
-        sound_events = proc.create_dataset('sound_events', data=sound_events)
-        sound_events.attrs['headers'] = 'sound_time, sound_id, timeline_idx'
+        sound_events_ds = proc.create_dataset('sound_events', data=sound_events)
+        sound_events_ds.attrs['headers'] = 'sound_time, sound_id, timeline_idx'
 
         # building timeline
         width = 50  # 100 points ~= 1 sec with at 100Hz
@@ -205,6 +240,11 @@ def pack(pos_file, ev_file, snd_file, cfg_file, dst_file, drift_coeff=0.000025):
                      [pos_at_freq[:, 0], x_smooth, y_smooth, speed, hd, trials_data, sound_tl, x_smooth, y_smooth],
                    ))
         timeline.attrs['headers'] = 'time, x, y, speed, hd, trial_no, sound_ids, x_raw, y_raw'
+
+        # create target matrix
+        tgt_matrix = build_tgt_matrix(sound_events, trials)
+        tgt_matrix_ds = proc.create_dataset('target_matrix', data=tgt_matrix)
+        tgt_matrix_ds.attrs['headers'] = 'sound_idx_start, sound_idx_end, tl_idx_start, tl_idx_end, result'
 
 
 # actual execution
