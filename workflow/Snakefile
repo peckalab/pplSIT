@@ -21,6 +21,7 @@ include: "rules/pack.smk"
 include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
 include: "rules/aeps.smk"
+include: "rules/analysis/psth.smk"
 
 
 def get_targets(wildcards):
@@ -29,7 +30,8 @@ def get_targets(wildcards):
         'meta.h5', 
         'lfp.h5', 
         'AEPs.h5', 
-        'units.h5'
+        'units.h5',
+        'analysis/psth_shuffle_micro_silence.h5'
     ]
 
     sessions = expand("{session}", session=config["session_IDs"])

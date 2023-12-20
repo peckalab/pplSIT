@@ -14,6 +14,13 @@ kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters
 lfp:
   s_rate: 1000  # sampling rate in Hz
   aep_dur: 0.25  # Auditory evoked response duration in sec
+psth:
+  micro:
+    latency: 0.25
+    bin_count: 41
+  macro:
+    latency: 7.25
+    bin_count: 41
 session_IDs:
   # ----- 009266 -----
   - "009266_hippoSIT_2023-04-17_17-04-17"
