@@ -73,7 +73,7 @@ def build_tgt_matrix(sound_events, trials):
     ]).astype(np.int32)
 
 
-def pack(pos_file, ev_file, snd_file, cfg_file, dst_file, drift_coeff=0.000025):  
+def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=0.000025):  
     """
     Pack independent raw session datasets into a single HDF5 file.
 
@@ -182,9 +182,11 @@ def pack(pos_file, ev_file, snd_file, cfg_file, dst_file, drift_coeff=0.000025):
         trial_idxs = proc.create_dataset('trial_idxs', data=trials)
         trial_idxs.attrs['headers'] = 't_start_idx, t_end_idx, target_x, target_y, target_r, fail_or_success'
 
-        # adjust for a drift
+        # adjust for a drift and offset
         drift = s_end * drift_coeff
-        sounds[:, 0] = sounds[:, 0] + np.arange(len(sounds)) * drift/len(sounds)
+        with open(man_file, 'r') as json_file:
+            offset = json.load(json_file)['ephys']['offset']
+        sounds[:, 0] = sounds[:, 0] + np.arange(len(sounds)) * drift/len(sounds) + offset/1000.
 
         # save sounds
         sound_events = np.zeros((len(sounds), 3))
@@ -253,5 +255,6 @@ pack(
     snakemake.input[1], 
     snakemake.input[2], 
     snakemake.input[3], 
+    snakemake.input[4],
     snakemake.output[0]
 )
