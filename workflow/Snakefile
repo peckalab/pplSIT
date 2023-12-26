@@ -23,6 +23,8 @@ include: "rules/neurosuite.smk"
 include: "rules/aeps.smk"
 include: "rules/analysis/shuffle.smk"
 include: "rules/analysis/psth.smk"
+include: "rules/analysis/aeps.smk"
+include: "rules/analysis/spatial.smk"
 
 
 def get_targets(wildcards):
@@ -32,12 +34,15 @@ def get_targets(wildcards):
         'lfp.h5', 
         'AEPs.h5', 
         'units.h5',
+        'analysis/AEP_components.h5',
         'analysis/psth_tgt_onset.pdf',
         'analysis/psth_tgt_offset.pdf',
         'analysis/psth_trial_onset.pdf',
         'analysis/psth_noise_offset.pdf',
-        #'analysis/psth_bgr_tgt.pdf',
-        #'analysis/psth_bgr_sil.pdf'
+        'analysis/psth_bgr_tgt.pdf',
+        'analysis/psth_bgr_sil.pdf',
+        'analysis/spiking_maps.png',
+        'analysis/fr_maps.pdf'
         #'analysis/psth_shuffle_micro_silence.h5'
     ]
 

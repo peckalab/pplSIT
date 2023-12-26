@@ -15,7 +15,7 @@ from utils.neurosuite import XMLHero
 def get_clu_inputs(w):
     xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
     electrodes = XMLHero(xml_path).get_electrodes()
-    return expand(n_path(w.animal, w.session, w.session + '.clu_copy.' + '{electrode}'), electrode=electrodes)
+    return ancient(expand(n_path(w.animal, w.session, w.session + '.clu_copy.' + '{electrode}'), electrode=electrodes))
 
 def get_fet_param(w):
     xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
@@ -27,10 +27,10 @@ def get_fet_param(w):
 # high-pass filtering
 rule hipass:
     input:
-        xml=n_path('{animal}', '{session}', '{session}.xml'),
-        dat=n_path('{animal}', '{session}', '{session}.dat')
+        xml=ancient(n_path('{animal}', '{session}', '{session}.xml')),
+        dat=ancient(n_path('{animal}', '{session}', '{session}.dat'))
     output:
-        temp(n_path('{animal}', '{session}', '{session}.fil'))
+        n_path('{animal}', '{session}', '{session}.fil')
     params:
         session="{session}",
         animal="{animal}"
@@ -118,7 +118,7 @@ rule kkwik:
 # backup .clu files
 rule clu_backup:
     input:
-        n_path('{animal}', '{session}', '{session}.clu.{electrode}')
+        ancient(n_path('{animal}', '{session}', '{session}.clu.{electrode}'))
     output:
         n_path('{animal}', '{session}', '{session}.clu_copy.{electrode}')
     shell:
@@ -128,7 +128,7 @@ rule clu_backup:
  # dump units to HDF5
 rule dump_units:
     input:
-        xml=n_path('{animal}', '{session}', '{session}.xml'),
+        xml=ancient(n_path('{animal}', '{session}', '{session}.xml')),
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
         clu=get_clu_inputs
     output:

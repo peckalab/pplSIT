@@ -1,0 +1,171 @@
+Building DAG of jobs...
+Job stats:
+job           count
+----------  -------
+all               1
+clu_backup       12
+dump_units        2
+total            15
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu.3
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.3
+    jobid: 407
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.3
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-19_08-58-35, electrode=3
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu.1
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.1
+    jobid: 377
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.1
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-14_08-21-23, electrode=1
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu.2
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.2
+    jobid: 382
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.2
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-14_08-21-23, electrode=2
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu.3
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.3
+    jobid: 384
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.3
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-14_08-21-23, electrode=3
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu.4
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.4
+    jobid: 386
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.4
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-14_08-21-23, electrode=4
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu.1
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.1
+    jobid: 400
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.1
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-19_08-58-35, electrode=1
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu.5
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.5
+    jobid: 388
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-14_08-21-23, electrode=5
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu.6
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.6
+    jobid: 390
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.6
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-14_08-21-23, electrode=6
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu.4
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.4
+    jobid: 409
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.4
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-19_08-58-35, electrode=4
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu.5
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.5
+    jobid: 411
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-19_08-58-35, electrode=5
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu.6
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.6
+    jobid: 413
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.6
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-19_08-58-35, electrode=6
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule clu_backup:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu.2
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.2
+    jobid: 405
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.2
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-19_08-58-35, electrode=2
+    resources: tmpdir=/tmp
+
+
+[Mon Dec 18 11:23:06 2023]
+rule dump_units:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.xml, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.1, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.2, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.3, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.4, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.6
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/units.h5
+    jobid: 399
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/units.h5; Input files updated by another job: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.3, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.2, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.1, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.4, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/neurosuite/009266_hippoSIT_2023-06-19_08-58-35.clu_copy.6
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-19_08-58-35
+    resources: tmpdir=/tmp
+
+[Mon Dec 18 11:23:06 2023]
+rule dump_units:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.xml, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.1, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.2, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.3, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.4, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.6
+    output: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/units.h5
+    jobid: 376
+    reason: Missing output files: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/units.h5; Input files updated by another job: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.4, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.1, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.6, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.2, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/neurosuite/009266_hippoSIT_2023-06-14_08-21-23.clu_copy.3
+    wildcards: animal=009266, session=009266_hippoSIT_2023-06-14_08-21-23
+    resources: tmpdir=/tmp
+
+[Mon Dec 18 11:23:06 2023]
+localrule all:
+    input: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-18_10-10-37/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-18_10-10-37/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-18_10-10-37/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-18_10-10-37/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-18_17-03-10/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-18_17-03-10/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-18_17-03-10/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-18_17-03-10/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-19_10-33-51/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-19_10-33-51/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-19_10-33-51/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-19_10-33-51/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-20_08-57-39/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-20_08-57-39/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-20_08-57-39/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-20_08-57-39/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-24_16-56-55/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-24_16-56-55/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-24_16-56-55/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-24_16-56-55/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-26_08-20-17/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-26_08-20-17/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-26_08-20-17/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-26_08-20-17/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-02_12-22-14/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-02_12-22-14/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-02_12-22-14/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-02_12-22-14/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-04_19-47-15/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-04_19-47-15/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-04_19-47-15/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-04_19-47-15/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-20_15-24-14/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-20_15-24-14/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-20_15-24-14/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-20_15-24-14/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-21_08-43-00/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-21_08-43-00/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-21_08-43-00/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-21_08-43-00/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-21_13-12-31/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-21_13-12-31/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-21_13-12-31/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-21_13-12-31/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-24_10-08-11/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-24_10-08-11/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-24_10-08-11/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-24_10-08-11/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-22_09-27-22/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-22_09-27-22/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-22_09-27-22/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-22_09-27-22/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-23_09-18-05/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-23_09-18-05/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-23_09-18-05/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-23_09-18-05/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-25_15-55-57/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-25_15-55-57/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-25_15-55-57/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-05-25_15-55-57/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/meta.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/lfp.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/AEPs.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/units.h5
+    jobid: 0
+    reason: Input files updated by another job: /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-14_08-21-23/units.h5, /home/sobolev/nevermind/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-06-19_08-58-35/units.h5
+    resources: tmpdir=/tmp
+
+Job stats:
+job           count
+----------  -------
+all               1
+clu_backup       12
+dump_units        2
+total            15
+
+Reasons:
+    (check individual jobs above for details)
+    input files updated by another job:
+        all, dump_units
+    missing output files:
+        clu_backup, dump_units
+
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.
