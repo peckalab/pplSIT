@@ -159,7 +159,7 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
         # convert timeline to 100 Hz
         time_freq = 100  # at 100Hz
         s_start, s_end = events[0][0], events[-1][0]
-        times = np.linspace(s_start, s_end, int((s_end - s_start) * time_freq))
+        times = np.arange(s_start, s_end, 1./time_freq)
         pos_at_freq = np.zeros((len(times), 3))
 
         curr_idx = 0
