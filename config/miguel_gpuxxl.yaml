@@ -14,8 +14,8 @@ blocks:  # blocks of pipeline to run
   LFP: False          # extract LFP
   SS_SI: False       # run sikesorting with spike interface
   SS_kwik: True      # complete spike sorting with neurosuite / klustakwik
-ndm_path: "/home/sobolev/apps/ndm/usr/bin/"
-kkwik_path: "/home/sobolev/apps/kkwik/"
+ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
+kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
 kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
 lfp:
   s_rate: 1000  # sampling rate in Hz
