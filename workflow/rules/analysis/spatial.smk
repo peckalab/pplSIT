@@ -16,5 +16,3 @@ rule plot_firing_rate_maps:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'fr_maps.pdf')
     script:
         "../../scripts/analysis/fr_maps.py"
-
-#rule plot_AEP_component_maps:
