@@ -201,6 +201,9 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
             sound_events[i] = (sounds[i][0], sounds[i][1], left_idx)
             delta = 10**5
 
+        # remove events outside timeline
+        to_keep_idxs = np.where(sound_events[:, 2] < len(times))[0]
+        sound_events = sound_events[to_keep_idxs]
         sound_events_ds = proc.create_dataset('sound_events', data=sound_events)
         sound_events_ds.attrs['headers'] = 'sound_time, sound_id, timeline_idx'
 
