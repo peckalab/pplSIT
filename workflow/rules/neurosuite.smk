@@ -30,7 +30,7 @@ rule hipass:
         xml=ancient(n_path('{animal}', '{session}', '{session}.xml')),
         dat=ancient(n_path('{animal}', '{session}', '{session}.dat'))
     output:
-        n_path('{animal}', '{session}', '{session}.fil')
+        temp(n_path('{animal}', '{session}', '{session}.fil'))
     params:
         session="{session}",
         animal="{animal}"
@@ -92,6 +92,7 @@ rule PCA:
 
 
 # sort clusters with KlustaKwik
+"""
 rule kkwik:
     input:
         #n_path('{animal}', '{session}', '{session}.fet.{electrode}'),
@@ -113,6 +114,7 @@ rule kkwik:
             config['kwik_args'],
             '{params.fet_string}'
         )
+"""
 
 
 # backup .clu files
