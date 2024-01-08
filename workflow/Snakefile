@@ -27,9 +27,10 @@ include: "rules/analysis/aeps.smk"
 include: "rules/analysis/spatial.smk"
 
 
+
 def get_targets(wildcards):
-    # add more target files here
     target_names = [
+        # --- postprocessing ---
         'meta.h5',
         #'DLC_100Hz.h5',
         #'video_labeled.mp4',
@@ -37,6 +38,8 @@ def get_targets(wildcards):
         'AEPs.h5', 
         'units.h5',
         'analysis/AEP_components.h5',
+
+        # --- plotting ---
         #'analysis/psth_tgt_onset.pdf',
         #'analysis/psth_tgt_offset.pdf',
         #'analysis/psth_trial_onset.pdf',
@@ -46,6 +49,9 @@ def get_targets(wildcards):
         #'analysis/spiking_maps.png',
         #'analysis/fr_maps.pdf',
         #'analysis/aeps_maps.pdf',
+        'analysis/aeps_profiles.pdf'
+
+        # --- shuffle ---
         #'analysis/psth_shuffle_micro_silence.h5'
     ]
 

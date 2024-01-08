@@ -30,3 +30,13 @@ rule plot_AEP_component_maps:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'aeps_maps.pdf')
     script:
         "../../scripts/analysis/aeps_maps.py"
+
+
+rule plot_AEP_profiles:
+    input:
+        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        aeps=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEPs.h5')
+    output:
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'aeps_profiles.pdf')
+    script:
+        "../../scripts/analysis/aeps_profiles.py"
