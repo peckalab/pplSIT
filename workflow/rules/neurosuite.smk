@@ -15,7 +15,7 @@ from utils.neurosuite import XMLHero
 def get_clu_inputs(w):
     xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
     electrodes = XMLHero(xml_path).get_electrodes()
-    return ancient(expand(n_path(w.animal, w.session, w.session + '.clu_copy.' + '{electrode}'), electrode=electrodes))
+    return expand(n_path(w.animal, w.session, w.session + '.clu.' + '{electrode}'), electrode=electrodes)
 
 def get_fet_param(w):
     xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
@@ -78,7 +78,7 @@ rule PCA:
         n_path('{animal}', '{session}', 'spk.ready')
     output:
         #n_path('{animal}', '{session}', '{session}.fet.{electrode}')
-        temp(n_path('{animal}', '{session}', 'fet.ready'))
+        n_path('{animal}', '{session}', 'fet.ready')
     params:
         session="{session}",
         animal="{animal}"
@@ -92,7 +92,6 @@ rule PCA:
 
 
 # sort clusters with KlustaKwik
-"""
 rule kkwik:
     input:
         #n_path('{animal}', '{session}', '{session}.fet.{electrode}'),
@@ -114,7 +113,6 @@ rule kkwik:
             config['kwik_args'],
             '{params.fet_string}'
         )
-"""
 
 
 # backup .clu files

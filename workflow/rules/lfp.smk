@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 # Replace the sampling rate value for ndm lfp
 rule update_lfp_rate:
     input:
-        xml=n_path('{animal}', '{session}', '{session}.xml')
+        xml=ancient(n_path('{animal}', '{session}', '{session}.xml'))
     output:
         xml=temp(n_path('{animal}', '{session}', '{session}.lfp.xml'))
     run:
@@ -47,8 +47,8 @@ rule extract_lfp:
 # convert from binary to HDF5 format, shift by offset
 rule lfp2hdf5:
     input:
-        xml=n_path('{animal}', '{session}', '{session}.xml'),
-        lfp=n_path('{animal}', '{session}', '{session}.lfp')
+        xml=ancient(n_path('{animal}', '{session}', '{session}.xml')),
+        lfp=ancient(n_path('{animal}', '{session}', '{session}.lfp'))
     output:
         lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5')
     run:

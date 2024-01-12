@@ -40,15 +40,15 @@ def get_targets(wildcards):
         'analysis/AEP_components.h5',
 
         # --- plotting ---
-        #'analysis/psth_tgt_onset.pdf',
-        #'analysis/psth_tgt_offset.pdf',
-        #'analysis/psth_trial_onset.pdf',
-        #'analysis/psth_noise_offset.pdf',
-        #'analysis/psth_bgr_tgt.pdf',
-        #'analysis/psth_bgr_sil.pdf',
-        #'analysis/spiking_maps.png',
-        #'analysis/fr_maps.pdf',
-        #'analysis/aeps_maps.pdf',
+        'analysis/psth_tgt_onset.pdf',
+        'analysis/psth_tgt_offset.pdf',
+        'analysis/psth_trial_onset.pdf',
+        'analysis/psth_noise_offset.pdf',
+        'analysis/psth_bgr_tgt.pdf',
+        'analysis/psth_bgr_sil.pdf',
+        'analysis/spiking_maps.png',
+        'analysis/fr_maps.pdf',
+        'analysis/aeps_maps.pdf',
         'analysis/aeps_profiles.pdf'
 
         # --- shuffle ---
