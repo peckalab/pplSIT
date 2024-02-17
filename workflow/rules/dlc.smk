@@ -101,6 +101,7 @@ rule create_video_timestamps:
         timestamps = join(config["src_path"],"{animal}","{session}","video.csv"),
     run:
         import cv2
+        import numpy as np
 
         video = cv2.VideoCapture(input.video_path)
 
