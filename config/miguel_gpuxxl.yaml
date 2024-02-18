@@ -1,11 +1,13 @@
 src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 session_IDs: 
+  # - "60_SIT_2023-08-28_19-17-37"
   - "60_SIT_2023-08-21_17-55-38"
 dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
 dlc_shuffle: 3
 dlc_trainingsetindex: 0
-cuda_device_to_use: 3
+moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
+cuda_device_to_use: 2
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   DLC: False         # Deep lab cut

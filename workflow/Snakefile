@@ -21,6 +21,7 @@ include: "rules/pack.smk"
 include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
 include: "rules/dlc.smk"
+include: "rules/moseq.smk"
 include: "rules/analysis/shuffle.smk"
 include: "rules/analysis/psth.smk"
 include: "rules/analysis/aeps.smk"
@@ -32,24 +33,25 @@ def get_targets(wildcards):
     target_names = [
         # --- postprocessing ---
         'meta.h5',
-        #'DLC_100Hz.h5',
-        #'video_labeled.mp4',
-        'lfp.h5', 
-        'AEPs.h5', 
-        'units.h5',
-        'analysis/AEP_components.h5',
+        'DLC_100Hz.h5',
+        'video_labeled.mp4',
+        'moseq/moseq.csv',
+        #'lfp.h5', 
+        #'AEPs.h5', 
+        # 'units.h5',
+        #'analysis/AEP_components.h5',
 
         # --- plotting ---
-        'analysis/psth_tgt_onset.pdf',
-        'analysis/psth_tgt_offset.pdf',
-        'analysis/psth_trial_onset.pdf',
-        'analysis/psth_noise_offset.pdf',
-        'analysis/psth_bgr_tgt.pdf',
-        'analysis/psth_bgr_sil.pdf',
-        'analysis/spiking_maps.png',
-        'analysis/fr_maps.pdf',
-        'analysis/aeps_maps.pdf',
-        'analysis/aeps_profiles.pdf'
+        # 'analysis/psth_tgt_onset.pdf',
+        # 'analysis/psth_tgt_offset.pdf',
+        # 'analysis/psth_trial_onset.pdf',
+        # 'analysis/psth_noise_offset.pdf',
+        # 'analysis/psth_bgr_tgt.pdf',
+        # 'analysis/psth_bgr_sil.pdf',
+        # 'analysis/spiking_maps.png',
+        # 'analysis/fr_maps.pdf',
+        #'analysis/aeps_maps.pdf',
+        #'analysis/aeps_profiles.pdf'
 
         # --- shuffle ---
         #'analysis/psth_shuffle_micro_silence.h5'
