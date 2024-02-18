@@ -41,15 +41,16 @@ rule apply_moseq:
 
 
 # TODO: add rule to synch moseq data to 100Hz
-# rule synch_moseq_100Hz:
-#     input:
-#         moseq_csv = join(config["dst_path"],"{animal}","{session}","moseq","moseq.csv"),
-#         events = join(config["src_path"],"{animal}","{session}","events.csv"),
-#         session_cfg = join(config["src_path"],"{animal}","{session}","{session}.json"),
-#         timestamps_raw = lambda wildcards: join(config["src_path"],"{animal}","{session}",get_videoname(wildcards,config)+".csv"),
-#     output:
-#         DLC_h5_path_100Hz = join(config["dst_path"],"{animal}","{session}","DLC_100Hz.h5"),
-#     conda:
-#         "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/kpms_v0_1_5"
-#     script:
-#         "../scripts/synch_moseq_100Hz.py"
+rule synch_moseq_100Hz:
+    input:
+        moseq_csv_path = join(config["dst_path"],"{animal}","{session}","moseq","moseq.csv"),
+        events = join(config["src_path"],"{animal}","{session}","events.csv"),
+        session_cfg = join(config["src_path"],"{animal}","{session}","{session}.json"),
+        timestamps_raw = lambda wildcards: join(config["src_path"],"{animal}","{session}",get_videoname(wildcards,config)+".csv"),
+    output:
+        moseq_h5_path_100Hz = join(config["dst_path"],"{animal}","{session}","MoSeq.h5"),
+    params:
+        session = "{session}",
+        animal = "{animal}"
+    script:
+        "../scripts/synch_moseq_100Hz.py"

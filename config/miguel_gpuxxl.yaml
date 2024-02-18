@@ -1,8 +1,8 @@
 src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 session_IDs: 
-  # - "60_SIT_2023-08-28_19-17-37"
-  - "60_SIT_2023-08-21_17-55-38"
+  - "60_SIT_2023-08-28_19-17-37"
+  # - "60_SIT_2023-08-21_17-55-38"
 dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
 dlc_shuffle: 3
 dlc_trainingsetindex: 0

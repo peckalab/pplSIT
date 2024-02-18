@@ -35,7 +35,7 @@ def get_targets(wildcards):
         'meta.h5',
         'DLC_100Hz.h5',
         'video_labeled.mp4',
-        'moseq/moseq.csv',
+        'MoSeq.h5',
         #'lfp.h5', 
         #'AEPs.h5', 
         # 'units.h5',
