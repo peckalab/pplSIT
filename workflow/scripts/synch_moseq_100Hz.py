@@ -34,7 +34,7 @@ with open(snakemake.input.session_cfg) as json_file:
 fps_video = parameters['video']['fps']
 
 # Find the indices of the timestamps that are closest to the times
-indices = np.searchsorted(timestamps_raw, times)
+indices = [np.abs(timestamps_raw - time).argmin() for time in times]
 
 df_moseq_100Hz['time'] = times
 for column in df_moseq_30Hz.columns:
