@@ -26,35 +26,57 @@ include: "rules/analysis/psth.smk"
 include: "rules/analysis/aeps.smk"
 include: "rules/analysis/spatial.smk"
 
+# collect targets
+target_names = []
+if 'meta' in config['blocks'] and config['blocks']['meta']:
+    target_names += ['meta.h5']
 
+if 'DLC' in config['blocks'] and config['blocks']['DLC']:
+    target_names += ['DLC_100Hz.h5', 'video_labeled.mp4']
 
-def get_targets(wildcards):
-    target_names = [
-        # --- postprocessing ---
-        'meta.h5',
-        #'DLC_100Hz.h5',
-        #'video_labeled.mp4',
-        'lfp.h5', 
+if 'MoSeq' in config['blocks'] and config['blocks']['MoSeq']:
+    pass
+
+if 'Audio' in config['blocks'] and config['blocks']['Audio']:
+    pass
+
+if 'LFP' in config['blocks'] and config['blocks']['LFP']:
+    target_names += ['lfp.h5']
+ 
+if 'AEPs' in config['blocks'] and config['blocks']['AEPs']:
+    target_names += [
         'AEPs.h5', 
-        'units.h5',
-        'analysis/AEP_components.h5',
+        'analysis/AEP_components.h5', 
+        'analysis/aeps_maps.pdf', 
+        'analysis/aeps_profiles.pdf'
+    ]
 
-        # --- plotting ---
+if 'units' in config['blocks'] and config['blocks']['units']:
+    target_names += ['units.h5']
+
+if 'PSTH' in config['blocks'] and config['blocks']['PSTH']:
+    target_names += [
         'analysis/psth_tgt_onset.pdf',
         'analysis/psth_tgt_offset.pdf',
         'analysis/psth_trial_onset.pdf',
         'analysis/psth_noise_offset.pdf',
         'analysis/psth_bgr_tgt.pdf',
         'analysis/psth_bgr_sil.pdf',
-        'analysis/spiking_maps.png',
-        'analysis/fr_maps.pdf',
-        'analysis/aeps_maps.pdf',
-        'analysis/aeps_profiles.pdf'
-
-        # --- shuffle ---
-        #'analysis/psth_shuffle_micro_silence.h5'
     ]
 
+if 'spatial' in config['blocks'] and config['blocks']['spatial']:
+    target_names += [
+        'analysis/spiking_maps.png',
+        'analysis/fr_maps.pdf',
+    ]
+
+if 'shuffle' in config['blocks'] and config['blocks']['shuffle']:
+    target_names += [
+        'analysis/psth_shuffle_micro_silence.h5'
+    ]
+
+
+def get_targets(wildcards):
     sessions = expand("{session}", session=config["session_IDs"])
     animals  = expand("{animal}", animal=[s.split('_')[0] for s in config["session_IDs"]])
 

@@ -1,19 +1,18 @@
-src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/"
-dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
-session_IDs: 
-  - "60_SIT_2023-08-21_17-55-38"
-dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
-dlc_shuffle: 3
-dlc_trainingsetindex: 0
-cuda_device_to_use: 3
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   DLC: False         # Deep lab cut
   MoSeq: False        # MoSeq
   Audio: False       # process audio data
   LFP: False          # extract LFP
-  units: True      # complete spike sorting with neurosuite / klustakwik
-  AEPs: True         # extract Auditory Evoked Responses
+  SS_SI: False       # run sikesorting with spike interface
+  SS_kwik: False      # complete spike sorting with neurosuite / klustakwik
+  AEPs: False         # extract Auditory Evoked Responses
+src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/"
+dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
+dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
+dlc_shuffle: 3
+dlc_trainingsetindex: 0
+cuda_device_to_use: 3
 ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
 kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
 kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"

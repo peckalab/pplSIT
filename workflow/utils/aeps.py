@@ -16,7 +16,7 @@ AEP_metrics_lims = {
         'N0': [15, 20], # max - min to the left of max
         'P1': [20, 40], # min - max to the left of min
         'N1': [40, 75], # max - min to the left of max
-        'P3': [75, 160] # AUC
+        'P3': [75, 160] # AUC - consider 75 - 200!
     },
     'HPC': {
         'P0': [10, 15], # min - max to the left of min

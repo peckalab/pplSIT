@@ -4,8 +4,11 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   Audio: False       # process audio data
   LFP: False          # extract LFP
-  SS_SI: False       # run sikesorting with spike interface
-  SS_kwik: True      # complete spike sorting with neurosuite / klustakwik
+  units: True      # complete spike sorting with neurosuite / klustakwik
+  AEPs: True         # extract Auditory Evoked Responses
+  PSTH: True
+  spatial: True
+  shuffle: False
 #src_path: "/home/sobolev/nevermind/Andrey/data/"
 src_path: "/home/sobolev/nevermind/AG_Pecka/data/raw/"
 dst_path: "/home/sobolev/nevermind/AG_Pecka/data/processed/"

@@ -47,7 +47,7 @@ rule hipass:
 # files. No better way to run it with snakemake found
 rule extractspikes:
     input:
-        xml=n_path('{animal}', '{session}', '{session}.xml'),
+        xml=ancient(n_path('{animal}', '{session}', '{session}.xml')),
         fil=n_path('{animal}', '{session}', '{session}.fil')
     output:
         temp(n_path('{animal}', '{session}', 'spk.ready'))
@@ -75,7 +75,7 @@ rule extractspikes:
 rule PCA:
     input:
         #n_path('{animal}', '{session}', '{session}.spk.{electrode}')
-        n_path('{animal}', '{session}', 'spk.ready')
+        ancient(n_path('{animal}', '{session}', 'spk.ready'))
     output:
         #n_path('{animal}', '{session}', '{session}.fet.{electrode}')
         n_path('{animal}', '{session}', 'fet.ready')
@@ -96,7 +96,7 @@ rule kkwik:
     input:
         #n_path('{animal}', '{session}', '{session}.fet.{electrode}'),
         #n_path('{animal}', '{session}', '{session}.res.{electrode}')
-        n_path('{animal}', '{session}', 'fet.ready')
+        ancient(n_path('{animal}', '{session}', 'fet.ready'))
     output:
         n_path('{animal}', '{session}', '{session}.clu.{electrode}')
     params:
