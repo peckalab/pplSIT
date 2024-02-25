@@ -22,10 +22,12 @@ events = np.loadtxt(snakemake.input.events, delimiter=',', skiprows=1)
 
 time_freq = 100  # at 100Hz
 
-events[:, 0] = events[:, 0] - events[:, 0][0]
 s_start, s_end = events[:, 0][0], events[:, 0][-1]
-times = np.arange(0, s_end, (1./ time_freq))
+events[:, 0] = events[:, 0] - s_start
+times = np.arange(0, events[:, 0][-1], (1./ time_freq))
+
 timestamps_raw = np.loadtxt(snakemake.input.timestamps_raw)
+timestamps_raw = timestamps_raw - s_start
 
 df_DLC_100Hz['time'] = times
 for column in df_DLC_30Hz.columns:

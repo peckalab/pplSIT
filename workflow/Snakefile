@@ -21,6 +21,7 @@ include: "rules/pack.smk"
 include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
 include: "rules/dlc.smk"
+include: "rules/moseq.smk"
 include: "rules/analysis/shuffle.smk"
 include: "rules/analysis/psth.smk"
 include: "rules/analysis/aeps.smk"
@@ -35,7 +36,7 @@ if 'DLC' in config['blocks'] and config['blocks']['DLC']:
     target_names += ['DLC_100Hz.h5', 'video_labeled.mp4']
 
 if 'MoSeq' in config['blocks'] and config['blocks']['MoSeq']:
-    pass
+    target_names += ['MoSeq.h5']
 
 if 'Audio' in config['blocks'] and config['blocks']['Audio']:
     pass

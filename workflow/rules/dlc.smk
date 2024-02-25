@@ -93,3 +93,31 @@ rule synch_dlc_100Hz:
         "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/dlc"
     script:
         "../scripts/synch_DLC_100Hz.py"
+
+rule create_video_timestamps:
+    input:
+        video_path = lambda wildcards: join(config["src_path"],"{animal}","{session}","video.avi"),
+        events = join(config["src_path"],"{animal}","{session}","events.csv"),
+    output:
+        timestamps = join(config["src_path"],"{animal}","{session}","video.csv"),
+    run:
+        import cv2
+        import numpy as np
+
+        # Read events.csv
+        events = np.loadtxt(input.events, delimiter=',', skiprows=1)
+        # Get session start and end
+        s_start, s_end = events[:, 0][0], events[:, 0][-1]
+
+        video = cv2.VideoCapture(input.video_path)
+
+        # Get the total number of frames
+        frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        video.release()
+
+        # Create a np array with the timestamps
+        timestamps = np.linspace(s_start, s_end, frame_count)
+
+        # Save the timestamps to a csv file
+        np.savetxt(output.timestamps, timestamps, delimiter="\n")
