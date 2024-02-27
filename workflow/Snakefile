@@ -27,54 +27,49 @@ include: "rules/analysis/psth.smk"
 include: "rules/analysis/aeps.smk"
 include: "rules/analysis/spatial.smk"
 
-# collect targets
-target_names = []
-if 'meta' in config['blocks'] and config['blocks']['meta']:
-    target_names += ['meta.h5']
 
-if 'DLC' in config['blocks'] and config['blocks']['DLC']:
-    target_names += ['DLC_100Hz.h5', 'video_labeled.mp4']
-
-if 'MoSeq' in config['blocks'] and config['blocks']['MoSeq']:
-    target_names += ['MoSeq.h5']
-
-if 'Audio' in config['blocks'] and config['blocks']['Audio']:
-    pass
-
-if 'LFP' in config['blocks'] and config['blocks']['LFP']:
-    target_names += ['lfp.h5']
- 
-if 'AEPs' in config['blocks'] and config['blocks']['AEPs']:
-    target_names += [
+target_names_dict = {
+    'meta':    ['meta.h5'],
+    'DLC':     ['DLC_100Hz.h5', 'video_labeled.mp4'],
+    'MoSeq':   ['MoSeq.h5'],
+    'Audio':   [],
+    'LFP':     ['lfp.h5'],
+    'AEPs':    [
         'AEPs.h5', 
         'analysis/AEP_components.h5', 
         'analysis/aeps_maps.pdf', 
         'analysis/aeps_profiles.pdf'
-    ]
-
-if 'units' in config['blocks'] and config['blocks']['units']:
-    target_names += ['units.h5']
-
-if 'PSTH' in config['blocks'] and config['blocks']['PSTH']:
-    target_names += [
+    ],
+    'units':   ['units.h5'],
+    'PSTH':    [
         'analysis/psth_tgt_onset.pdf',
         'analysis/psth_tgt_offset.pdf',
         'analysis/psth_trial_onset.pdf',
         'analysis/psth_noise_offset.pdf',
         'analysis/psth_bgr_tgt.pdf',
         'analysis/psth_bgr_sil.pdf',
-    ]
-
-if 'spatial' in config['blocks'] and config['blocks']['spatial']:
-    target_names += [
+    ],
+    'spatial': [
         'analysis/spiking_maps.png',
         'analysis/fr_maps.pdf',
-    ]
+    ],
+    'shuffle': ['analysis/psth_shuffle_micro_silence.h5'],
+}
 
-if 'shuffle' in config['blocks'] and config['blocks']['shuffle']:
-    target_names += [
-        'analysis/psth_shuffle_micro_silence.h5'
-    ]
+def collect_target_names():
+    target_names = []
+
+    for block_name, enabled in config['blocks'].items():
+        if not enabled:
+            continue
+        if not block_name in target_names_dict:
+            continue
+        
+        target_names += target_names_dict[block_name]
+
+    return target_names
+
+target_names = collect_target_names()
 
 
 def get_targets(wildcards):
