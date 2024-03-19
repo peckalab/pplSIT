@@ -3,6 +3,7 @@ import numpy as np
 import h5py
 from scipy import signal
 from scipy import stats
+from sklearn import decomposition
 
 
 def unit_response_matrix(session_path, electrodes, times_to_event=[15, 28, 73, 100]):
@@ -41,21 +42,24 @@ def unit_response_matrix(session_path, electrodes, times_to_event=[15, 28, 73, 1
     return bins, unit_mx
 
 
-def spontaneous_activity(s_path):
+def activity_at_phase(s_path, phase=4, do_pca=False):
+    # by default = spontaneous activity, phase 4 (max 4)
     times_to_event = [15, 28, 73, 100]
 
     bins, unit_mx = unit_response_matrix(s_path, [1, 2], times_to_event)
-    resp_at_phase = unit_mx[4::len(times_to_event) + 1]
+    resp_at_phase = unit_mx[phase::len(times_to_event) + 1]
     unit_act_matrix = resp_at_phase.T
     for u, unit_data in enumerate(unit_act_matrix):
         unit_act_matrix[u] = stats.zscore(unit_data)
     resp_at_phase = unit_act_matrix.T
 
-    #pca.fit(resp_at_phase)
-    #X = pca.transform(resp_at_phase)
-    #pop_act1 = X[:, 0]  # PC1 score
-
-    pop_act  = resp_at_phase.mean(axis=1)  # or just a sum
+    if do_pca:
+        pca = decomposition.PCA(n_components=3)
+        pca.fit(resp_at_phase)
+        X = pca.transform(resp_at_phase)
+        pop_act = X[:, 0]  # PC1 score
+    else:
+        pop_act = resp_at_phase.mean(axis=1)  # or just a sum
 
     # smooth
     k_width = 40
