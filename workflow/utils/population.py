@@ -42,11 +42,11 @@ def unit_response_matrix(session_path, electrodes, times_to_event=[15, 28, 73, 1
     return bins, unit_mx
 
 
-def activity_at_phase(s_path, phase=4, do_pca=False):
+def activity_at_phase(s_path, phase=4, electrodes=[1, 2], do_pca=False):
     # by default = spontaneous activity, phase 4 (max 4)
     times_to_event = [15, 28, 73, 100]
 
-    bins, unit_mx = unit_response_matrix(s_path, [1, 2], times_to_event)
+    bins, unit_mx = unit_response_matrix(s_path, electrodes, times_to_event)
     resp_at_phase = unit_mx[phase::len(times_to_event) + 1]
     unit_act_matrix = resp_at_phase.T
     for u, unit_data in enumerate(unit_act_matrix):
@@ -62,7 +62,7 @@ def activity_at_phase(s_path, phase=4, do_pca=False):
         pop_act = resp_at_phase.mean(axis=1)  # or just a sum
 
     # smooth
-    k_width = 40
+    k_width = 30
     kernel  = signal.gaussian(k_width, std=(k_width) / 7.2)
     pop_act = np.convolve(pop_act, kernel, 'same') / kernel.sum()
 

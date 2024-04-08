@@ -1,21 +1,28 @@
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
-  DLC: True         # Deep lab cut
+  DLC: False         # Deep lab cut
   MoSeq: False        # MoSeq
   Audio: False       # process audio data
-  LFP: True          # extract LFP
+  LFP: False          # extract LFP
   units: True      # complete spike sorting with neurosuite / klustakwik
-  AEPs: True         # extract Auditory Evoked Responses
-  PSTH: True
-  spatial: True
+  AEPs: False         # extract Auditory Evoked Responses
+  PSTH: False
+  spatial: False
   shuffle: False
+  population: True
+
+#src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/raw"
 src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
 #src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
+
+#dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
 dst_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/"
+
 dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
 dlc_shuffle: 3
 dlc_trainingsetindex: 0
-cuda_device_to_use: 3
+moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
+cuda_device_to_use: 0
 ndm_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
 #ndm_path: "/home/sobolev/ndm/usr/bin/"
 kkwik_path: "/home/sobolev/apps/kkwik/"
@@ -31,10 +38,31 @@ psth:
     latency: 7.25
     bin_count: 41
 session_IDs:  
+# 009266
+  # - "009266_hippoSIT_2023-04-17_17-04-17"
+  # - "009266_hippoSIT_2023-04-18_10-10-37"
+  - "009266_hippoSIT_2023-04-18_17-03-10"
+  - "009266_hippoSIT_2023-04-19_10-33-51"
+  - "009266_hippoSIT_2023-04-20_08-57-39"
+  #- "009266_hippoSIT_2023-04-20_15-24-14"
+  - "009266_hippoSIT_2023-04-21_08-43-00"
+  - "009266_hippoSIT_2023-04-21_13-12-31"
+  - "009266_hippoSIT_2023-04-24_10-08-11"
+  - "009266_hippoSIT_2023-04-24_16-56-55"
+  - "009266_hippoSIT_2023-04-26_08-20-17"
+  - "009266_hippoSIT_2023-05-02_12-22-14"
+  - "009266_hippoSIT_2023-05-04_19-47-15"
+  - "009266_hippoSIT_2023-05-22_09-27-22"
+  - "009266_hippoSIT_2023-05-23_09-18-05"
+  - "009266_hippoSIT_2023-05-25_15-55-57"
+  - "009266_hippoSIT_2023-06-14_08-21-23"
+  - "009266_hippoSIT_2023-06-19_08-58-35"
+
+# # 009265
   - "009265_hippoSIT_2023-02-24_09-53-26"
   - "009265_hippoSIT_2023-02-24_17-22-46"
-  - "009265_hippoSIT_2023-02-27_10-18-32"
-  - "009265_hippoSIT_2023-02-27_15-33-46"
+  # - "009265_hippoSIT_2023-02-27_10-18-32"
+  # - "009265_hippoSIT_2023-02-27_15-33-46"
   - "009265_hippoSIT_2023-02-28_09-16-50"
   - "009265_hippoSIT_2023-02-28_13-16-10"
   - "009265_hippoSIT_2023-02-28_20-45-04"
@@ -52,3 +80,40 @@ session_IDs:
   - "009265_hippoSIT_2023-03-10_09-57-34"
   - "009265_hippoSIT_2023-04-13_09-54-39"
   - "009265_hippoSIT_2023-04-20_11-39-02"
+
+# 008229
+  # - "008229_hippoSIT_2022-05-16_20-36-44"
+  # - "008229_hippoSIT_2022-05-17_21-44-43"
+  # - "008229_hippoSIT_2022-05-18_14-36-18"
+  # - "008229_hippoSIT_2022-05-20_15-54-39"
+
+# - "60_SIT_2023-08-28_19-17-37"
+
+# Kate
+  # - "008228_hippoSIT_2022-05-27_10-24-45"
+  # - "008228_hippoSIT_2022-05-27_15-31-55"
+  # - "008228_hippoSIT_2022-05-28_12-20-33"
+  # - "008228_hippoSIT_2022-05-30_20-57-26"
+  # - "008228_hippoSIT_2022-05-31_10-10-19"
+  # - "008228_hippoSIT_2022-05-31_15-29-24"
+  # - "008228_hippoSIT_2022-05-31_20-12-21"
+  # - "008228_hippoSIT_2022-06-01_10-19-39"
+  # - "008228_hippoSIT_2022-06-01_15-20-55"
+  # - "008228_hippoSIT_2022-06-02_14-30-09"
+  # - "008228_hippoSIT_2022-06-02_21-39-53"
+  # - "008228_hippoSIT_2022-06-03_10-20-25"
+  # - "008228_hippoSIT_2022-06-03_12-13-09"
+
+  # - "008229_hippoSIT_2022-05-27_19-47-51"
+  # - "008229_hippoSIT_2022-05-28_13-21-39"
+  # - "008229_hippoSIT_2022-05-29_10-45-44"
+  # - "008229_hippoSIT_2022-05-29_17-16-59"
+  # - "008229_hippoSIT_2022-05-30_15-35-25"
+  # - "008229_hippoSIT_2022-05-30_21-40-24"
+  # - "008229_hippoSIT_2022-05-31_11-00-02"
+  # - "008229_hippoSIT_2022-05-31_16-38-23"
+  # - "008229_hippoSIT_2022-06-01_11-08-51"
+  # - "008229_hippoSIT_2022-06-01_16-09-26"
+  # - "008229_hippoSIT_2022-06-02_15-26-01"
+  # - "008229_hippoSIT_2022-06-02_20-42-08"
+  # - "008229_hippoSIT_2022-06-03_09-18-49"

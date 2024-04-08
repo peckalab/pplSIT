@@ -9,6 +9,9 @@ import os
 # issue with providing old files instead of letting snakemake compute them (metadata cleanup)
 # https://github.com/snakemake/snakemake/issues/828
 
+# run snakemake from ../workflow folder:
+# snakemake -n --configfile=../config/andrey_gpuxxl.yaml --use-conda --cores=1
+
 # generate DAG in PDF
 # snakemake --forceall --dag --configfile="../config/andrey_pd.yaml" --cores=1 | dot -Tpdf > dag.pdf
 
@@ -26,12 +29,18 @@ include: "rules/analysis/shuffle.smk"
 include: "rules/analysis/psth.smk"
 include: "rules/analysis/aeps.smk"
 include: "rules/analysis/spatial.smk"
+include: "rules/analysis/behavior.smk"
+include: "rules/analysis/population.smk"
 
 
 target_names_dict = {
     'meta':    ['meta.h5'],
     'DLC':     ['DLC_100Hz.h5', 'video_labeled.mp4'],
-    'MoSeq':   ['MoSeq.h5'],
+    'MoSeq':   [
+        'MoSeq.h5', 
+        'analysis/MoSeq_tSNE_UMAP.h5',
+        #'analysis/MoSeq_W1-W4_GLM.h5'
+    ],
     'Audio':   [],
     'LFP':     ['lfp.h5'],
     'AEPs':    [
@@ -54,6 +63,7 @@ target_names_dict = {
         'analysis/fr_maps.pdf',
     ],
     'shuffle': ['analysis/psth_shuffle_micro_silence.h5'],
+    'population': ['analysis/W1-W4_tSNE_UMAP.h5']
 }
 
 def collect_target_names():
