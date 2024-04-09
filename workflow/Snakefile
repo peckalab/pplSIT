@@ -10,7 +10,7 @@ import os
 # https://github.com/snakemake/snakemake/issues/828
 
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl.yaml --use-conda --cores=1
+# snakemake -n --configfile=../config/andrey_gpuxxl.yaml --use-conda --rerun-triggers mtime --cores=1
 
 # generate DAG in PDF
 # snakemake --forceall --dag --configfile="../config/andrey_pd.yaml" --cores=1 | dot -Tpdf > dag.pdf
@@ -25,6 +25,7 @@ include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
 include: "rules/dlc.smk"
 include: "rules/moseq.smk"
+include: "rules/descendants.smk"
 include: "rules/analysis/shuffle.smk"
 include: "rules/analysis/psth.smk"
 include: "rules/analysis/aeps.smk"
@@ -41,6 +42,7 @@ target_names_dict = {
         'analysis/MoSeq_tSNE_UMAP.h5',
         #'analysis/MoSeq_W1-W4_GLM.h5'
     ],
+    'descendants': ['descendants.h5'],
     'Audio':   [],
     'LFP':     ['lfp.h5'],
     'AEPs':    [

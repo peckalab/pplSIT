@@ -2,6 +2,7 @@ blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   DLC: False         # Deep lab cut
   MoSeq: False        # MoSeq
+  descendants: True   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: False          # extract LFP
   units: True      # complete spike sorting with neurosuite / klustakwik
@@ -9,7 +10,7 @@ blocks:  # blocks of pipeline to run
   PSTH: False
   spatial: False
   shuffle: False
-  population: True
+  population: False
 
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/raw"
 src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -39,12 +40,12 @@ psth:
     bin_count: 41
 session_IDs:  
 # 009266
-  # - "009266_hippoSIT_2023-04-17_17-04-17"
-  # - "009266_hippoSIT_2023-04-18_10-10-37"
+  - "009266_hippoSIT_2023-04-17_17-04-17"
+  - "009266_hippoSIT_2023-04-18_10-10-37"
   - "009266_hippoSIT_2023-04-18_17-03-10"
   - "009266_hippoSIT_2023-04-19_10-33-51"
   - "009266_hippoSIT_2023-04-20_08-57-39"
-  #- "009266_hippoSIT_2023-04-20_15-24-14"
+  - "009266_hippoSIT_2023-04-20_15-24-14"
   - "009266_hippoSIT_2023-04-21_08-43-00"
   - "009266_hippoSIT_2023-04-21_13-12-31"
   - "009266_hippoSIT_2023-04-24_10-08-11"
@@ -61,8 +62,8 @@ session_IDs:
 # # 009265
   - "009265_hippoSIT_2023-02-24_09-53-26"
   - "009265_hippoSIT_2023-02-24_17-22-46"
-  # - "009265_hippoSIT_2023-02-27_10-18-32"
-  # - "009265_hippoSIT_2023-02-27_15-33-46"
+  - "009265_hippoSIT_2023-02-27_10-18-32"
+  - "009265_hippoSIT_2023-02-27_15-33-46"
   - "009265_hippoSIT_2023-02-28_09-16-50"
   - "009265_hippoSIT_2023-02-28_13-16-10"
   - "009265_hippoSIT_2023-02-28_20-45-04"
