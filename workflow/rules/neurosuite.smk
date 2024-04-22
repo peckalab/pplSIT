@@ -13,12 +13,26 @@ from utils.neurosuite import XMLHero
 
 # main function to create all inputs and wildcards
 def get_clu_inputs(w):
-    xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
+    # TODO: this should be done in a more elegant way
+    if os.path.isfile(os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')):
+        xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
+    elif os.path.isfile(config['template_xml']):
+        xml_path = config['template_xml']
+    else:
+        raise FileNotFoundError('No XML file found')
+    
     electrodes = XMLHero(xml_path).get_electrodes()
     return expand(n_path(w.animal, w.session, w.session + '.clu.' + '{electrode}'), electrode=electrodes)
 
 def get_fet_param(w):
-    xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
+    # TODO: this should be done in a more elegant way
+    if os.path.isfile(os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')):
+        xml_path = os.path.join(config['src_path'], w.animal, w.session, w.session + '.xml')
+    elif os.path.isfile(config['template_xml']):
+        xml_path = config['template_xml']
+    else:
+        raise FileNotFoundError('No XML file found')
+    
     return XMLHero(xml_path).get_fet_string(w.electrode)
 
 # -------- rules ----------------------
