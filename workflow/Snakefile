@@ -40,7 +40,8 @@ target_names_dict = {
     'MoSeq':   [
         'MoSeq.h5', 
         'analysis/MoSeq_tSNE_UMAP.h5',
-        #'analysis/MoSeq_W1-W4_GLM.h5'
+        #'analysis/MoSeq_W1-W4_GLM.h5',
+        'analysis/state_idxs.h5',
     ],
     'descendants': ['descendants.h5'],
     'Audio':   [],
