@@ -39,6 +39,11 @@ class XMLHero:
         sampling_rate = root.findall('acquisitionSystem')[0].findall('samplingRate')[0]
         return int(sampling_rate.text)
 
+    def get_channel_count(self):
+        root = ET.parse(self.xml_path).getroot()
+        ch_count = root.findall('acquisitionSystem')[0].findall('nChannels')[0]
+        return int(ch_count.text)
+
 
 class DatHero:
     # class to work with the Neurosuite DAT file
@@ -59,6 +64,21 @@ class DatHero:
         offset_in_bytes = offset * self.s_rate * self.ch_no * 2  # assuming int16 is 2 bytes
         block = np.fromfile(self.dat_path, dtype=np.int16, count=int(count), offset=int(offset_in_bytes))
         return block.reshape([int(self.s_rate * duration), self.ch_no])
+
+    def get_single_channel(self, channel_no, block_duration=1):  # block duration 1 sec
+        size = os.path.getsize(self.dat_path)
+        samples_no = size / (self.ch_no * 2)
+
+        raw_signal = np.zeros(int(samples_no))  # length in time: samples_no / sample_rate
+        offset = 0
+
+        while offset < samples_no / self.s_rate - block_duration:
+            block = self.read_block(block_duration, offset)  # read in blocks
+            raw_signal[self.s_rate*offset:self.s_rate*(offset + block_duration)] = block[:, channel_no]
+            offset += block_duration
+            del block
+
+        return raw_signal
 
 
 def load_clu_res(where):

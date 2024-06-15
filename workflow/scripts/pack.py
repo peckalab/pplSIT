@@ -1,8 +1,16 @@
 import h5py
+import sys
 import time
 import os, json
 import numpy as np
 from scipy import signal
+
+# import util functions from utils module
+parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+sys.path.append(os.getcwd())
+sys.path.append(parent_dir)
+
+from utils.sync import get_sound_events_from_ephys
 
 
 def head_direction(tl, hd_update_speed=0.04):
@@ -91,6 +99,7 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
         /positions      - raw positions from .csv
         /events         - raw events from .csv
         /sounds         - raw sounds from .csv
+        /sounds_ephys   - (if exists) sounds events from .dat file
         /islands        - raw island infos from .csv (if exists)
     /processed
         /timeline       - matrix of [time, x, y, speed, HD, trial_no, sound_id] sampled at 100Hz,
@@ -183,10 +192,36 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
         trial_idxs.attrs['headers'] = 't_start_idx, t_end_idx, target_x, target_y, target_r, fail_or_success'
 
         # adjust for a drift and offset
-        drift = s_end * drift_coeff
+
         with open(man_file, 'r') as json_file:
             offset = json.load(json_file)['ephys']['offset']
-        sounds[:, 0] = sounds[:, 0] + np.arange(len(sounds)) * drift/len(sounds) + offset/1000.
+
+        if type(offset) == type(int):  # manual offset / drift processing
+            drift = s_end * drift_coeff
+            sounds[:, 0] = sounds[:, 0] + np.arange(len(sounds)) * drift/len(sounds) + offset/1000.
+        
+        else:
+            if offset['type'] == 'ephys': # sync events from ephys
+                session = ev_file.split('/')[-2]
+                animal  = session.split('_')[0]
+                src     = ev_file.split(animal)[0]
+
+                dat_file = os.path.join(src, animal, session, '%s.dat' % session)
+                xml_file = os.path.join(src, animal, session, '%s.xml' % session)
+                if not os.path.exists(dat_file) or not os.path.exists(xml_file):
+                    raise FileNotFoundError('Need ephys files to sync sound events, but they are not found')
+                
+                ev_ephys, ev_synced = get_sound_events_from_ephys(dat_file, xml_file, snd_file, ev_file, int(offset['channel']))
+                sounds = ev_synced.copy()  # overwrite logged sounds with a synced version
+
+                ds = raw.create_dataset('sounds_ephys', data=ev_ephys)
+                ds.attrs['headers'] = 't_start, t_end'
+
+            elif offset['type'] == 'microphones':  # sync events from microphones
+                raise NotImplementedError
+            
+            else:
+                raise NotImplementedError
 
         # save sounds
         sound_events = np.zeros((len(sounds), 3))
