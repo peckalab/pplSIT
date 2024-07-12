@@ -196,7 +196,7 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
         with open(man_file, 'r') as json_file:
             offset = json.load(json_file)['ephys']['offset']
 
-        if type(offset) == type(int):  # manual offset / drift processing
+        if type(offset) == int:  # manual offset / drift processing
             drift = s_end * drift_coeff
             sounds[:, 0] = sounds[:, 0] + np.arange(len(sounds)) * drift/len(sounds) + offset/1000.
         

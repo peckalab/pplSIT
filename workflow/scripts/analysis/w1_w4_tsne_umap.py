@@ -17,7 +17,9 @@ perplexities      = [20, 50, 70, 100]
 umap_fits         = {}
 tsne_fits         = {}
 
-s_path = os.path.dirname(snakemake.input[0])
+s_path  = os.path.dirname(snakemake.input[0])
+session = os.path.basename(s_path)
+animal  = session.split('_')[0]
 
 with h5py.File(snakemake.input[0], 'r') as f:
     cfg = json.loads(f['processed'].attrs['parameters'])
@@ -49,13 +51,25 @@ binning_AC_AEP = {
     150: [15, 28, 168, 195],
 }
 
+# for the moment define binning scheme manually for each animal
+all_binnings = {
+    '009265': binning_AC_AEP,
+    '009266': binning_AC_AEP,
+    '57': binning_mPFC_PCA,
+}
+selected_binning = all_binnings[animal] if animal in all_binnings else binning_AC_AEP
+
+# define actual binning for target / background
 dur_bgr = int(cfg['sound']['sounds']['background']['duration'] * 1000)  # in ms
 dur_tgt = int(cfg['sound']['sounds']['target']['duration'] * 1000)  # in ms
 
-key_bgr = dur_bgr if dur_bgr in binning_mPFC_PCA else 50
-key_tgt = dur_tgt if dur_tgt in binning_mPFC_PCA else 50
+assert dur_bgr in selected_binning
+assert dur_tgt in selected_binning
 
-w_mx = pop_activity_phase_shifted(s_path, binning_mPFC_PCA[key_bgr], binning_mPFC_PCA[key_tgt], do_pca=True)
+# electrodes in A1
+electrodes = snakemake.config['nMAP_electrodes'][animal]
+
+w_mx = pop_activity_phase_shifted(s_path, selected_binning[dur_bgr], selected_binning[dur_tgt], electrodes=electrodes, do_pca=True)
 
 # reduce 4-to-2 dimensions
 for perp in perplexities:

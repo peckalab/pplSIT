@@ -20,6 +20,23 @@ def get_ratio_matrix(moseq, tl, win_l=2, step=1, s_rate=100, syl_num=10):
     return syl_ratio_mx, idxs_srm_tl
 
 
+def get_ratio_matrix_ev(moseq, events, win_l=2, step=1, s_rate=100, syl_num=10):
+    # behavioral matrix that fits sound events
+    syl_ratio_mx = np.zeros([len(events), syl_num])
+
+    for i in range(len(events)):
+        idx_l = int(events[i][2])
+        idx_r = idx_l + int(win_l*s_rate)
+        curr_syls = moseq[:, 1][idx_l:idx_r]  # second column is syllables reindexed
+        for j in np.arange(syl_num):
+            syl_ratio_mx[i, j] = np.sum(curr_syls == j) / int(win_l*s_rate)
+    
+    # roll 1 step to match
+    to_roll = int(0.5 * (win_l / step))
+    syl_ratio_mx = np.roll(syl_ratio_mx, -to_roll, axis=0)
+
+    return syl_ratio_mx
+
 
 # parameters for tSNE / UMAP. Should go to yaml?
 umap_dists        = [0.1, 0.3, 0.5, 0.7]
@@ -37,9 +54,12 @@ with h5py.File(snakemake.input[1], 'r') as f:
 
 with h5py.File(snakemake.input[0], 'r') as f:
     tl = np.array(f['processed']['timeline'])
+    events = np.array(f['processed']['sound_events'])
     tgt_mx = np.array(f['processed']['target_matrix'])
     
-syl_ratio_mx, idxs_srm_tl = get_ratio_matrix(moseq, tl, win_l=win_l, step=step)
+#syl_ratio_mx, idxs_srm_tl = get_ratio_matrix(moseq, tl, win_l=win_l, step=step)
+syl_ratio_mx = get_ratio_matrix_ev(moseq, events, win_l=win_l, step=step)
+idxs_srm_tl  = events[:, 2].astype(np.int32)
 
 for perp in perplexities:
     tsne = TSNE(n_components=2, perplexity=perp, random_state=0)

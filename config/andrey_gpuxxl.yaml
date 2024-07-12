@@ -1,7 +1,7 @@
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/raw"
-#src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
-src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
+src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
+#src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
 
 # destination for processed data
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
@@ -37,6 +37,31 @@ psth:
     latency: 7.25
     bin_count: 41
 
+# neural manifolds
+nMAP_electrodes:
+    '009265': [1, 2]
+    '009266': [1, 2]
+    '57': [1]
+
+nMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.1
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# behavioral manifolds
+bMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.1
+  bin_count: 100
+  shuffle_iter_count: 100
+
 blocks:  # blocks of pipeline to run
   meta: False         # pack main metadata into HDF5
   DLC: False         # Deep lab cut
@@ -49,28 +74,29 @@ blocks:  # blocks of pipeline to run
   PSTH: False
   spatial: False
   shuffle: False
-  population: True
+  population: False
+  manifold_states: True
 
 session_IDs:  
 # 009266
-#   - "009266_hippoSIT_2023-04-17_17-04-17"
-#   - "009266_hippoSIT_2023-04-18_10-10-37"
-#   - "009266_hippoSIT_2023-04-18_17-03-10"
-#   - "009266_hippoSIT_2023-04-19_10-33-51"
-#   - "009266_hippoSIT_2023-04-20_08-57-39"
-#   - "009266_hippoSIT_2023-04-20_15-24-14"
-#   - "009266_hippoSIT_2023-04-21_08-43-00"
-#   - "009266_hippoSIT_2023-04-21_13-12-31"
-#   - "009266_hippoSIT_2023-04-24_10-08-11"
-#   - "009266_hippoSIT_2023-04-24_16-56-55"
-#   - "009266_hippoSIT_2023-04-26_08-20-17"
-#   - "009266_hippoSIT_2023-05-02_12-22-14"
-#   - "009266_hippoSIT_2023-05-04_19-47-15"
-#   - "009266_hippoSIT_2023-05-22_09-27-22"
-#   - "009266_hippoSIT_2023-05-23_09-18-05"
-#   - "009266_hippoSIT_2023-05-25_15-55-57"
-#   - "009266_hippoSIT_2023-06-14_08-21-23"
-#   - "009266_hippoSIT_2023-06-19_08-58-35"
+  # - "009266_hippoSIT_2023-04-17_17-04-17"
+  # - "009266_hippoSIT_2023-04-18_10-10-37"
+  # - "009266_hippoSIT_2023-04-18_17-03-10"
+  # - "009266_hippoSIT_2023-04-19_10-33-51"
+  # - "009266_hippoSIT_2023-04-20_08-57-39"
+  # - "009266_hippoSIT_2023-04-20_15-24-14"  # not enough units, bad MoSeq
+  # - "009266_hippoSIT_2023-04-21_08-43-00"
+  # - "009266_hippoSIT_2023-04-21_13-12-31"
+  # - "009266_hippoSIT_2023-04-24_10-08-11"
+  # - "009266_hippoSIT_2023-04-24_16-56-55"
+  # - "009266_hippoSIT_2023-04-26_08-20-17"
+  # - "009266_hippoSIT_2023-05-02_12-22-14"
+  # - "009266_hippoSIT_2023-05-04_19-47-15"
+  # - "009266_hippoSIT_2023-05-22_09-27-22"
+  # - "009266_hippoSIT_2023-05-23_09-18-05"
+  # - "009266_hippoSIT_2023-05-25_15-55-57"
+  # - "009266_hippoSIT_2023-06-14_08-21-23"
+  # - "009266_hippoSIT_2023-06-19_08-58-35"
 
 # # 009265
   # - "009265_hippoSIT_2023-02-24_09-53-26"
@@ -133,24 +159,36 @@ session_IDs:
   # - "008229_hippoSIT_2022-06-03_09-18-49"
 
   # 57
-  # - "57_SIT_2023-12-18_14-07-34"
-  # - "57_SIT_2023-12-18_21-17-56"  # broken session
-  # - "57_SIT_2023-12-19_14-15-26"
-  - "57_SIT_2023-12-21_15-05-52"
+  
+  # selected
   - "57_SIT_2023-12-22_14-08-07"
-  # - "57_SIT_2023-12-22_14-43-58"
   - "57_SIT_2023-12-22_17-37-18"
-  # - "57_SIT_2023-12-23_14-21-01"  # some kkwik issue, look closer
-  # - "57_SIT_2023-12-23_14-56-24"  # broken session
   - "57_SIT_2023-12-28_16-43-28"
   - "57_SIT_2023-12-29_11-06-26"
   - "57_SIT_2023-12-29_11-40-14"
-  # - "57_SIT_2023-12-29_12-11-46"
-  # - "57_SIT_2024-01-02_14-43-18"
   - "57_SIT_2024-01-02_16-38-05"
   - "57_SIT_2024-01-02_17-10-09"
-  # - "57_SIT_2024-01-03_19-22-18"
   - "57_SIT_2024-01-03_19-54-59"
+
+  # ALL
+  # - "57_SIT_2023-12-18_14-07-34"
+  # - "57_SIT_2023-12-18_21-17-56"  # broken session
+  # - "57_SIT_2023-12-19_14-15-26"
+  # - "57_SIT_2023-12-21_15-05-52"  # SN wants to rerun kkwik, WTF?
+  # - "57_SIT_2023-12-22_14-08-07"
+  # - "57_SIT_2023-12-22_14-43-58"
+  # - "57_SIT_2023-12-22_17-37-18"
+  # - "57_SIT_2023-12-23_14-21-01"  # some kkwik issue, look closer
+  # - "57_SIT_2023-12-23_14-56-24"  # broken session
+  # - "57_SIT_2023-12-28_16-43-28"
+  # - "57_SIT_2023-12-29_11-06-26"
+  # - "57_SIT_2023-12-29_11-40-14"
+  # - "57_SIT_2023-12-29_12-11-46"
+  # - "57_SIT_2024-01-02_14-43-18"
+  # - "57_SIT_2024-01-02_16-38-05"
+  # - "57_SIT_2024-01-02_17-10-09"
+  # - "57_SIT_2024-01-03_19-22-18"
+  # - "57_SIT_2024-01-03_19-54-59"
   # - "57_SIT_2024-01-04_14-16-22"
   # - "57_SIT_2024-01-04_14-52-59"
   # - "57_SIT_2024-01-05_14-35-49"
@@ -166,4 +204,4 @@ session_IDs:
   # - "57_SIT_2024-01-31_17-00-39" # some kkwik issue, look closer
   # - "57_SIT_2024-02-01_15-51-41"
   # - "57_SIT_2024-02-05_13-10-00"
-  #- "57_SIT_2024-03-11_14-45-37"
+  # - "57_SIT_2024-03-11_14-45-37"

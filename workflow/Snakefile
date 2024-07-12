@@ -32,6 +32,7 @@ include: "rules/analysis/aeps.smk"
 include: "rules/analysis/spatial.smk"
 include: "rules/analysis/behavior.smk"
 include: "rules/analysis/population.smk"
+include: "rules/analysis/manifold_states.smk"
 
 
 target_names_dict = {
@@ -41,7 +42,6 @@ target_names_dict = {
         'MoSeq.h5', 
         'analysis/MoSeq_tSNE_UMAP.h5',
         #'analysis/MoSeq_W1-W4_GLM.h5',
-        'analysis/state_idxs.h5',
     ],
     'descendants': ['descendants.h5'],
     'Audio':   [],
@@ -66,7 +66,12 @@ target_names_dict = {
         'analysis/fr_maps.pdf',
     ],
     'shuffle': ['analysis/psth_shuffle_micro_silence.h5'],
-    'population': ['analysis/W1-W4_tSNE_UMAP.h5']
+    'population': ['analysis/W1-W4_tSNE_UMAP.h5'],
+    'manifold_states': [
+        #'analysis/state_idxs.h5',  # legacy AL state inference
+        'analysis/nMAP_segmentation.h5',
+        'analysis/bMAP_segmentation.h5'
+    ],
 }
 
 def collect_target_names():
