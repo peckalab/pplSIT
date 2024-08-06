@@ -22,15 +22,15 @@ with h5py.File(snakemake.input[0], 'r') as f:
 aeps = {}
 with h5py.File(snakemake.input[1], 'r') as f:
     for area in f:
-        ds_name = [x for x in f[area]][0]
+        ds_name = [x for x in f[area] if x.find('filt') > 0][0]
         aeps[area] = np.array(f[area][ds_name])
         
-# remove outliers
-for area, aeps_mx in aeps.items():
-    aeps_no_out = aeps_mx.copy()
-    aeps_mx[aeps_mx > outlier_lims[area]]  = outlier_lims[area]
-    aeps_mx[aeps_mx < -outlier_lims[area]] = -outlier_lims[area]
-    aeps[area] = aeps_no_out
+# remove outliers - legacy for filtered LFP / AEPs
+# for area, aeps_mx in aeps.items():
+#     aeps_no_out = aeps_mx.copy()
+#     aeps_mx[aeps_mx > outlier_lims[area]]  = outlier_lims[area]
+#     aeps_mx[aeps_mx < -outlier_lims[area]] = -outlier_lims[area]
+#     aeps[area] = aeps_no_out
 
 # --------------------------
 

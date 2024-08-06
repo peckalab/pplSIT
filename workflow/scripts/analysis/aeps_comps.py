@@ -20,12 +20,13 @@ with h5py.File(snakemake.input[0], 'r') as f:
 collected = dict([(area, {}) for area in areas])
 for area in areas:
     with h5py.File(snakemake.input[0], 'r') as f:
-        ds_name = [x for x in f[area]][0]
+        #ds_name = [x for x in f[area]][0]  # use the filtered version
+        ds_name = [x for x in f[area] if x.find('filt') > 0][0]
         aeps = np.array(f[area][ds_name])
 
     # remove outliers
-    aeps[aeps >  outlier_lims[area]]  = outlier_lims[area]
-    aeps[aeps < -outlier_lims[area]] = -outlier_lims[area]
+    #aeps[aeps >  outlier_lims[area]]  = outlier_lims[area]
+    #aeps[aeps < -outlier_lims[area]] = -outlier_lims[area]
 
     metrics_raw, metrics_norm  = {}, {}
     for m_name, bounds in AEP_metrics_lims[area].items():
