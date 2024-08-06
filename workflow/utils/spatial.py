@@ -165,10 +165,10 @@ def best_match_rotation_pearson(map_A, map_B, delta=6):
     return angles, corrs, np.argmax(corrs)*6  # actual value
 
 
-def get_positions_relative_to(pos_alo, HD, poi):
+def get_positions_relative_to(pos_alo, HD, poi, res_type='polar'):
     """
-    pos_allo    2D array of alloentric animal positions X, Y    (shape Nx2)
-    HD          vector of HD angles (in rad.) for each pos_allo (shape N)
+    pos_alo     2D array of allocentric animal positions X, Y  (shape Nx2)
+    HD          vector of HD angles (in rad.) for each pos_alo (shape N)
     poi         point of interest (x, y) relative to which to compute egocentric coords.
     """
     pos_poi = poi - pos_alo
@@ -176,5 +176,7 @@ def get_positions_relative_to(pos_alo, HD, poi):
     phi_alo = (np.degrees(np.arctan2(pos_poi[:, 1], pos_poi[:, 0])) - HD) % 360  # angle to POI in allocentric frame, in deg.
     phi_ego = phi_alo - np.rad2deg(HD)  # angle to POI in egocentric frame, in deg.
     phi_ego = np.deg2rad(phi_ego)
-
+    
+    if res_type == 'polar':
+        return np.array([R, phi_ego]).T
     return np.array([np.multiply(R, np.cos(phi_ego)), np.multiply(R, np.sin(phi_ego))]).T

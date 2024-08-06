@@ -35,13 +35,17 @@ def manifold_segmentation(events, tgt_mx, fit, cfg):
     x_bins = np.linspace(extent[0], extent[1], fit_labels.shape[0]+1)
     y_bins = np.linspace(extent[2], extent[3], fit_labels.shape[1]+1)
 
-    # collecting label counts
-    for record in fit[idxs_succ_ev]:
+    # assigning labels (clusters) to events and collecting label counts for TGT
+    labels_ev = np.zeros(len(fit))
+    for i, record in enumerate(fit):  # [idxs_succ_ev]
         x_bin_idx = np.where(x_bins > record[0])[0][0] - 1
         y_bin_idx = np.where(y_bins > record[1])[0][0] - 1
 
         curr_label = fit_labels[x_bin_idx, y_bin_idx]
-        clu_tgt_counts[curr_label-1] += 1
+        labels_ev[i] = curr_label
+
+        if i in idxs_succ_ev:  # collecting label counts for TGT success
+            clu_tgt_counts[curr_label-1] += 1
     tgt_stats = clu_tgt_counts/label_areas
 
     # shuffle TGT and conf intervals
@@ -91,4 +95,4 @@ def manifold_segmentation(events, tgt_mx, fit, cfg):
 
     idxs_tgt_succ_state_ev = get_idxs_in_patches(fit, fit_labels_sel, extent, bin_count=cfg['bin_count'])
 
-    return d_map, fit_labels, fit_labels_sel, idxs_tgt_succ_state_ev, tgt_stats, tgt_stats_shuf
+    return d_map, fit_labels, fit_labels_sel, labels_ev, idxs_tgt_succ_state_ev, tgt_stats, tgt_stats_shuf

@@ -40,6 +40,7 @@ binning_mPFC_AEP = {
 
 binning_mPFC_PCA = {
     50:  [8, 16, 65, 85],
+    57:  [8, 16, 72, 92],
     75:  [8, 16, 90, 110],
     100: [8, 16, 115, 135],
 }
@@ -63,8 +64,8 @@ selected_binning = all_binnings[animal] if animal in all_binnings else binning_A
 dur_bgr = int(cfg['sound']['sounds']['background']['duration'] * 1000)  # in ms
 dur_tgt = int(cfg['sound']['sounds']['target']['duration'] * 1000)  # in ms
 
-assert dur_bgr in selected_binning
-assert dur_tgt in selected_binning
+assert dur_bgr in selected_binning, "BGR duration is %s" % str(dur_bgr)
+assert dur_tgt in selected_binning, "TGT duration is %s" % str(dur_tgt)
 
 # electrodes in A1
 electrodes = snakemake.config['nMAP_electrodes'][animal]
