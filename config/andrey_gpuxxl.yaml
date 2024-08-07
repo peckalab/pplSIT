@@ -34,6 +34,7 @@ psth:
     latency: 0.25
     bin_count: 31
     boot_iter_count: 100
+    shuf_iter_count: 100
   macro:
     latency: 7.25
     bin_count: 31
@@ -73,32 +74,32 @@ blocks:  # blocks of pipeline to run
   LFP: False          # extract LFP
   units: False      # complete spike sorting with neurosuite / klustakwik
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH: True
+  PSTH: False
   spatial: False
-  shuffle: False
+  shuffle: True
   population: False
   manifold_states: False
 
 session_IDs:  
 # 009266
   - "009266_hippoSIT_2023-04-17_17-04-17"
-  - "009266_hippoSIT_2023-04-18_10-10-37"
-  - "009266_hippoSIT_2023-04-18_17-03-10"
-  - "009266_hippoSIT_2023-04-19_10-33-51"
-  - "009266_hippoSIT_2023-04-20_08-57-39"
-  - "009266_hippoSIT_2023-04-20_15-24-14"  # not enough units, bad MoSeq
-  - "009266_hippoSIT_2023-04-21_08-43-00"
-  - "009266_hippoSIT_2023-04-21_13-12-31"
-  - "009266_hippoSIT_2023-04-24_10-08-11"
-  - "009266_hippoSIT_2023-04-24_16-56-55"
-  - "009266_hippoSIT_2023-04-26_08-20-17"
-  - "009266_hippoSIT_2023-05-02_12-22-14"
-  - "009266_hippoSIT_2023-05-04_19-47-15"
-  - "009266_hippoSIT_2023-05-22_09-27-22"
-  - "009266_hippoSIT_2023-05-23_09-18-05"
-  - "009266_hippoSIT_2023-05-25_15-55-57"
-  - "009266_hippoSIT_2023-06-14_08-21-23"
-  - "009266_hippoSIT_2023-06-19_08-58-35"
+  # - "009266_hippoSIT_2023-04-18_10-10-37"
+  # - "009266_hippoSIT_2023-04-18_17-03-10"
+  # - "009266_hippoSIT_2023-04-19_10-33-51"
+  # - "009266_hippoSIT_2023-04-20_08-57-39"
+  # - "009266_hippoSIT_2023-04-20_15-24-14"  # not enough units, bad MoSeq
+  # - "009266_hippoSIT_2023-04-21_08-43-00"
+  # - "009266_hippoSIT_2023-04-21_13-12-31"
+  # - "009266_hippoSIT_2023-04-24_10-08-11"
+  # - "009266_hippoSIT_2023-04-24_16-56-55"
+  # - "009266_hippoSIT_2023-04-26_08-20-17"
+  # - "009266_hippoSIT_2023-05-02_12-22-14"
+  # - "009266_hippoSIT_2023-05-04_19-47-15"
+  # - "009266_hippoSIT_2023-05-22_09-27-22"
+  # - "009266_hippoSIT_2023-05-23_09-18-05"
+  # - "009266_hippoSIT_2023-05-25_15-55-57"
+  # - "009266_hippoSIT_2023-06-14_08-21-23"
+  # - "009266_hippoSIT_2023-06-19_08-58-35"
 
 # # 009265
   # - "009265_hippoSIT_2023-02-24_09-53-26"

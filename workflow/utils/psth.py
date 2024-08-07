@@ -24,7 +24,7 @@ def get_spike_counts(spk_times, pulse_times, hw=0.25, bin_count=51):
 
 
 def compute_shuffled_metrics(strain, event_times, offset, bin_count, iter_count=1000):
-    # psth with shuffled spike data
+    # psth with shuffled spike data across a given sound condition
     psth_shuffled = np.zeros((iter_count, bin_count - 1))
     for i in range(iter_count):  # shuffle 1000 times
         shuffled = get_shuffled(strain)
@@ -33,25 +33,25 @@ def compute_shuffled_metrics(strain, event_times, offset, bin_count, iter_count=
         
     # percentiles
     confidence_5_0_low  = np.zeros(psth_shuffled.shape[1])
-    confidence_2_5_low  = np.zeros(psth_shuffled.shape[1])
+    #confidence_2_5_low  = np.zeros(psth_shuffled.shape[1])
     confidence_95_0_high = np.zeros(psth_shuffled.shape[1])
-    confidence_97_5_high = np.zeros(psth_shuffled.shape[1])
+    #confidence_97_5_high = np.zeros(psth_shuffled.shape[1])
     for i, col in enumerate(psth_shuffled.T):
         confidence_5_0_low[i]  = np.percentile(col, 5)
         confidence_95_0_high[i] = np.percentile(col, 95)
-        confidence_2_5_low[i]  = np.percentile(col, 2.5)
-        confidence_97_5_high[i] = np.percentile(col, 97.5)
+        #confidence_2_5_low[i]  = np.percentile(col, 2.5)
+        #confidence_97_5_high[i] = np.percentile(col, 97.5)
         
-    # bins, shuffled mean, shuffled std, 0.025, 0.975, 0.05, 0.95 percentiles (p=0.05, p=0.0)
+    # bins, shuffled mean, shuffled std, 0.05, 0.95 percentiles (p=0.05, p=0.0)
     return np.vstack([
         bins[:-1],  
         psth_shuffled.mean(axis=0),
         psth_shuffled.std(axis=0),
-        confidence_2_5_low, 
-        confidence_97_5_high,
+        #confidence_2_5_low, 
+        #confidence_97_5_high,
         confidence_5_0_low, 
         confidence_95_0_high,
-    ]).T
+    ])
 
 
 def staple_pulsetrain(pulses, periods):

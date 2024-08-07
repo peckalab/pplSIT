@@ -54,6 +54,7 @@ target_names_dict = {
     ],
     'units':   ['units.h5'],
     'PSTH':    [
+        'analysis/psth_micro.h5',
         'analysis/psth_tgt_onset.pdf',
         'analysis/psth_tgt_offset.pdf',
         'analysis/psth_trial_onset.pdf',
@@ -67,7 +68,10 @@ target_names_dict = {
         'analysis/spiking_maps.png',
         'analysis/fr_maps.pdf',
     ],
-    'shuffle': ['analysis/psth_shuffle_micro_silence.h5'],
+    'shuffle': [
+        'analysis/shuffle_micro.h5',
+        'analysis/psth_shuffle_micro.pdf',
+    ],
     'population': ['analysis/W1-W4_tSNE_UMAP.h5'],
     'manifold_states': [
         #'analysis/state_idxs.h5',  # legacy AL state inference
