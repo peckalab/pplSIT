@@ -32,10 +32,11 @@ lfp:
 psth:
   micro:
     latency: 0.25
-    bin_count: 41
+    bin_count: 31
+    boot_iter_count: 100
   macro:
     latency: 7.25
-    bin_count: 41
+    bin_count: 31
 
 # neural manifolds
 nMAP_electrodes:
@@ -70,34 +71,34 @@ blocks:  # blocks of pipeline to run
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: False          # extract LFP
-  units: True      # complete spike sorting with neurosuite / klustakwik
+  units: False      # complete spike sorting with neurosuite / klustakwik
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH: False
+  PSTH: True
   spatial: False
   shuffle: False
   population: False
-  manifold_states: True
+  manifold_states: False
 
 session_IDs:  
 # 009266
-  # - "009266_hippoSIT_2023-04-17_17-04-17"
-  # - "009266_hippoSIT_2023-04-18_10-10-37"
-  # - "009266_hippoSIT_2023-04-18_17-03-10"
-  # - "009266_hippoSIT_2023-04-19_10-33-51"
-  # - "009266_hippoSIT_2023-04-20_08-57-39"
-  # - "009266_hippoSIT_2023-04-20_15-24-14"  # not enough units, bad MoSeq
-  # - "009266_hippoSIT_2023-04-21_08-43-00"
-  # - "009266_hippoSIT_2023-04-21_13-12-31"
-  # - "009266_hippoSIT_2023-04-24_10-08-11"
-  # - "009266_hippoSIT_2023-04-24_16-56-55"
-  # - "009266_hippoSIT_2023-04-26_08-20-17"
-  # - "009266_hippoSIT_2023-05-02_12-22-14"
-  # - "009266_hippoSIT_2023-05-04_19-47-15"
-  # - "009266_hippoSIT_2023-05-22_09-27-22"
-  # - "009266_hippoSIT_2023-05-23_09-18-05"
-  # - "009266_hippoSIT_2023-05-25_15-55-57"
-  # - "009266_hippoSIT_2023-06-14_08-21-23"
-  # - "009266_hippoSIT_2023-06-19_08-58-35"
+  - "009266_hippoSIT_2023-04-17_17-04-17"
+  - "009266_hippoSIT_2023-04-18_10-10-37"
+  - "009266_hippoSIT_2023-04-18_17-03-10"
+  - "009266_hippoSIT_2023-04-19_10-33-51"
+  - "009266_hippoSIT_2023-04-20_08-57-39"
+  - "009266_hippoSIT_2023-04-20_15-24-14"  # not enough units, bad MoSeq
+  - "009266_hippoSIT_2023-04-21_08-43-00"
+  - "009266_hippoSIT_2023-04-21_13-12-31"
+  - "009266_hippoSIT_2023-04-24_10-08-11"
+  - "009266_hippoSIT_2023-04-24_16-56-55"
+  - "009266_hippoSIT_2023-04-26_08-20-17"
+  - "009266_hippoSIT_2023-05-02_12-22-14"
+  - "009266_hippoSIT_2023-05-04_19-47-15"
+  - "009266_hippoSIT_2023-05-22_09-27-22"
+  - "009266_hippoSIT_2023-05-23_09-18-05"
+  - "009266_hippoSIT_2023-05-25_15-55-57"
+  - "009266_hippoSIT_2023-06-14_08-21-23"
+  - "009266_hippoSIT_2023-06-19_08-58-35"
 
 # # 009265
   # - "009265_hippoSIT_2023-02-24_09-53-26"
@@ -203,8 +204,8 @@ session_IDs:
   # - "60_SIT_2023-09-06_09-48-08" # - A1 - empty, PPC 4 cells, done
   # - "60_SIT_2023-09-24_19-04-06" # - A1 worth looking, PPC ~one cell, done
   # - "60_SIT_2023-09-25_19-10-36" # - A1 - one cell, PPC nothing, done
-  - "60_SIT_2023-09-26_19-10-17" # - A1 a few cells, PPC a few cells, done
-  - "60_SIT_2023-09-28_09-55-55" # - A1, PPC - something to look at, done
+  # - "60_SIT_2023-09-26_19-10-17" # - A1 a few cells, PPC a few cells, done
+  # - "60_SIT_2023-09-28_09-55-55" # - A1, PPC - something to look at, done
   # - "60_SIT_2023-11-18_19-12-56" # - A1 - empty, PPC - a few cells, done
   # - "60_SIT_2023-11-24_13-17-01" #
 

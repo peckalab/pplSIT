@@ -58,8 +58,10 @@ target_names_dict = {
         'analysis/psth_tgt_offset.pdf',
         'analysis/psth_trial_onset.pdf',
         'analysis/psth_noise_offset.pdf',
-        'analysis/psth_bgr_tgt.pdf',
-        'analysis/psth_bgr_sil.pdf',
+        'analysis/psth_bgr_tgt_line.pdf',
+        'analysis/psth_bgr_sil_line.pdf',
+        'analysis/psth_bgr_tgt_bar.pdf',
+        'analysis/psth_bgr_sil_bar.pdf'
     ],
     'spatial': [
         'analysis/spiking_maps.png',
