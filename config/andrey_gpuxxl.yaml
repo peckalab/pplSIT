@@ -74,7 +74,7 @@ blocks:  # blocks of pipeline to run
   LFP: False          # extract LFP
   units: False      # complete spike sorting with neurosuite / klustakwik
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH: False
+  PSTH: True
   spatial: False
   shuffle: True
   population: False

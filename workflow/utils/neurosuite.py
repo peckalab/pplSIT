@@ -125,3 +125,17 @@ def load_clu_res(where):
         all_units[idx] = result
 
     return all_units
+
+
+def unit_id_to_number(unit_id):
+    # converts standard unit id like '1-8' to a number like 108
+    # so it can be sorted nicely with other units
+    elec_num, unit_num = unit_id.split('-')
+    if int(unit_num) < 10:
+        unit_num = '0' + unit_num
+    return int(elec_num + unit_num)
+
+
+def get_unit_names_sorted(unit_names):
+    unit_sort_idxs = np.argsort(np.array([unit_id_to_number(u) for u in unit_names]))
+    return [unit_names[i] for i in unit_sort_idxs]

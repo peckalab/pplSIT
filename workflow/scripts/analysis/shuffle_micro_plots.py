@@ -8,12 +8,14 @@ parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
+from utils.neurosuite import get_unit_names_sorted
+
 
 # reading some configs
 with h5py.File(snakemake.input[0], 'r') as f:
     cfg = json.loads(f['processed'].attrs['parameters'])
 with h5py.File(snakemake.input[1], 'r') as f:
-    units_to_plot = [unit for unit in f['BGR']]  # should always exist in profiles
+    units_to_plot = get_unit_names_sorted([unit for unit in f['BGR']])  # should always exist in profiles
 
 # configuration
 event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters

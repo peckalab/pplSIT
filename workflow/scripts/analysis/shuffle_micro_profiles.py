@@ -9,6 +9,7 @@ sys.path.append(parent_dir)
 
 from utils.psth import compute_shuffled_metrics, staple_pulsetrain, staple_spike_times
 from utils.events import get_event_periods
+from utils.neurosuite import get_unit_names_sorted
 
 
 # some configs
@@ -25,7 +26,7 @@ with h5py.File(snakemake.input[0], 'r') as f:
     
 spike_times = {}
 with h5py.File(snakemake.input[1], 'r') as f:
-    unit_names = [name for name in f]
+    unit_names = get_unit_names_sorted([name for name in f])
     for unit_name in f:
         spike_times[unit_name] = np.array(f[unit_name]['spike_times'])
 
