@@ -24,6 +24,7 @@ colors = {0: 'indigo', 1: 'tab:blue', 2: 'tab:orange', -1: 'red'}
 bgr_dur    = cfg['sound']['sounds']['background']['duration']  # in seconds
 cols = len(event_types)
 rows = len(units_to_plot)
+latency = cfg['sound']['latency']
 
 
 # plot figures
@@ -44,20 +45,22 @@ for i, unit_name in enumerate(units_to_plot):
         
         ax = axes[i][j]
         for k, c_stats in enumerate([shuffled, profile_stats]):
+            bin_size = c_stats[0][1] - c_stats[0][0]
             clr = colors[ev_type] if k == 1 else 'black'
             label = ev_names[ev_type] if k == 1 else 'SHUF'
-            ax.plot(c_stats[0], c_stats[1], color=clr, lw=2, label=label)
-            ax.fill_between(c_stats[0], c_stats[3], c_stats[4], color=clr, alpha=0.4)
-        
+            ax.plot(c_stats[0] + bin_size, c_stats[1], color=clr, lw=2, label=label)
+            ax.fill_between(c_stats[0] + bin_size, c_stats[3], c_stats[4], color=clr, alpha=0.4)
+        ax.set_xlim(-latency, latency)
         ax.set_ylim(bottom=0)
         ax.axvline(0, color='black', ls='--')
         ax.set_title("%s" % unit_name, fontsize=14)
         ax.axvspan(0, bgr_dur, alpha=0.3, color='gray')
+        ax.axvspan(-latency, -latency + bgr_dur, alpha=0.3, color='gray')
         ax.legend()
         ax.grid()
     
     axes[i][0].set_ylabel("Firing Rate, Hz", fontsize=14)
             
-    fig.tight_layout()
-    fig.savefig(snakemake.output[0])
+fig.tight_layout()
+fig.savefig(snakemake.output[0])
 

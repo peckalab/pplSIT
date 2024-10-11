@@ -1,0 +1,216 @@
+Building DAG of jobs...
+Job stats:
+job                        count
+-----------------------  -------
+all                            1
+bMAP_segmentation              1
+compute_aep_components         1
+descendants                    1
+dump_units                     1
+extract_aeps                   1
+moseq_tsne_umap                1
+nMAP_segmentation              1
+pack                           1
+plot_AEP_component_maps        1
+plot_AEP_profiles              1
+psth_macro                     1
+psth_micro_plots               1
+psth_micro_profiles            1
+shuffle_micro_plots            1
+shuffle_micro_profiles         1
+synch_moseq_100Hz              1
+w1_w4_tsne_umap                1
+total                         18
+
+
+[Wed Aug 28 15:40:57 2024]
+rule synch_moseq_100Hz:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/moseq/moseq.csv, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/events.csv, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/009266_hippoSIT_2023-04-17_17-04-17.json, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/video.csv
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/MoSeq.h5
+    jobid: 31
+    reason: Updated input files: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/009266_hippoSIT_2023-04-17_17-04-17.json, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/video.csv, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/events.csv
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule pack:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/positions.csv, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/events.csv, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/sounds.csv, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/009266_hippoSIT_2023-04-17_17-04-17.json, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/manual.json
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    jobid: 1
+    reason: Updated input files: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/manual.json, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/positions.csv, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/sounds.csv, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/009266_hippoSIT_2023-04-17_17-04-17.json, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/events.csv
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule descendants:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/MoSeq.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/descendants.h5
+    jobid: 30
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/MoSeq.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule dump_units:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/neurosuite/009266_hippoSIT_2023-04-17_17-04-17.xml, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/neurosuite/009266_hippoSIT_2023-04-17_17-04-17.clu.1, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/neurosuite/009266_hippoSIT_2023-04-17_17-04-17.clu.2, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/neurosuite/009266_hippoSIT_2023-04-17_17-04-17.clu.3, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/neurosuite/009266_hippoSIT_2023-04-17_17-04-17.clu.4, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/neurosuite/009266_hippoSIT_2023-04-17_17-04-17.clu.5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/neurosuite/009266_hippoSIT_2023-04-17_17-04-17.clu.6
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5
+    jobid: 14
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule extract_aeps:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw/009266/009266_hippoSIT_2023-04-17_17-04-17/manual.json, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/lfp.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/AEPs.h5
+    jobid: 3
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule moseq_tsne_umap:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/MoSeq.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/MoSeq_tSNE_UMAP.h5
+    jobid: 36
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/MoSeq.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule shuffle_micro_profiles:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/shuffle_micro.h5
+    jobid: 26
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule bMAP_segmentation:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/descendants.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/MoSeq_tSNE_UMAP.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/bMAP_segmentation.h5
+    jobid: 35
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/MoSeq_tSNE_UMAP.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/descendants.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule w1_w4_tsne_umap:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/W1-W4_tSNE_UMAP.h5
+    jobid: 28
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule plot_AEP_profiles:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/AEPs.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/aeps_profiles.pdf
+    jobid: 12
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/AEPs.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule psth_micro_profiles:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_micro.h5
+    jobid: 13
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule psth_macro:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_tgt_onset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_tgt_offset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_trial_onset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_noise_offset.pdf
+    jobid: 24
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/units.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule compute_aep_components:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/AEPs.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/AEP_components.h5
+    jobid: 10
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/AEPs.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule psth_micro_plots:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_micro.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_tgt_line.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_sil_line.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_tgt_bar.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_sil_bar.pdf
+    jobid: 25
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_micro.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule shuffle_micro_plots:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_micro.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/shuffle_micro.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_shuffle_micro.pdf
+    jobid: 27
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_micro.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/shuffle_micro.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule nMAP_segmentation:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/descendants.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/W1-W4_tSNE_UMAP.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/nMAP_segmentation.h5
+    jobid: 29
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/descendants.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/W1-W4_tSNE_UMAP.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+rule plot_AEP_component_maps:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/AEP_components.h5
+    output: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/aeps_maps.pdf
+    jobid: 11
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/AEP_components.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5
+    wildcards: animal=009266, session=009266_hippoSIT_2023-04-17_17-04-17
+    resources: tmpdir=/tmp
+
+[Wed Aug 28 15:40:57 2024]
+localrule all:
+    input: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/AEPs.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/AEP_components.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/aeps_maps.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/aeps_profiles.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_micro.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_tgt_onset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_tgt_offset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_trial_onset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_noise_offset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_tgt_line.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_sil_line.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_tgt_bar.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_sil_bar.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/shuffle_micro.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_shuffle_micro.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/W1-W4_tSNE_UMAP.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/nMAP_segmentation.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/bMAP_segmentation.h5
+    jobid: 0
+    reason: Input files updated by another job: /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_shuffle_micro.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/aeps_maps.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_noise_offset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_tgt_offset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/W1-W4_tSNE_UMAP.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/bMAP_segmentation.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_tgt_bar.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/AEPs.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/nMAP_segmentation.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/AEP_components.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/meta.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_micro.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_sil_line.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_sil_bar.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_trial_onset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_tgt_onset.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/aeps_profiles.pdf, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/shuffle_micro.h5, /home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/009266/009266_hippoSIT_2023-04-17_17-04-17/analysis/psth_bgr_tgt_line.pdf
+    resources: tmpdir=/tmp
+
+Job stats:
+job                        count
+-----------------------  -------
+all                            1
+bMAP_segmentation              1
+compute_aep_components         1
+descendants                    1
+dump_units                     1
+extract_aeps                   1
+moseq_tsne_umap                1
+nMAP_segmentation              1
+pack                           1
+plot_AEP_component_maps        1
+plot_AEP_profiles              1
+psth_macro                     1
+psth_micro_plots               1
+psth_micro_profiles            1
+shuffle_micro_plots            1
+shuffle_micro_profiles         1
+synch_moseq_100Hz              1
+w1_w4_tsne_umap                1
+total                         18
+
+Reasons:
+    (check individual jobs above for details)
+    input files updated by another job:
+        all, bMAP_segmentation, compute_aep_components, descendants, dump_units, extract_aeps, moseq_tsne_umap, nMAP_segmentation, plot_AEP_component_maps, plot_AEP_profiles, psth_macro, psth_micro_plots, psth_micro_profiles, shuffle_micro_plots, shuffle_micro_profiles, w1_w4_tsne_umap
+    updated input files:
+        pack, synch_moseq_100Hz
+
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.

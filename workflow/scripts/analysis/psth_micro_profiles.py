@@ -12,7 +12,6 @@ sys.path.append(parent_dir)
 from utils.psth import get_spike_counts
 from utils.neurosuite import get_unit_names_sorted
 
-
 # configuration
 event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters
 event_type_names = ['SIL', 'BGR', 'TGT', 'NOI']  # SIL, BGR, TGT, NOI - order matters

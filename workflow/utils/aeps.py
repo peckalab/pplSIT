@@ -6,24 +6,24 @@ from scipy import stats
 
 AEP_metrics_lims = {
     'A1': {
-        'P1': [15, 28],  # min - max to the left of min
-        'N1': [28, 73],  # AUC
-        'P2': [73, 100], # AUC
+        'P1': [10, 23],  # min - max to the left of min
+        'N1': [23, 68],  # AUC
+        'P2': [68, 100], # AUC
         'P3': [100, 200] # AUC
     },
     'PPC': {
-        'P0': [10, 15], # min - max to the left of min
-        'N0': [15, 20], # max - min to the left of max
-        'P1': [20, 40], # min - max to the left of min
-        'N1': [40, 75], # max - min to the left of max
-        'P3': [75, 160] # AUC - consider 75 - 200!
+        'P0': [5, 10], # min - max to the left of min
+        'N0': [10, 15], # max - min to the left of max
+        'P1': [15, 35], # min - max to the left of min
+        'N1': [35, 70], # max - min to the left of max
+        'P3': [70, 160] # AUC - consider 75 - 200!
     },
     'HPC': {
-        'P0': [10, 15], # min - max to the left of min
-        'N0': [15, 20], # max - min to the left of max
-        'P1': [20, 40], # min - max to the left of min
-        'N1': [40, 75], # max - min to the left of max
-        'P3': [75, 160] # min - max to the left of min
+        'P0': [5, 10], # min - max to the left of min
+        'N0': [10, 15], # max - min to the left of max
+        'P1': [15, 35], # min - max to the left of min
+        'N1': [35, 70], # max - min to the left of max
+        'P3': [70, 160] # min - max to the left of min
     }
 }
 

@@ -33,6 +33,8 @@ include: "rules/analysis/spatial.smk"
 include: "rules/analysis/behavior.smk"
 include: "rules/analysis/population.smk"
 include: "rules/analysis/manifold_states.smk"
+include: "rules/analysis/metronome.smk"
+include: "rules/analysis/video.smk"
 
 
 target_names_dict = {
@@ -72,12 +74,22 @@ target_names_dict = {
         'analysis/shuffle_micro.h5',
         'analysis/psth_shuffle_micro.pdf',
     ],
-    'population': ['analysis/W1-W4_tSNE_UMAP.h5'],
+    'population': [
+        #'analysis/W1-W4_tSNE_UMAP.h5',
+        'analysis/nMAP_EV_SU.h5',
+        'analysis/coherence.h5',
+    ],
     'manifold_states': [
         #'analysis/state_idxs.h5',  # legacy AL state inference
         'analysis/nMAP_segmentation.h5',
         'analysis/bMAP_segmentation.h5'
     ],
+    'metronome': [
+        'analysis/metronome/periods.h5',
+        'analysis/metronome/psth.h5',
+        'analysis/metronome/shuffle.h5'
+    ],
+    'video': ['video/videos.ready']
 }
 
 def collect_target_names():
