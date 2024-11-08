@@ -32,6 +32,7 @@ include: "rules/analysis/aeps.smk"
 include: "rules/analysis/spatial.smk"
 include: "rules/analysis/behavior.smk"
 include: "rules/analysis/population.smk"
+include: "rules/analysis/coherence.smk"
 include: "rules/analysis/manifold_states.smk"
 include: "rules/analysis/metronome.smk"
 include: "rules/analysis/video.smk"
@@ -77,6 +78,8 @@ target_names_dict = {
     'population': [
         #'analysis/W1-W4_tSNE_UMAP.h5',
         'analysis/nMAP_EV_SU.h5',
+    ],
+    'coherence': [
         'analysis/coherence.h5',
     ],
     'manifold_states': [

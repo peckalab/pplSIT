@@ -19,13 +19,3 @@ rule nMAP_EV_SU:
         nMAP_EV_SU=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'nMAP_EV_SU.h5')
     script:
         "../../scripts/analysis/nMAP_EV_SU.py"
-
-rule coherence:
-    input:
-        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
-        units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5'),
-    output:
-        coh=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'coherence.h5')
-    script:
-        "../../scripts/analysis/coherence.py"
-

@@ -55,3 +55,13 @@ def get_shuffled(spiketrain):
     ISIs = np.diff(spiketrain)
     np.random.shuffle(ISIs)
     return np.concatenate([[spiketrain[0]], spiketrain[0] + np.cumsum(ISIs)])
+
+
+def smooth_gaussian(data, k_width):
+    kernel  = signal.gaussian(k_width, std=(k_width) / 7.2)
+    return np.convolve(data, kernel, 'same') / kernel.sum()
+
+
+def smooth_rectangular(data, width_in_bins):
+    kernel = np.ones(width_in_bins)
+    return np.convolve(data, kernel, 'same') / kernel.sum()
