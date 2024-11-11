@@ -37,6 +37,8 @@ with h5py.File(snakemake.input[1], 'r') as f:
 
 bin_size = snakemake.config['nMAP_EV_SU']['bin_size']
 ev_su_lag = snakemake.config['nMAP_EV_SU']['ev_su_lag']
+smooth_su_size = snakemake.config['nMAP_EV_SU']['smooth_su_size']
+smooth_ev_size = snakemake.config['nMAP_EV_SU']['smooth_ev_size']
 
 ev_bin_count = int(ev_su_lag/bin_size)
 ev_times_beg = sound_events[:, 0]
@@ -69,20 +71,25 @@ for k, unit_name in enumerate(unit_names):
 # ----- for SUSTAINED - z-score, smooth and take 1st PC
 
 # 1. sum all spikes for each pulse BEFORE z-scoring and PCA. 
-# Works, but not in line with the previous analysis
+# Works, but not in line with the previous analysis - 1 second smoothing is best
 
 su_unit_mx_events = np.zeros([len(unit_names), len(sound_events)])
 for i in range(len(unit_names)):
     for j in range(len(sound_events)):
         su_unit_mx_events[i][j] = su_unit_mx[i][j*su_bin_count:(j+1)*su_bin_count].mean()
     
-# z-score
+# smoothing
 for j in range(len(unit_names)):
-    su_unit_mx_events[j] = stats.zscore(su_unit_mx_events[j])
+    su_unit_mx_events[j] = smooth_rectangular(su_unit_mx_events[j], smooth_su_size)
+
+# z-score
+su_unit_mx_events_z = np.zeros([len(unit_names), len(sound_events)])
+for j in range(len(unit_names)):
+    su_unit_mx_events_z[j] = stats.zscore(su_unit_mx_events[j])
 
 # take first PC
 su_pca = decomposition.PCA(n_components=2)
-su_X   = su_pca.fit_transform(su_unit_mx_events.T)
+su_X   = su_pca.fit_transform(su_unit_mx_events_z.T)
 su_resp = su_X[:, 0]  # PC1 scores. bin_size resolution
 
 # 2. Sum spikes after PCA
@@ -95,55 +102,74 @@ su_resp = su_X[:, 0]  # PC1 scores. bin_size resolution
 # su_resp = su_X[:, 0]  # PC1 scores. bin_size resolution
 # su_resp = su_resp.reshape([int(su_resp.shape[0]/su_bin_count), su_bin_count]).mean(axis=1)  # sound events resolution
 
-# smooth
-su_resp = smooth_gaussian(su_resp, snakemake.config['nMAP_EV_SU']['smooth_k'])
+# smooth again the final thing
+#su_resp = smooth_gaussian(su_resp, snakemake.config['nMAP_EV_SU']['smooth_k'])
+
+# TODO: resolve why smoothing AFTER z-scoring/PCA, not BEFORE.
+# try to smooth before, diff kernel sizes
 
 
 
-# ----- for EVOKED - z-score, template match, subtract sustained and sum
+# ----- for EVOKED - z-score, template match?, subtract sustained and sum / PCA
 
-event_ids = {1: 'BGR', 2: 'TGT', 0: 'SIL', -1: 'NOI'}
 
-# response profile matrix
-psth_bins, psths_all = get_psth_matrix(snakemake.input[2], electrodes)
-conditions = list(psths_all.keys())
+# OPTION 1. Using template matching
+# event_ids = {1: 'BGR', 2: 'TGT', 0: 'SIL', -1: 'NOI'}
 
-# taking only the evoked profile part (important - this is not periodic!)
-idx_s = int(psth_bins.shape[0]/2)
-idx_e = idx_s + ev_bin_count # int(np.ceil(idx_s/2))
+# # response profile matrix
+# psth_bins, psths_all = get_psth_matrix(snakemake.input[2], electrodes)
+# conditions = list(psths_all.keys())
 
-ev_resp_mx = np.zeros([len(sound_events), len(unit_names)])
-for i in range(len(unit_names)):
+# # taking only the evoked profile part (important - this is not periodic!)
+# idx_s = int(psth_bins.shape[0]/2)
+# idx_e = idx_s + ev_bin_count # int(np.ceil(idx_s/2))
 
-    # subtract instantaneous FR of sustained part of that unit - not nice
-    #idxs_del = ((np.arange(len(sound_events))+1)*su_bin_count)-1
-    #su_resp_inst_unit = np.delete(su_unit_mx[i], idxs_del)
-    #ev_unit_mx[i] = su_resp_inst_unit[:len(ev_unit_mx[i])]
+# ev_resp_mx = np.zeros([len(sound_events), len(unit_names)])
+# for i in range(len(unit_names)):
 
-    ev_unit_mx[i] = stats.zscore(ev_unit_mx[i])
+#     # subtract instantaneous FR of sustained part of that unit - not nice
+#     #idxs_del = ((np.arange(len(sound_events))+1)*su_bin_count)-1
+#     #su_resp_inst_unit = np.delete(su_unit_mx[i], idxs_del)
+#     #ev_unit_mx[i] = su_resp_inst_unit[:len(ev_unit_mx[i])]
 
-    # subtract instantaneous sustained response multiplied by eigenvalue of that unit - not nice
-    #su_inst = su_pca.components_[0][i] * su_resp  # subtract sustained part per unit
-    #su_inst = np.repeat(su_inst.T, ev_bin_count)[:len(ev_unit_mx[i])]
-    #ev_unit_mx[i] = ev_unit_mx[i] - su_inst
+#     ev_unit_mx[i] = stats.zscore(ev_unit_mx[i])
 
-    for j in range(len(sound_events)):  # for each pulse do template matching via dot product
-        idx_ev_mx = j*ev_bin_count
-        #su_inst_unit = su_pca.components_[0][i] * su_resp[j]
-        resp = ev_unit_mx[i][idx_ev_mx:idx_ev_mx+ev_bin_count] #- su_inst_unit
-        if len(resp) == ev_bin_count:
-            cond = event_ids[int(sound_events[j][1])]
-            resp = np.dot(resp, psths_all[cond][:, idx_s:idx_e][i])  # evoked part only!
-            ev_resp_mx[j][i] = resp
+#     # subtract instantaneous sustained response multiplied by eigenvalue of that unit - not nice
+#     #su_inst = su_pca.components_[0][i] * su_resp  # subtract sustained part per unit
+#     #su_inst = np.repeat(su_inst.T, ev_bin_count)[:len(ev_unit_mx[i])]
+#     #ev_unit_mx[i] = ev_unit_mx[i] - su_inst
+
+#     for j in range(len(sound_events)):  # for each pulse do template matching via dot product
+#         idx_ev_mx = j*ev_bin_count
+#         #su_inst_unit = su_pca.components_[0][i] * su_resp[j]
+#         resp = ev_unit_mx[i][idx_ev_mx:idx_ev_mx+ev_bin_count] #- su_inst_unit
+#         if len(resp) == ev_bin_count:
+#             cond = event_ids[int(sound_events[j][1])]
+#             resp = np.dot(resp, psths_all[cond][:, idx_s:idx_e][i])  # evoked part only!
+#             ev_resp_mx[j][i] = resp
         
-# PCA - gives weird results:
-# ev_pca = decomposition.PCA(n_components=10)
-# ev_X   = ev_pca.fit_transform(ev_resp_mx)
-# ev_resp = ev_X[:, 0]  # PC1 scores. sound events resolution
+# OPTION 2. Using just the on-response window + PCA
+ev_unit_mx_events = np.zeros([len(unit_names), len(sound_events)])
+for i in range(len(unit_names)):
+    for j in range(len(sound_events)):
+        unit_ev_resp = ev_unit_mx[i][j*ev_bin_count + 1:j*ev_bin_count + 3].mean()
+        if not np.isnan(unit_ev_resp):
+            ev_unit_mx_events[i][j] = unit_ev_resp
+    
+# z-score / smoothing
+for j in range(len(unit_names)):
+    ev_unit_mx_events[j] = smooth_rectangular(ev_unit_mx_events[j], 4)
+    ev_unit_mx_events[j] = ev_unit_mx_events[j] - su_unit_mx_events[j]  # subtract sustained
+    ev_unit_mx_events[j] = stats.zscore(ev_unit_mx_events[j])
+
+# PCA:
+ev_pca = decomposition.PCA(n_components=2)
+ev_X   = ev_pca.fit_transform(ev_unit_mx_events.T)
+ev_resp = ev_X[:, 0]  # PC1 scores. sound events resolution
 
 # or just a sum - works better
-ev_resp = ev_resp_mx.sum(axis=1) / len(unit_names)
-ev_resp = smooth_gaussian(ev_resp, snakemake.config['nMAP_EV_SU']['smooth_k'])
+# ev_resp = ev_resp_mx.sum(axis=1) / len(unit_names)
+# ev_resp = smooth_gaussian(ev_resp, snakemake.config['nMAP_EV_SU']['smooth_k'])
 
 # 3. -------------- response manifold -----------------------
 
@@ -153,7 +179,7 @@ resp_manifold = np.column_stack([ev_resp, su_resp])
 with h5py.File(snakemake.output[0], 'w') as f:
     f.create_dataset('unit_mx_ev', data=ev_unit_mx)  # original activity matrix, 10 ms bins
     f.create_dataset('unit_mx_su', data=su_unit_mx)  # original activity matrix, 10 ms bins
-    f.create_dataset('unit_mx_proc_ev', data=ev_resp_mx)  # transformed activity matrix, event sampling
+    f.create_dataset('unit_mx_proc_ev', data=ev_unit_mx_events.T)  # transformed activity matrix, event sampling
     f.create_dataset('unit_mx_proc_su', data=su_unit_mx_events.T)  # transformed activity matrix, event sampling
     f.create_dataset('bins_ev', data=ev_bins)
     f.create_dataset('bins_su', data=su_bins)
