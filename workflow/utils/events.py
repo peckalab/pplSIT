@@ -17,3 +17,18 @@ def get_event_periods(tl, event_type):
     # convert to TL indices and then to times
     tl_idxs_mx = np.column_stack([idxs_events[periods[:, 0]], idxs_events[periods[:, 1]]])
     return np.column_stack([tl[tl_idxs_mx[:, 0]][:, 0], tl[tl_idxs_mx[:, 1]][:, 0]]) 
+
+
+def get_sound_event_periods(sound_events, event_type):
+    t_periods = []
+    curr_period = []
+    for i in range(len(sound_events) - 1):  # always starts with BGR, so ignore first pulse
+        if sound_events[i-1][1] != event_type and sound_events[i][1] == event_type:  # start of the period
+            curr_period.append(sound_events[i][0])
+        if sound_events[i+1][1] != event_type and sound_events[i][1] == event_type:  # end of the period
+            # !!! time of the FIRST PULSE AFTER period end
+            curr_period.append(sound_events[i+1][0])
+
+            t_periods.append(curr_period)
+            curr_period = []
+    return t_periods

@@ -1,4 +1,6 @@
 import numpy as np
+import h5py
+from scipy import stats
 
 
 def get_shuffled(spiketrain):
@@ -89,3 +91,31 @@ def staple_spike_times(s_times, periods, mode='sequence'):
 
         sil_dur += t_end - t_start
     return all_spikes  #np.array([item for sublist in all_spikes for item in sublist])
+
+
+def get_psth_matrix(psth_file, electrodes):
+    # build response profile (PSTH) matrix for all units all sound conditions
+    # electrodes - a list of electrodes to take into account, like [1, 2]
+    psths_all = {}
+    psth_bins = None
+    with h5py.File(psth_file, 'r') as f:
+        conditions = [x for x in f]  # should be like ['BGR', 'TGT', 'SIL', 'NOI']
+
+    for k, cond in enumerate(conditions):
+        psths = []
+        with h5py.File(psth_file, 'r') as f:
+            for unit_name in f[cond]:
+                if int(unit_name[0]) not in electrodes:
+                    continue
+                psths.append(np.array(f[cond][unit_name]['profile_stats'][1]))
+                if psth_bins is None:
+                    psth_bins = np.array(f[cond][unit_name]['profile_stats'][0])
+        psths = np.array(psths)
+
+        # z-score
+        psths_z = psths.copy()
+        for i, psth in enumerate(psths):
+            psths_z[i] = stats.zscore(psth)
+            
+        psths_all[cond] = psths_z
+    return psth_bins, psths_all

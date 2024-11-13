@@ -12,7 +12,6 @@ sys.path.append(parent_dir)
 from utils.psth import get_spike_counts
 from utils.neurosuite import get_unit_names_sorted
 
-
 # configuration
 event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters
 event_type_names = ['SIL', 'BGR', 'TGT', 'NOI']  # SIL, BGR, TGT, NOI - order matters
@@ -48,7 +47,8 @@ for j, event_id in enumerate(event_types):  # sound events
             
         elif sound_events[k][1] == event_id:
             if sound_events[k-1][1] != event_id:
-                idxs_pool.append(k+1)  # add next event instead of the first one in a sequence to avoid bias
+                if not k+1 >= len(sound_events):
+                    idxs_pool.append(k+1)  # add next event instead of the first one in a sequence to avoid bias
             else:
                 idxs_pool.append(k)
     idxs_pool = np.array(idxs_pool)

@@ -27,6 +27,7 @@ cols = 3
 rows = int(np.ceil(len(units_to_plot)/cols))
 colors = {0: 'gray', 1: 'tab:blue', 2: 'tab:orange', -1: 'red'}
 ev_names = {0: 'SIL', 1: 'BGR', 2: 'TGT', -1: 'NOI'}
+latency = cfg['sound']['latency']
 
 
 # line plot figures
@@ -44,13 +45,15 @@ for fig_id, stim_comb in enumerate(stim_combs):
         
         ax = fig.add_subplot(rows, cols, i+1)
         for j, c_stats in enumerate([curr_stats_1, curr_stats_2]):
-            ax.plot(c_stats[0], c_stats[1], alpha=0.95, color=colors[stim_comb[j]], lw=2, label=ev_names[stim_comb[j]])
-            ax.fill_between(c_stats[0], c_stats[3], c_stats[4], color=colors[stim_comb[j]], alpha=0.4)
-        
+            bin_size = c_stats[0][1] - c_stats[0][0]
+            ax.plot(c_stats[0] + bin_size, c_stats[1], alpha=0.95, color=colors[stim_comb[j]], lw=2, label=ev_names[stim_comb[j]])
+            ax.fill_between(c_stats[0] + bin_size, c_stats[3], c_stats[4], color=colors[stim_comb[j]], alpha=0.4)
+        ax.set_xlim(-latency, latency)
         ax.set_ylim(bottom=0)
         ax.axvline(0, color='black', ls='--')
         ax.set_title("%s" % unit_name, fontsize=14)
         ax.axvspan(0, bgr_dur, alpha=0.3, color='gray')
+        ax.axvspan(-latency, -latency + bgr_dur, alpha=0.3, color='gray')
         ax.legend()
         ax.grid()
         if i % cols == 0:

@@ -28,7 +28,7 @@ def get_videoname(wildcards, config):
 
 rule run_dlc_inference:
     input:
-        video_path = join(config["src_path"],"{animal}","{session}","{videoname}.avi")
+        video_path = ancient(join(config["src_path"],"{animal}","{session}","{videoname}.avi"))
     output:
         DLC_h5_path = join(config["dst_path"],"{animal}","{session}","dlc","{videoname}"+DLC_scorer+".h5"),
         DLC_h5_path_meta = join(config["dst_path"],"{animal}","{session}","dlc","{videoname}"+DLC_scorer+"_meta.pickle")

@@ -11,7 +11,6 @@ from utils.psth import compute_shuffled_metrics, staple_pulsetrain, staple_spike
 from utils.events import get_event_periods
 from utils.neurosuite import get_unit_names_sorted
 
-
 # some configs
 hw = snakemake.config['psth']['micro']['latency']
 bc = snakemake.config['psth']['micro']['bin_count']
