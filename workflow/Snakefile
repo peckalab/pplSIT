@@ -21,6 +21,10 @@ import yaml
 with open("../config/default.yaml") as f:
     default_config = yaml.safe_load(f)
 
+# Provide an error message if no user config file was provided
+if config=={}:
+    raise ValueError("No user config file provided. Please provide a config file with --configfile=<path>")
+
 # Merge configurations, giving priority to user_config
 config = {**default_config, **config}
  
