@@ -22,12 +22,12 @@ dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 # neurosuite / klustakwik config files
 template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/60_SIT_2023-08-11_16-23-36.xml"
 template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/manual.json"
-ndm_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
+ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
 kkwik_path: "/home/sobolev/apps/kkwik/"
 kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
 
 # deep lab cut config files
-dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
+dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
 dlc_shuffle: 3
 dlc_trainingsetindex: 0
 cuda_device_to_use: 3
