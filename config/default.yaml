@@ -1,28 +1,106 @@
 blocks:  # blocks of pipeline to run
-  meta: True         # pack main metadata into HDF5
-  DLC: False         # Deep lab cut
+  meta: False         # pack main metadata into HDF5
+  DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
+  descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: False          # extract LFP
-  SS_SI: False       # run sikesorting with spike interface
-  SS_kwik: False      # complete spike sorting with neurosuite / klustakwik
+  units: False      # complete spike sorting with neurosuite / klustakwik
   AEPs: False         # extract Auditory Evoked Responses
+  PSTH: False
+  spatial: False
+  shuffle: False
+  population: False
+  coherence: False
+  manifold_states: False
+  metronome: False
+  video: False
+
 src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
-dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
+
+# neurosuite / klustakwik config files
+template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/60_SIT_2023-08-11_16-23-36.xml"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/manual.json"
+ndm_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
+kkwik_path: "/home/sobolev/apps/kkwik/"
+kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
+
+# deep lab cut config files
+dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
 dlc_shuffle: 3
 dlc_trainingsetindex: 0
 cuda_device_to_use: 3
-ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
-kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
-kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
+
+# moseq config files
+moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
+
+# LFP configuration
 lfp:
   s_rate: 1000  # sampling rate in Hz
   aep_dur: 0.25  # Auditory evoked response duration in sec
+
+# analysis configurations
 psth:
   micro:
     latency: 0.25
-    bin_count: 41
+    bin_count: 51
+    boot_iter_count: 100
+    shuf_iter_count: 100
   macro:
     latency: 7.25
-    bin_count: 41
+    bin_count: 31
+
+# neural manifolds
+nMAP_electrodes:
+    '009265': [1, 2]
+    '009266': [1, 2]
+    '57': [1]
+    '60': [1, 2]
+
+nMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.1
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# behavioral manifolds
+bMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.12
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# metronome
+metronome:
+  split_ratio: 0.5
+
+# Evoked / sustained manifold
+nMAP_EV_SU:
+  bin_size: 0.01
+  ev_su_lag: 0.12
+  k_width: 200  # sampled as activity matrix bins (10ms)
+  smooth_su_size: 4  #  rectangular kernel size to smooth sustained part
+  smooth_ev_size: 20  #  gaussian kernel size to smooth evoked part
+
+# unit matrix + video merging
+video:
+  duration: 300  # in seconds
+  overlap: 100  # in seconds
+  crop_width: 900
+  crop_height: 768
+  scale_height: 1242
+  overwrite: False
+
+# PCA and pairwise correlations for sustained activity
+coherence:
+  comp_count: 10
+  bin_size: 0.01
+  win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
+  sustained_start: 0.12
