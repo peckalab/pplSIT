@@ -113,7 +113,7 @@ blocks:  # blocks of pipeline to run
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
-  units: False      # extract spike trains from sorted data
+  units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
   PSTH: False
   spatial: False
