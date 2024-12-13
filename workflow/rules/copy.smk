@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 
 rule move_dat_from_subfolder:
@@ -11,30 +12,16 @@ rule move_dat_from_subfolder:
         # Define the source path
         session_path = os.path.join(config['src_path'], wildcards.animal, wildcards.session)
 
-        # Get a list of all items in the source directory
-        items = os.listdir(session_path)
+        dat_path = None
+        for dirpath, dirnames, filenames in os.walk(session_path):
+            for filename in [f for f in filenames if f.endswith('.dat')]:
+                dat_path = os.path.join(dirpath, filename)
+                break
 
-        # Filter this list to only include directories
-        dirs = [item for item in items if os.path.isdir(os.path.join(session_path, item))]
-
-        # Check if there is only one directory
-        if len(dirs) != 1:
+        if dat_path is None:
             raise ValueError("There should be one and only one subdirectory in the session path")
-        
-        recording_root_directory = os.path.join(session_path, dirs[0])
 
-        # Check whether there are multiple recordings
-        if len(os.listdir(os.path.join(recording_root_directory,'Record Node 117','experiment1'))) > 1:
-            raise ValueError("There should be only one recording in the source path")
-
-        # Define the source and destination paths for the .dat file
-        src_dat = os.path.join(recording_root_directory,'Record Node 117','experiment1', 'recording1', 'continuous', 'Rhythm_FPGA-114.0', 'continuous.dat')
-        dest_dat = output.dat
-
-        # Copy the .dat file
-        shutil.copy(src_dat, dest_dat)
-
-        # TODO: rewrite by searching .dat in the hierarchy + create hard link!
+        subprocess.run(['ln', dat_path, output.dat])
 
 
 # HARD-linking raw data to destination folder
@@ -44,8 +31,8 @@ rule copy_ephys:
         dat=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.dat'))
     output:
         xml=n_path('{animal}', '{session}', '{session}.xml'),
-        dat_ns=protected(n_path('{animal}', '{session}', '{session}.dat')),
-        dat_ks=protected(k_path('{animal}', '{session}', '{session}.dat'))
+        dat_ns=n_path('{animal}', '{session}', '{session}.dat'),
+        dat_ks=k_path('{animal}', '{session}', '{session}.dat')
     shell:
         "ln {input.xml} {output.xml}; ln {input.dat} {output.dat_ns}; ln {input.dat} {output.dat_ks}"
 

@@ -111,9 +111,9 @@ blocks:  # blocks of pipeline to run
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: False          # extract LFP
-  neurosuite: False  # sorting with neurosuite / klustakwik
-  kilosort: True  # sorting with kilosort
-  units: True      # extract spike trains from sorted data
+  neurosuite: True  # sorting with neurosuite / klustakwik
+  kilosort: False  # sorting with kilosort
+  units: False      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
   PSTH: False
   spatial: False
