@@ -139,13 +139,16 @@ rule clu_backup:
         "cp {input} {output}"
 
 
- # dump units to HDF5
-rule dump_units:
+ # finalize processing
+rule neurosuite_ready:
     input:
         xml=ancient(n_path('{animal}', '{session}', '{session}.xml')),
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
         clu=get_clu_inputs
     output:
-        os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
-    script:
-        "../scripts/units.py"
+        n_path('{animal}', '{session}', 'neurosuite.ready')
+    params:
+        session="{session}",
+        animal="{animal}"
+    shell:
+        "touch %s" % n_path('{params.animal}', '{params.session}', 'neurosuite.ready')

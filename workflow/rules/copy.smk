@@ -1,20 +1,6 @@
 import os
 
 
-# TODO: mark all raw data files as read-only
-
-# copying raw data to destination folder
-rule copy_ephys:
-    input:
-        xml=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.xml')),
-        dat=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.dat'))
-    output:
-        xml=n_path('{animal}', '{session}', '{session}.xml'),
-        dat=protected(n_path('{animal}', '{session}', '{session}.dat'))
-    shell:
-        "cp {input.xml} {output.xml}; cp {input.dat} {output.dat}"
-
-
 rule move_dat_from_subfolder:
     output:
         dat=os.path.join(config['src_path'], '{animal}', '{session}', '{session}.dat')
@@ -48,6 +34,22 @@ rule move_dat_from_subfolder:
         # Copy the .dat file
         shutil.copy(src_dat, dest_dat)
 
+        # TODO: rewrite by searching .dat in the hierarchy + create hard link!
+
+
+# HARD-linking raw data to destination folder
+rule copy_ephys:
+    input:
+        xml=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.xml')),
+        dat=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.dat'))
+    output:
+        xml=n_path('{animal}', '{session}', '{session}.xml'),
+        dat_ns=protected(n_path('{animal}', '{session}', '{session}.dat')),
+        dat_ks=protected(k_path('{animal}', '{session}', '{session}.dat'))
+    shell:
+        "ln {input.xml} {output.xml}; ln {input.dat} {output.dat_ns}; ln {input.dat} {output.dat_ks}"
+
+
 rule create_xml_from_template:
     input:
         template=ancient(config['template_xml'])
@@ -56,6 +58,7 @@ rule create_xml_from_template:
     shell:
         "cp {input.template} {output.xml}"
 
+
 rule create_manual_json_from_template:
     input:
         template=ancient(config['template_manual_json'])
@@ -63,3 +66,21 @@ rule create_manual_json_from_template:
         man_json=os.path.join(config['src_path'], '{animal}', '{session}', 'manual.json')
     shell:
         "cp {input.template} {output.man_json}"
+
+
+rule create_kilosort_settings_from_template:
+    input:
+        template=ancient(config['kilosort']['settings_path'])
+    output:
+        kilo=os.path.join(config['src_path'], '{animal}', '{session}', 'kilosort.json')
+    shell:
+        "cp {input.template} {output.kilo}"
+
+
+rule create_probe_from_template:
+    input:
+        template=ancient(config['kilosort']['probe_path'])
+    output:
+        kilo=os.path.join(config['src_path'], '{animal}', '{session}', 'probe.json')
+    shell:
+        "cp {input.template} {output.kilo}"

@@ -16,6 +16,15 @@ ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
 kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
 kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
 
+kilosort:
+  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/kilosort.json"
+  probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/probe.json"
+  save_preprocessed: False
+
+# single units config: which sorter to use
+units:
+  source: 'kilosort'
+
 # deep lab cut config files
 dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
 dlc_shuffle: 3
@@ -101,11 +110,13 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: True          # extract LFP
-  units: True      # complete spike sorting with neurosuite / klustakwik
-  AEPs: True         # extract Auditory Evoked Responses
-  PSTH: True
-  spatial: True
+  LFP: False          # extract LFP
+  neurosuite: False  # sorting with neurosuite / klustakwik
+  kilosort: True  # sorting with kilosort
+  units: False      # extract spike trains from sorted data
+  AEPs: False         # extract Auditory Evoked Responses
+  PSTH: False
+  spatial: False
   shuffle: False
   population: False
   coherence: False
@@ -115,25 +126,25 @@ blocks:  # blocks of pipeline to run
 
 session_IDs:  
   - "013829_ppcSIT_2024-11-06_20-06-31"
-  - "013829_ppcSIT_2024-11-07_08-38-36"
-  - "013829_ppcSIT_2024-11-08_08-38-51"
-  - "013829_ppcSIT_2024-11-10_15-19-36"
-  - "013829_ppcSIT_2024-11-11_09-10-59"
-  - "013829_ppcSIT_2024-11-11_16-35-07"
-  - "013829_ppcSIT_2024-11-12_10-07-58"
-  - "013829_ppcSIT_2024-11-13_13-13-13"
-  - "013829_ppcSIT_2024-11-14_11-07-32"
-  - "013829_ppcSIT_2024-11-15_15-48-45"
-  - "013829_ppcSIT_2024-11-16_11-17-54"
-  - "013829_ppcSIT_2024-11-16_19-31-26"
-  - "013829_ppcSIT_2024-11-17_15-26-16"
-  - "013829_ppcSIT_2024-11-18_08-49-06"
-  - "013829_ppcSIT_2024-11-18_19-59-51"
-  - "013829_ppcSIT_2024-11-19_09-00-18"
-  - "013829_ppcSIT_2024-11-19_21-18-43"
-  - "013829_ppcSIT_2024-11-20_09-26-11"
-  - "013829_ppcSIT_2024-11-20_16-59-28"
-  - "013829_ppcSIT_2024-11-21_09-27-32"
-  - "013829_ppcSIT_2024-11-22_09-17-13"
-  - "013829_ppcSIT_2024-11-24_16-59-20"
-  - "013829_ppcSIT_2024-11-25_10-04-29"
+  # - "013829_ppcSIT_2024-11-07_08-38-36"
+  # - "013829_ppcSIT_2024-11-08_08-38-51"
+  # - "013829_ppcSIT_2024-11-10_15-19-36"
+  # - "013829_ppcSIT_2024-11-11_09-10-59"
+  # - "013829_ppcSIT_2024-11-11_16-35-07"
+  # - "013829_ppcSIT_2024-11-12_10-07-58"
+  # - "013829_ppcSIT_2024-11-13_13-13-13"
+  # - "013829_ppcSIT_2024-11-14_11-07-32"
+  # - "013829_ppcSIT_2024-11-15_15-48-45"
+  # - "013829_ppcSIT_2024-11-16_11-17-54"
+  # - "013829_ppcSIT_2024-11-16_19-31-26"
+  # - "013829_ppcSIT_2024-11-17_15-26-16"
+  # - "013829_ppcSIT_2024-11-18_08-49-06"
+  # - "013829_ppcSIT_2024-11-18_19-59-51"
+  # - "013829_ppcSIT_2024-11-19_09-00-18"
+  # - "013829_ppcSIT_2024-11-19_21-18-43"
+  # - "013829_ppcSIT_2024-11-20_09-26-11"
+  # - "013829_ppcSIT_2024-11-20_16-59-28"
+  # - "013829_ppcSIT_2024-11-21_09-27-32"
+  # - "013829_ppcSIT_2024-11-22_09-17-13"
+  # - "013829_ppcSIT_2024-11-24_16-59-20"
+  # - "013829_ppcSIT_2024-11-25_10-04-29"
