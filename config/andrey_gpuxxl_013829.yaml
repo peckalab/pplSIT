@@ -1,5 +1,5 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl.yaml --use-conda --rerun-triggers mtime --cores=1
+# snakemake -n --configfile=../config/andrey_gpuxxl_013829.yaml --use-conda --cores=20
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -104,8 +104,8 @@ blocks:  # blocks of pipeline to run
   LFP: True          # extract LFP
   units: True      # complete spike sorting with neurosuite / klustakwik
   AEPs: True         # extract Auditory Evoked Responses
-  PSTH: False
-  spatial: False
+  PSTH: True
+  spatial: True
   shuffle: False
   population: False
   coherence: False
@@ -114,7 +114,26 @@ blocks:  # blocks of pipeline to run
   video: False
 
 session_IDs:  
+  - "013829_ppcSIT_2024-11-06_20-06-31"
   - "013829_ppcSIT_2024-11-07_08-38-36"
   - "013829_ppcSIT_2024-11-08_08-38-51"
   - "013829_ppcSIT_2024-11-10_15-19-36"
   - "013829_ppcSIT_2024-11-11_09-10-59"
+  - "013829_ppcSIT_2024-11-11_16-35-07"
+  - "013829_ppcSIT_2024-11-12_10-07-58"
+  - "013829_ppcSIT_2024-11-13_13-13-13"
+  - "013829_ppcSIT_2024-11-14_11-07-32"
+  - "013829_ppcSIT_2024-11-15_15-48-45"
+  - "013829_ppcSIT_2024-11-16_11-17-54"
+  - "013829_ppcSIT_2024-11-16_19-31-26"
+  - "013829_ppcSIT_2024-11-17_15-26-16"
+  - "013829_ppcSIT_2024-11-18_08-49-06"
+  - "013829_ppcSIT_2024-11-18_19-59-51"
+  - "013829_ppcSIT_2024-11-19_09-00-18"
+  - "013829_ppcSIT_2024-11-19_21-18-43"
+  - "013829_ppcSIT_2024-11-20_09-26-11"
+  - "013829_ppcSIT_2024-11-20_16-59-28"
+  - "013829_ppcSIT_2024-11-21_09-27-32"
+  - "013829_ppcSIT_2024-11-22_09-17-13"
+  - "013829_ppcSIT_2024-11-24_16-59-20"
+  - "013829_ppcSIT_2024-11-25_10-04-29"

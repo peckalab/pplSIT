@@ -2,6 +2,7 @@ import h5py, os, sys, json
 import numpy as np
 from scipy import stats, signal
 from sklearn import decomposition
+from sklearn.preprocessing import minmax_scale
 
 
 # import util functions from utils module
@@ -85,7 +86,8 @@ for j in range(len(unit_names)):
 # z-score
 su_unit_mx_events_z = np.zeros([len(unit_names), len(sound_events)])
 for j in range(len(unit_names)):
-    su_unit_mx_events_z[j] = stats.zscore(su_unit_mx_events[j])
+    #su_unit_mx_events_z[j] = stats.zscore(su_unit_mx_events[j])
+    su_unit_mx_events_z[j] = minmax_scale(su_unit_mx_events[j], feature_range=(0, 1), axis=0, copy=True)
 
 # take first PC
 su_pca = decomposition.PCA(n_components=2)
@@ -160,7 +162,8 @@ for i in range(len(unit_names)):
 for j in range(len(unit_names)):
     ev_unit_mx_events[j] = smooth_rectangular(ev_unit_mx_events[j], 4)
     ev_unit_mx_events[j] = ev_unit_mx_events[j] - su_unit_mx_events[j]  # subtract sustained
-    ev_unit_mx_events[j] = stats.zscore(ev_unit_mx_events[j])
+    #ev_unit_mx_events[j] = stats.zscore(ev_unit_mx_events[j])
+    ev_unit_mx_events[j] = minmax_scale(ev_unit_mx_events[j], feature_range=(0, 1), axis=0, copy=True)
 
 # PCA:
 ev_pca = decomposition.PCA(n_components=2)
