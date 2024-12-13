@@ -205,7 +205,7 @@ def read_config(configname):
 
     else:
         raise FileNotFoundError(
-            "Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
+            "DLC config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
         )
     return cfg
 

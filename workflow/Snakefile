@@ -1,4 +1,5 @@
 import os
+import yaml
 
 # examples of Snakemake workflows:
 # https://snakemake.github.io/snakemake-workflow-catalog/
@@ -15,6 +16,18 @@ import os
 # generate DAG in PDF
 # snakemake --forceall --dag --configfile="../config/andrey_pd.yaml" --cores=1 | dot -Tpdf > dag.pdf
 
+# Block to define configuration: default.yaml and user-provided configfile
+# Load default configuration
+with open("../config/default.yaml") as f:
+    default_config = yaml.safe_load(f)
+
+# Provide an error message if no user config file was provided
+if config=={}:
+    raise ValueError("No user config file provided. Please provide a config file with --configfile=<path>")
+
+# Merge configurations, giving priority to user_config
+config = {**default_config, **config}
+ 
 # shortcut for neurosuite file paths (LFP, spikes, ephys files)
 n_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal, session, 'neurosuite', fname)
 k_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal, session, 'kilosort', fname)
