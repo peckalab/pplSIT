@@ -142,8 +142,6 @@ rule clu_backup:
  # finalize processing
 rule neurosuite_ready:
     input:
-        xml=ancient(n_path('{animal}', '{session}', '{session}.xml')),
-        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
         clu=get_clu_inputs
     output:
         n_path('{animal}', '{session}', 'neurosuite.ready')

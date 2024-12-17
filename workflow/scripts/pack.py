@@ -4,6 +4,8 @@ import time
 import os, json
 import numpy as np
 from scipy import signal
+from scipy.ndimage import median_filter
+
 
 # import util functions from utils module
 parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
@@ -242,12 +244,15 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
         sound_events_ds = proc.create_dataset('sound_events', data=sound_events)
         sound_events_ds.attrs['headers'] = 'sound_time, sound_id, timeline_idx'
 
+        x_mf = median_filter(pos_at_freq[:, 1], size=200)
+        y_mf = median_filter(pos_at_freq[:, 2], size=200)
+
         # building timeline
         width = 50  # 100 points ~= 1 sec with at 100Hz
         kernel = signal.gaussian(width, std=(width) / 7.2)
 
-        x_smooth = np.convolve(pos_at_freq[:, 1], kernel, 'same') / kernel.sum()
-        y_smooth = np.convolve(pos_at_freq[:, 2], kernel, 'same') / kernel.sum()
+        x_smooth = np.convolve(x_mf, kernel, 'same') / kernel.sum()
+        y_smooth = np.convolve(y_mf, kernel, 'same') / kernel.sum()
 
         # speed
         dx = np.sqrt(np.square(np.diff(x_smooth)) + np.square(np.diff(y_smooth)))
