@@ -1,5 +1,6 @@
 import os, sys
 import h5py
+import json
 import numpy as np
 import scipy.ndimage as ndi
 
@@ -20,14 +21,28 @@ metric_names = (H5NAMES.o_maps, H5NAMES.f_maps, H5NAMES.sparsity, H5NAMES.select
                 H5NAMES.spat_info, H5NAMES.peak_FR, H5NAMES.f_patches, H5NAMES.f_COM, \
                 H5NAMES.pfr_center, H5NAMES.occ_info, H5NAMES.o_patches, H5NAMES.o_COM)
 
-session_path = os.path.dirname(snakemake.input[0])
+sorted_data_path = os.path.dirname(snakemake.input[1])
 
 # loading unit data
-units = load_clu_res(session_path)  # spikes are in samples, not seconds
-sampling_rate = XMLHero(snakemake.input[0]).get_sampling_rate()
+units = load_clu_res(sorted_data_path)  # spikes are in samples, not seconds
+if snakemake.config['units']['source'] == 'neurosuite':
+    # neurosuite: read from XML
+    xml_files = [f for f in os.listdir(sorted_data_path) if f.find('.xml') > 0]
+    if len(xml_files) == 0:
+        raise ValueError('Need XML settings file to store spiketrains sorted by Neurosuite')
+
+    neurosuite_settings_file = os.path.join(sorted_data_path, xml_files[0])
+    sampling_rate = XMLHero(neurosuite_settings_file).get_sampling_rate()
+
+else:
+    # kilosort: read from settings.json
+    kilosort_settings_file = os.path.join(sorted_data_path, 'settings.json')
+    with open(kilosort_settings_file, 'r') as json_file:
+        sampling_rate = json.load(json_file)['fs']
+
 
 # loading timeline
-with h5py.File(snakemake.input[1], 'r') as f:
+with h5py.File(snakemake.input[0], 'r') as f:
     tl = np.array(f['processed']['timeline'])  # time, X, Y, speed, HD, trials, sounds
     run_idxs = np.where(tl[:, 3] > 0.04)[0]
 

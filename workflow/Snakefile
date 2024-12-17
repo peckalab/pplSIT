@@ -30,12 +30,15 @@ config = {**default_config, **config}
  
 # shortcut for neurosuite file paths (LFP, spikes, ephys files)
 n_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal, session, 'neurosuite', fname)
+k_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal, session, 'kilosort', fname)
 
 # include rules here
 include: "rules/copy.smk"
 include: "rules/pack.smk"
 include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
+include: "rules/kilosort.smk"
+include: "rules/units.smk"
 include: "rules/dlc.smk"
 include: "rules/moseq.smk"
 include: "rules/descendants.smk"
@@ -68,6 +71,8 @@ target_names_dict = {
         'analysis/aeps_maps.pdf', 
         'analysis/aeps_profiles.pdf'
     ],
+    'neurosuite': ['neurosuite/neurosuite.ready'],
+    'kilosort':   ['kilosort/kilosort.ready'],
     'units':   ['units.h5'],
     'PSTH':    [
         'analysis/psth_micro.h5',
