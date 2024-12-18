@@ -25,16 +25,23 @@ rule move_dat_from_subfolder:
 
 
 # HARD-linking raw data to destination folder
-rule copy_ephys:
+rule copy_ephys_ns:
     input:
         xml=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.xml')),
         dat=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.dat'))
     output:
         xml=n_path('{animal}', '{session}', '{session}.xml'),
-        dat_ns=n_path('{animal}', '{session}', '{session}.dat'),
-        dat_ks=k_path('{animal}', '{session}', '{session}.dat')
+        dat=n_path('{animal}', '{session}', '{session}.dat')
     shell:
-        "ln {input.xml} {output.xml}; ln {input.dat} {output.dat_ns}; ln {input.dat} {output.dat_ks}"
+        "ln {input.xml} {output.xml}; ln {input.dat} {output.dat}"
+
+rule copy_ephys_ks:
+    input:
+        dat=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.dat'))
+    output:
+        dat=k_path('{animal}', '{session}', '{session}.dat')
+    shell:
+        "ln {input.dat} {output.dat}"
 
 
 rule create_xml_from_template:
