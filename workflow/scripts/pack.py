@@ -12,7 +12,7 @@ parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
-from utils.sync import get_sound_events_from_ephys
+from utils.sync import get_sound_events_from_openephys, get_sound_events_from_ADC
 
 
 def head_direction(tl, hd_update_speed=0.04):
@@ -203,27 +203,37 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
             sounds[:, 0] = sounds[:, 0] + np.arange(len(sounds)) * drift/len(sounds) + offset/1000.
         
         else:
-            if offset['type'] == 'ephys': # sync events from ephys
-                session = ev_file.split('/')[-2]
-                animal  = session.split('_')[0]
-                src     = ev_file.split(animal)[0]
+            session = ev_file.split('/')[-2]
+            animal  = session.split('_')[0]
+            src     = ev_file.split(animal)[0]
 
+            if offset['type'] == 'ephys': # sync events from ephys
                 dat_file = os.path.join(src, animal, session, '%s.dat' % session)
                 xml_file = os.path.join(src, animal, session, '%s.xml' % session)
                 if not os.path.exists(dat_file) or not os.path.exists(xml_file):
                     raise FileNotFoundError('Need ephys files to sync sound events, but they are not found')
-                
-                ev_ephys, ev_synced = get_sound_events_from_ephys(dat_file, xml_file, snd_file, ev_file, int(offset['channel']))
-                sounds = ev_synced.copy()  # overwrite logged sounds with a synced version
 
-                ds = raw.create_dataset('sounds_ephys', data=ev_ephys)
-                ds.attrs['headers'] = 't_start, t_end'
+                ev_ephys, ev_synced = get_sound_events_from_openephys(dat_file, xml_file, snd_file, ev_file, int(offset['channel']))
+                
+            elif offset['type'] == 'OneBox_ADC':  # sync events from One Box ADC
+                adc_file = os.path.join(src, animal, session, 'ADC.dat')
+                ts_file  = os.path.join(src, animal, session, 'ADC_timestamps.npy')
+                if not os.path.exists(adc_file) or not os.path.exists(ts_file):
+                    raise FileNotFoundError('Need ADC files to sync sound events, but they are not found')
+
+                event_th = int(offset['threshold'])
+                adc_channel = int(offset['channel'])
+                ev_ephys, ev_synced = get_sound_events_from_ADC(adc_file, ts_file, snd_file, ev_file, adc_channel, event_th)
 
             elif offset['type'] == 'microphones':  # sync events from microphones
                 raise NotImplementedError
             
             else:
                 raise NotImplementedError
+
+            sounds = ev_synced.copy()  # overwrite logged sounds with a synced version
+            ds = raw.create_dataset('sounds_ephys', data=ev_ephys)
+            ds.attrs['headers'] = 't_start, t_end'
 
         # save sounds
         sound_events = np.zeros((len(sounds), 3))

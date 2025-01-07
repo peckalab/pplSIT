@@ -3,13 +3,63 @@ from scipy import signal
 from utils.neurosuite import XMLHero, DatHero
 
 
-def get_sound_events_from_ephys(dat_file, xml_file, sounds_file, events_file, channel, event_th=200, ipi=0.25):
+def get_sound_events_from_ADC(adc_file, ts_file, sounds_file, events_file, channel=11, event_th=300, s_rate=30300):
+    # read ADC channel with sound pulses
+    dh = DatHero(adc_file, s_rate=s_rate, ch_no=12)
+    channel_data = dh.get_single_channel(channel)
+
+    # smoothing and thresholding
+    kernel_width = s_rate / 100  # need to test if good enough for high frequencies
+    kernel = signal.gaussian(kernel_width, std=(kernel_width) / 7.2)
+
+    data_smooth = np.convolve(np.abs(channel_data - channel_data.mean()), kernel, 'same') / kernel.sum()
+
+    # TODO: make threshold dependent on noise levels between events
+    idxs_high = np.where(data_smooth > event_th)[0]  # indices where sound was ON
+    
+    # detect sound events
+    periods = []
+    idxs_diff = np.diff(idxs_high)
+    period_idxs = np.where((idxs_diff > 3))[0]
+
+    for i, idx in enumerate(period_idxs):
+        if i == 0:
+            pair = (idxs_high[0], idxs_high[idx])
+        else:
+            pair = (idxs_high[period_idxs[i - 1] + 1], idxs_high[idx])
+        periods.append(pair)
+    periods = np.array(periods)  # these are all pairs of sample indices
+
+    # convert samples indices into actual times in seconds
+    timestamps = np.load(ts_file)
+    p_begs = timestamps[periods[:, 0]] - timestamps[0]
+    p_ends = timestamps[periods[:, 1]] - timestamps[0]
+    period_times = np.column_stack([p_begs, p_ends])
+
+    events_exp = np.loadtxt(events_file, skiprows=1, delimiter=',')
+    events_csv = np.loadtxt(sounds_file, skiprows=1, delimiter=',')
+    events_csv[:, 0] = events_csv[:, 0] - events_exp[0][0]
+
+    # first shift by the delay of the ephys start
+    shift = events_csv[0][0] - period_times[0][0]
+    events_csv[:, 0] = events_csv[:, 0] - shift
+
+    # next linearly correct the drift by finding a time diff between
+    # the last ADC pulse and the last logged one, assuming they are still the closest events
+    t_last_ADC = period_times[-1][0]
+    t_last_sev = events_csv[np.abs(t_last_ADC - events_csv[:, 0]).argmin()][0]
+    drift = t_last_ADC - t_last_sev
+    events_csv[:, 0] = events_csv[:, 0] + np.arange(len(events_csv)) * drift/len(events_csv)
+
+    return period_times, events_csv
+
+
+def get_sound_events_from_openephys(dat_file, xml_file, sounds_file, events_file, channel, event_th=200, ipi=0.25):
     """
     returns: 
      - events_detected - sound events (t_start, t_end) detected from ephys
      - events_synced   - sound events (t_start, type) synced with the logger
     """
-    
     # read ephys events channel
     xml_hero = XMLHero(xml_file)
     s_rate   = xml_hero.get_sampling_rate()
@@ -18,7 +68,7 @@ def get_sound_events_from_ephys(dat_file, xml_file, sounds_file, events_file, ch
     dat_hero = DatHero(dat_file, s_rate=s_rate, ch_no=ch_count)
 
     data = dat_hero.get_single_channel(channel_no=channel)
-    
+
     # smoothing and thresholding
     kernel_width = s_rate / 100  # need to test if good enough for high frequencies
     kernel = signal.gaussian(kernel_width, std=(kernel_width) / 7.2)

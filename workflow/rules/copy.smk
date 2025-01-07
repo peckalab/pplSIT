@@ -2,6 +2,8 @@ import os
 import subprocess
 
 
+# Creates a hard link in the session folder to the actual raw files with recorded ephys data.
+# For Neuropixels recordings, also creates a hard link to the ADC raw data file.
 rule move_dat_from_subfolder:
     output:
         dat=os.path.join(config['src_path'], '{animal}', '{session}', '{session}.dat')
@@ -15,13 +17,20 @@ rule move_dat_from_subfolder:
         dat_path = None
         for dirpath, dirnames, filenames in os.walk(session_path):
             for filename in [f for f in filenames if f.endswith('.dat')]:
+                parent_dirname = os.path.basename(dirpath)
                 dat_path = os.path.join(dirpath, filename)
-                break
+
+                if parent_dirname.find('OneBox-ADC') > 0:  # this is ADC dat file, special case for NP
+                    subprocess.run(['ln', dat_path, os.path.join(session_path, 'ADC.dat')])
+
+                    # assume here should be timestamps file too - need to move it up as well
+                    adc_ts_path = os.path.join(dirpath, 'timestamps.npy')
+                    subprocess.run(['ln', adc_ts_path, os.path.join(session_path, 'ADC_timestamps.npy')])
+                else:
+                    subprocess.run(['ln', dat_path, output.dat])
 
         if dat_path is None:
-            raise ValueError("There should be one and only one subdirectory in the session path")
-
-        subprocess.run(['ln', dat_path, output.dat])
+            raise ValueError("There should be at least one .dat file in the session path")
 
 
 # HARD-linking raw data to destination folder
