@@ -78,12 +78,3 @@ rule create_kilosort_settings_from_template:
         kilo=os.path.join(config['src_path'], '{animal}', '{session}', 'kilosort.json')
     shell:
         "cp {input.template} {output.kilo}"
-
-
-rule create_probe_from_template:
-    input:
-        template=ancient(config['kilosort']['probe_path'])
-    output:
-        kilo=os.path.join(config['src_path'], '{animal}', '{session}', 'probe.json')
-    shell:
-        "cp {input.template} {output.kilo}"

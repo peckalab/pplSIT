@@ -10,6 +10,7 @@ sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
 from utils.neurosuite import load_clu_res, XMLHero
+from utils.kilosort import load_ks_units
 from utils.spiketrain import instantaneous_rate, spike_idxs
 from utils.hdf import create_dataset, H5NAMES
 from utils.spatial import place_field_2D, map_stats, get_field_patches
@@ -21,10 +22,10 @@ metric_names = (H5NAMES.o_maps, H5NAMES.f_maps, H5NAMES.sparsity, H5NAMES.select
                 H5NAMES.spat_info, H5NAMES.peak_FR, H5NAMES.f_patches, H5NAMES.f_COM, \
                 H5NAMES.pfr_center, H5NAMES.occ_info, H5NAMES.o_patches, H5NAMES.o_COM)
 
+
+# loading spike data
 sorted_data_path = os.path.dirname(snakemake.input[1])
 
-# loading unit data
-units = load_clu_res(sorted_data_path)  # spikes are in samples, not seconds
 if snakemake.config['units']['source'] == 'neurosuite':
     # neurosuite: read from XML
     xml_files = [f for f in os.listdir(sorted_data_path) if f.find('.xml') > 0]
@@ -34,11 +35,21 @@ if snakemake.config['units']['source'] == 'neurosuite':
     neurosuite_settings_file = os.path.join(sorted_data_path, xml_files[0])
     sampling_rate = XMLHero(neurosuite_settings_file).get_sampling_rate()
 
+    # loading unit data from .clu / .res
+    units = load_clu_res(sorted_data_path)  # spikes are in samples, not seconds
+    positions = None
+
 else:
     # kilosort: read from settings.json
     kilosort_settings_file = os.path.join(sorted_data_path, 'settings.json')
+    probe_file = os.path.join(sorted_data_path, 'probe.json')
     with open(kilosort_settings_file, 'r') as json_file:
         sampling_rate = json.load(json_file)['fs']
+    with open(probe_file, 'r') as json_file:
+        probe = json.load(json_file)
+
+    # loading unit data from kilosort
+    units, positions = load_ks_units(sorted_data_path)
 
 
 # loading timeline
@@ -46,6 +57,8 @@ with h5py.File(snakemake.input[0], 'r') as f:
     tl = np.array(f['processed']['timeline'])  # time, X, Y, speed, HD, trials, sounds
     run_idxs = np.where(tl[:, 3] > 0.04)[0]
 
+
+# writing spike in our formats with metrics
 for electrode_idx in units.keys():
     unit_idxs = units[electrode_idx]
 
@@ -60,6 +73,9 @@ for electrode_idx in units.keys():
         create_dataset(snakemake.output[0], unit_name, H5NAMES.spike_times, s_times)
         create_dataset(snakemake.output[0], unit_name, H5NAMES.inst_rate, i_rate)
         create_dataset(snakemake.output[0], unit_name, H5NAMES.spike_idxs, s_idxs)
+
+        if positions is not None:
+            create_dataset(snakemake.output[0], unit_name, H5NAMES.anat_pos, positions[electrode_idx][unit_idx])
 
         # spatial metrics
         xy_range = [-0.5, 0.5, -0.5, 0.5]  # make fixed for cross-comparisons

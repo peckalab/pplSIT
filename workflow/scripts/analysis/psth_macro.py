@@ -33,21 +33,23 @@ tgt_dur = cfg['experiment']['target_duration']
 idxs_succ = np.where(tgt_matrix[:, 4] == 1)[0]
 idxs_miss = np.where(tgt_matrix[:, 4] == 0)[0]
 
-# noise offset is a silence without reward
-noise_offset_idxs = []
-for i in range(len(tl)):
-    if tl[i, 6] == -1 and tl[i+1, 6] == 0:
-        noise_offset_idxs.append(i+1)
-noise_offset_times = tl[np.array(noise_offset_idxs)][:, 0]
-
 # combinations to plot
 dst_files = [x for x in snakemake.output]
 macro_times = [
     [ tl[tgt_matrix[idxs_succ][:, 2]][:, 0], tl[tgt_matrix[idxs_miss][:, 2]][:, 0] ],  # target onset
     [ tl[tgt_matrix[idxs_succ][:, 3]][:, 0], tl[tgt_matrix[idxs_miss][:, 3]][:, 0] ],  # target offset
     [ tl[trials[:, 0].astype(np.int32)][:, 0] ],  # trial onset
-    [ noise_offset_times ]  # noise offset
 ]
+
+# add noise offsets (silence without reward)
+noise_offset_idxs = []
+for i in range(len(tl)):
+    if tl[i, 6] == -1 and tl[i+1, 6] == 0:
+        noise_offset_idxs.append(i+1)
+if len(noise_offset_idxs) > 0:
+    noise_offset_times = tl[np.array(noise_offset_idxs)][:, 0]
+    macro_times.append([ noise_offset_times ])  # noise offset
+
 hw_bc = [[7, 51], [7, 51], [6, 49], [12, 49]]
 spans = [(0, tgt_dur), (-tgt_dur, 0), (0, hw_bc[2][0]), (-10, 0)]
 colors = [('green', 'black'), ('green', 'black'), ('tab:blue',), ('gray',)]

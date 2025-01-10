@@ -14,7 +14,7 @@ template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/neur
 template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/manual.json"
 ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
 kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
-kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
+kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 500 -UseFeatures"
 
 kilosort:
   settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/kilosort.json"
@@ -23,7 +23,7 @@ kilosort:
 
 # single units config: which sorter to use
 units:
-  source: 'neurosuite'
+  source: 'kilosort'
 
 # deep lab cut config files
 dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
@@ -44,7 +44,7 @@ psth:
   micro:
     latency: 0.25
     bin_count: 51
-    boot_iter_count: 100
+    boot_iter_count: 5
     shuf_iter_count: 100
   macro:
     latency: 7.25
@@ -110,9 +110,9 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: True          # extract LFP
-  neurosuite: True  # sorting with neurosuite / klustakwik
-  kilosort: False  # sorting with kilosort
+  LFP: False          # extract LFP
+  neurosuite: False  # sorting with neurosuite / klustakwik
+  kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
   PSTH: False
@@ -126,3 +126,7 @@ blocks:  # blocks of pipeline to run
 
 session_IDs:  
   - "013608_ppcSIT_2025-01-06_13-20-52"
+  # - "013608_ppcSIT_2025-01-07_08-47-27"
+  # - "013608_ppcSIT_2025-01-07_15-38-23"
+  # - "013608_ppcSIT_2025-01-09_09-09-55"
+  # - "013608_ppcSIT_2025-01-10_09-25-04"

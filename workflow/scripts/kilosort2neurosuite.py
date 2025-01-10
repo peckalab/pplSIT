@@ -42,22 +42,60 @@ for i, data in enumerate(clu_per_shank):
     f_path = os.path.join(dst_path, 'NS.clu.%d' % shanks[i])
     np.savetxt(f_path, np.array([data]).T, fmt='%d', header=str(len(np.unique(data))), comments='')
 
-# fake .fet files with FAKE features
-spread = 500
-for i, spk_times in enumerate(spk_per_shank):
-    f_path = os.path.join(dst_path, 'NS.fet.%d' % shanks[i])
-    fet_count = len(np.where(ch_shank_map == i+1)[0]) * 3 + 1
-    fet_mx = np.zeros([len(spk_times), fet_count])
-    
-    for j, spk_time in enumerate(spk_times):
-        #spread = 5000 if clu_per_shank[i][j] == clu and j < 100 else 500
-        fake_fet = np.random.randint(spread*2, size=fet_count - 1) - spread
-        fake_fet = np.concatenate([fake_fet, [spk_time]])
-        fet_mx[j] = fake_fet
-    
-    clu = clu_per_shank[i][0]  # some random cluster, induce larger spread for better visualization
-    idxs = np.where(clu_per_shank[i] == clu)[0][:2]
-    fet_mx[idxs[0]][:-1] = np.random.randint(spread*2*10, size=fet_count - 1) - spread*10
-    fet_mx[idxs[1]][:-1] = np.random.randint(spread*2*10, size=fet_count - 1) - spread*10
+with open(os.path.join(dst_path, 'ks2ns.ready'), 'w') as f:
+    f.write('ready')
 
-    np.savetxt(f_path, fet_mx, fmt='%d', delimiter=' ', header=str(fet_count), comments='')
+
+## TODO: .fet and .spk files
+
+# fake .fet files with FAKE features
+# spread = 500
+# for i, spk_times in enumerate(spk_per_shank):
+#     f_path = os.path.join(dst_path, 'NS.fet.%d' % shanks[i])
+#     fet_count = len(np.where(ch_shank_map == i+1)[0]) * 3 + 1
+#     fet_mx = np.zeros([len(spk_times), fet_count])
+    
+#     for j, spk_time in enumerate(spk_times):
+#         #spread = 5000 if clu_per_shank[i][j] == clu and j < 100 else 500
+#         fake_fet = np.random.randint(spread*2, size=fet_count - 1) - spread
+#         fake_fet = np.concatenate([fake_fet, [spk_time]])
+#         fet_mx[j] = fake_fet
+    
+#     clu = clu_per_shank[i][0]  # some random cluster, induce larger spread for better visualization
+#     idxs = np.where(clu_per_shank[i] == clu)[0][:2]
+#     fet_mx[idxs[0]][:-1] = np.random.randint(spread*2*10, size=fet_count - 1) - spread*10
+#     fet_mx[idxs[1]][:-1] = np.random.randint(spread*2*10, size=fet_count - 1) - spread*10
+
+#     np.savetxt(f_path, fet_mx, fmt='%d', delimiter=' ', header=str(fet_count), comments='')
+
+
+# create .spk files with waveforms
+# wf_to_display = 50
+# wf_in_samples = 50
+# total_samples = int(os.stat(dat_path).st_size/(2*ch_no))  # int16 is 2 bytes
+    
+# #for shank in shanks:
+# for shank in shanks:
+#     t_start = time.time()
+    
+#     channels_no = len(np.where(ch_shank_map == shank)[0])
+#     samples_no  = spk_sample_count
+#     spikes_no   = len(spk_per_shank[shank-1])
+#     spk_mx = np.zeros([spikes_no, samples_no, channels_no], dtype=np.int16)
+    
+#     for j, spk in enumerate(spk_per_shank[shank-1]):
+#         #spk_all = read_block_from_dat(dat_path, ch_no, int(spk - spk_sample_count/2), spk_sample_count)
+        
+#         s_start = int(spk - wf_in_samples/2)
+#         if s_start < 0 or s_start + wf_in_samples >= total_samples:
+#             continue
+        
+#         spk_all = read_block_from_dat(fil_path, ch_no, s_start, wf_in_samples)  # 20 ms
+#         #spk_sm  = spk_all.reshape([int(wf_in_samples/wf_to_display), wf_to_display, ch_no]).mean(axis=0)
+#         #spk_sm  = signal.decimate(spk_all, int(wf_in_samples/wf_to_display), axis=0)
+        
+#         spk_flt = spk_all.T[np.where(ch_shank_map == shank)[0]]
+#         spk_mx[j] = spk_flt.T
+        
+#     f_path = os.path.join(dst_path, 'filebase.spk.%d' % shank)
+#     spk_mx.tofile(f_path)
