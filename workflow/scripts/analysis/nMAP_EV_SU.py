@@ -83,7 +83,7 @@ for i in range(len(unit_names)):
 for j in range(len(unit_names)):
     su_unit_mx_events[j] = smooth_rectangular(su_unit_mx_events[j], smooth_su_size)
 
-# z-score
+# normalize
 su_unit_mx_events_z = np.zeros([len(unit_names), len(sound_events)])
 for j in range(len(unit_names)):
     #su_unit_mx_events_z[j] = stats.zscore(su_unit_mx_events[j])
@@ -160,7 +160,7 @@ for i in range(len(unit_names)):
     
 # z-score / smoothing
 for j in range(len(unit_names)):
-    ev_unit_mx_events[j] = smooth_rectangular(ev_unit_mx_events[j], 4)
+    ev_unit_mx_events[j] = smooth_rectangular(ev_unit_mx_events[j], smooth_ev_size)
     ev_unit_mx_events[j] = ev_unit_mx_events[j] - su_unit_mx_events[j]  # subtract sustained
     #ev_unit_mx_events[j] = stats.zscore(ev_unit_mx_events[j])
     ev_unit_mx_events[j] = minmax_scale(ev_unit_mx_events[j], feature_range=(0, 1), axis=0, copy=True)

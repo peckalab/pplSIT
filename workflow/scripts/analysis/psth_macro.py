@@ -46,9 +46,11 @@ noise_offset_idxs = []
 for i in range(len(tl)):
     if tl[i, 6] == -1 and tl[i+1, 6] == 0:
         noise_offset_idxs.append(i+1)
-if len(noise_offset_idxs) > 0:
-    noise_offset_times = tl[np.array(noise_offset_idxs)][:, 0]
-    macro_times.append([ noise_offset_times ])  # noise offset
+
+# temporarily turn off noise offset PSTHs
+# if len(noise_offset_idxs) > 0:
+#     noise_offset_times = tl[np.array(noise_offset_idxs)][:, 0]
+#     macro_times.append([ noise_offset_times ])  # noise offset
 
 hw_bc = [[7, 51], [7, 51], [6, 49], [12, 49]]
 spans = [(0, tgt_dur), (-tgt_dur, 0), (0, hw_bc[2][0]), (-10, 0)]

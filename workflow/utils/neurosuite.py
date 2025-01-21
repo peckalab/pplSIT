@@ -128,10 +128,15 @@ def load_clu_res(where):
 
 
 def unit_id_to_number(unit_id):
-    # converts standard unit id like '1-8' to a number like 108
+    # converts standard unit id like '1-8' to a number like 10008
+    # assuming each shank can contain max 10000 units
     # so it can be sorted nicely with other units
     elec_num, unit_num = unit_id.split('-')
     if int(unit_num) < 10:
+        unit_num = '000' + unit_num
+    elif int(unit_num) < 100:
+        unit_num = '00' + unit_num
+    elif int(unit_num) < 1000:
         unit_num = '0' + unit_num
     return int(elec_num + unit_num)
 

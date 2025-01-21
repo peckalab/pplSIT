@@ -43,7 +43,8 @@ include: "rules/dlc.smk"
 include: "rules/moseq.smk"
 include: "rules/descendants.smk"
 include: "rules/analysis/shuffle.smk"
-include: "rules/analysis/psth.smk"
+include: "rules/analysis/psth_bar.smk"
+include: "rules/analysis/psth_bootstrap.smk"
 include: "rules/analysis/aeps.smk"
 include: "rules/analysis/spatial.smk"
 include: "rules/analysis/behavior.smk"
@@ -74,16 +75,18 @@ target_names_dict = {
     'neurosuite': ['neurosuite/neurosuite.ready'],
     'kilosort':   ['kilosort/kilosort.ready'],
     'units':   ['units.h5'],
-    'PSTH':    [
-        'analysis/psth_micro.h5',
+    'PSTH_bar':    [
         'analysis/psth_tgt_onset.pdf',
         'analysis/psth_tgt_offset.pdf',
         'analysis/psth_trial_onset.pdf',
-        'analysis/psth_noise_offset.pdf',
-        'analysis/psth_bgr_tgt_line.pdf',
-        'analysis/psth_bgr_sil_line.pdf',
+        #'analysis/psth_noise_offset.pdf',
         'analysis/psth_bgr_tgt_bar.pdf',
         'analysis/psth_bgr_sil_bar.pdf'
+    ],
+    'PSTH_bootstrap': [
+        'analysis/psth_micro.h5',
+        'analysis/psth_bgr_tgt_line.pdf',
+        'analysis/psth_bgr_sil_line.pdf',
     ],
     'spatial': [
         'analysis/spiking_maps.png',

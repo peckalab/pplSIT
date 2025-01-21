@@ -12,10 +12,11 @@ blocks:  # blocks of pipeline to run
   Audio: False       # process audio data
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
-  kilosort: True  # sorting with kilosort
+  kilosort: False  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH: False
+  PSTH_bar: True
+  PSTH_bootstrap: True
   spatial: False
   shuffle: False
   population: False
@@ -33,10 +34,10 @@ session_IDs:
   # - "013608_ppcSIT_2025-01-13_14-01-40"
   # - "013608_ppcSIT_2025-01-14_10-20-14"
   # - "013608_ppcSIT_2025-01-15_14-56-18"
-  # - "013608_ppcSIT_2025-01-16_09-49-21"
-  - "013608_ppcSIT_2025-01-17_10-07-00"
-  - "013608_ppcSIT_2025-01-20_09-38-20"
-  - "013608_ppcSIT_2025-01-21_08-50-02"
+  - "013608_ppcSIT_2025-01-16_09-49-21"
+  # - "013608_ppcSIT_2025-01-17_10-07-00"
+  # - "013608_ppcSIT_2025-01-20_09-38-20"
+  # - "013608_ppcSIT_2025-01-21_08-50-02"
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -85,11 +86,14 @@ psth:
   micro:
     latency: 0.25
     bin_count: 51
-    boot_iter_count: 5
     shuf_iter_count: 100
   macro:
     latency: 7.25
     bin_count: 31
+  bootstrap:
+    latency: 0.25
+    bin_count: 51
+    boot_iter_count: 100
 
 # neural manifolds
 nMAP_electrodes:
@@ -126,7 +130,8 @@ nMAP_EV_SU:
   bin_size: 0.01
   ev_su_lag: 0.12
   k_width: 200  # sampled as activity matrix bins (10ms)
-  smooth_k: 20  #  gaussian kernel size to smooth evoked part
+  smooth_su_size: 4  #  rectangular kernel size to smooth sustained part
+  smooth_ev_size: 20  #  gaussian kernel size to smooth evoked part
 
 # unit matrix + video merging
 video:

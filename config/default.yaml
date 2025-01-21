@@ -9,7 +9,8 @@ blocks:  # blocks of pipeline to run
   kilosort: False  # sorting with kilosort
   units: False      # complete spike sorting with neurosuite / klustakwik
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH: False
+  PSTH_bar: True
+  PSTH_bootstrap: True
   spatial: False
   shuffle: False
   population: False
@@ -63,11 +64,14 @@ psth:
   micro:
     latency: 0.25
     bin_count: 51
-    boot_iter_count: 100
     shuf_iter_count: 100
   macro:
     latency: 7.25
     bin_count: 31
+  bootstrap:
+    latency: 0.25
+    bin_count: 51
+    boot_iter_count: 100
 
 # neural manifolds
 nMAP_electrodes:

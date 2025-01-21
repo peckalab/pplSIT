@@ -15,9 +15,9 @@ from utils.neurosuite import get_unit_names_sorted
 # configuration
 event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters
 event_type_names = ['SIL', 'BGR', 'TGT', 'NOI']  # SIL, BGR, TGT, NOI - order matters
-hw = snakemake.config['psth']['micro']['latency']
-bc = snakemake.config['psth']['micro']['bin_count']
-iter_count = snakemake.config['psth']['micro']['boot_iter_count']
+hw = snakemake.config['psth']['bootstrap']['latency']
+bc = snakemake.config['psth']['bootstrap']['bin_count']
+iter_count = snakemake.config['psth']['bootstrap']['boot_iter_count']
 bin_size   = hw/((bc-1)/2)
 
 
