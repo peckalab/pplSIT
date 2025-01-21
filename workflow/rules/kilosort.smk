@@ -28,6 +28,15 @@ rule create_probe:
         "../scripts/probe.py"
 
 
+rule copy_probe:
+    input:
+        probe=os.path.join(config['src_path'], '{animal}', '{session}', 'probe.json')
+    output:
+        probe=k_path('{animal}', '{session}', 'probe.json')
+    shell:
+        "cp {input.probe} {output.probe}"
+
+
 rule do_kilosort:
     input:
         settings=ancient(os.path.join(config['src_path'], '{animal}', '{session}', 'kilosort.json')),
@@ -59,7 +68,7 @@ rule do_kilosort:
  # finalize processing
 rule kilosort_ready:
     input:
-        probe=ancient(os.path.join(config['src_path'], '{animal}', '{session}', 'probe.json')),
+        probe=k_path('{animal}', '{session}', 'probe.json'),
         st=k_path('{animal}', '{session}', 'spike_times.npy'),
         sc=k_path('{animal}', '{session}', 'spike_clusters.npy'),
         tp=k_path('{animal}', '{session}', 'templates.npy')

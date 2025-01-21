@@ -54,19 +54,20 @@ def build_tgt_matrix(sound_events, trials):
     tgt_end_idxs = []
     
     for i, event in enumerate(sound_events[:-1]):
-        if sound_events[i][1] < 2 and sound_events[i+1][1] == 2:
+        if sound_events[i][1] != 2 and sound_events[i+1][1] == 2:
             tgt_start_idxs.append(i+1)
-        if sound_events[i][1] == 2 and sound_events[i+1][1] < 2:
+        if sound_events[i][1] == 2 and sound_events[i+1][1] != 2:
             tgt_end_idxs.append(i)
     
-    # ignore first/last target if not ended
+    # process boundary first/last target if not started / ended
     if tgt_start_idxs[-1] > tgt_end_idxs[-1]:
         tgt_start_idxs = tgt_start_idxs[:-1]
     if tgt_end_idxs[0] < tgt_start_idxs[0]:
-        tgt_end_idxs = tgt_end_idxs[1:]
+        #tgt_end_idxs = tgt_end_idxs[1:]
+        tgt_start_idxs = [0] + tgt_start_idxs
     tgt_start_idxs = np.array(tgt_start_idxs)
     tgt_end_idxs   = np.array(tgt_end_idxs)
-    
+
     # successful / missed
     tgt_results = np.zeros(len(tgt_start_idxs))
     for idx_tl_success_end in trials[trials[:, 5] == 1][:, 1]:
@@ -309,5 +310,6 @@ pack(
     snakemake.input[2], 
     snakemake.input[3], 
     snakemake.input[4],
-    snakemake.output[0]
+    snakemake.output[0],
+    drift_coeff=snakemake.config['pack']['drift_coeff']
 )

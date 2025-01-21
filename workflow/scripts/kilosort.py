@@ -1,4 +1,6 @@
 import os, json
+import torch
+import numpy as np
 
 from kilosort import run_kilosort, DEFAULT_SETTINGS
 from kilosort.io import load_probe
@@ -20,15 +22,30 @@ probe = load_probe(snakemake.input[1])
 
 save_p = snakemake.config['kilosort']['save_preprocessed']
 
+
+# select CUDA device with most of free memory
+try:
+    dev_count = torch.cuda.device_count()
+    dev_mem_stats = np.zeros([dev_count, 2])
+    for dev_id in range(dev_count):
+        m_free, m_total = torch.cuda.mem_get_info(dev_id)  # FIXME this fails with CUDA error: out of memory. 
+        dev_mem_stats[dev_id] = np.array([m_free, m_total])
+
+    best_dev_id = (dev_mem_stats[:, 0]/dev_mem_stats[:, 1]).argmax()
+    
+except RuntimeError:
+    best_dev_id = snakemake.config['kilosort']['cuda_device']
+
+print('USING CUDA DEVICE: %s' % str(best_dev_id))
+
 # run kilosort
 ops, st, clu, tF, Wall, similar_templates, is_ref, est_contam_rate, kept_spikes = \
-    run_kilosort(settings=settings, probe=probe, results_dir=results_dir, save_preprocessed_copy=save_p)
+    run_kilosort(settings=settings, probe=probe, results_dir=results_dir, save_preprocessed_copy=save_p, device=torch.device(best_dev_id))
 
 # save configuration
 with open(os.path.join(results_dir, 'settings.json'), 'w') as f:
     f.write(json.dumps(settings, indent=2))
-with open(os.path.join(results_dir, 'probe.json'), 'w') as f:
-    f.write(json.dumps(probe, indent=2))
+
 
 """
 * Resulting files in the dataset:

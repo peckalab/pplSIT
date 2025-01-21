@@ -1,5 +1,42 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl_013829.yaml --use-conda --cores=20
+# snakemake -n --configfile=../config/andrey_gpuxxl_013608.yaml --use-conda --cores=20
+#
+# mount nevermind via SSHFS
+# sshfs sobolev@10.153.172.1:/nevermind.neuro/share/ag-grothe nevermin
+
+blocks:  # blocks of pipeline to run
+  meta: True         # pack main metadata into HDF5
+  DLC: False        # Deep lab cut
+  MoSeq: False        # MoSeq
+  descendants: False   # speed, HD etc. from MoSeq and others
+  Audio: False       # process audio data
+  LFP: False          # extract LFP
+  neurosuite: False  # sorting with neurosuite / klustakwik
+  kilosort: True  # sorting with kilosort
+  units: True      # extract spike trains from sorted data
+  AEPs: False         # extract Auditory Evoked Responses
+  PSTH: False
+  spatial: False
+  shuffle: False
+  population: False
+  coherence: False
+  manifold_states: False
+  metronome: False
+  video: False
+
+session_IDs:  
+  # - "013608_ppcSIT_2025-01-06_13-20-52"
+  # - "013608_ppcSIT_2025-01-07_08-47-27"
+  # - "013608_ppcSIT_2025-01-07_15-38-23"
+  # - "013608_ppcSIT_2025-01-09_09-09-55"
+  # - "013608_ppcSIT_2025-01-10_09-25-04"
+  # - "013608_ppcSIT_2025-01-13_14-01-40"
+  # - "013608_ppcSIT_2025-01-14_10-20-14"
+  # - "013608_ppcSIT_2025-01-15_14-56-18"
+  # - "013608_ppcSIT_2025-01-16_09-49-21"
+  - "013608_ppcSIT_2025-01-17_10-07-00"
+  - "013608_ppcSIT_2025-01-20_09-38-20"
+  - "013608_ppcSIT_2025-01-21_08-50-02"
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -8,6 +45,9 @@ src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
 # destination for processed data
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
+
+pack:
+  drift_coeff: 0.000016666
 
 # neurosuite / klustakwik config files
 template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/neurosuite.xml"
@@ -20,6 +60,7 @@ kilosort:
   settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/kilosort.json"
   probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/probe.json"
   save_preprocessed: False
+  cuda_device: 3
 
 # single units config: which sorter to use
 units:
@@ -102,31 +143,3 @@ coherence:
   bin_size: 0.01
   win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
   sustained_start: 0.12
-
-
-blocks:  # blocks of pipeline to run
-  meta: True         # pack main metadata into HDF5
-  DLC: False        # Deep lab cut
-  MoSeq: False        # MoSeq
-  descendants: False   # speed, HD etc. from MoSeq and others
-  Audio: False       # process audio data
-  LFP: False          # extract LFP
-  neurosuite: False  # sorting with neurosuite / klustakwik
-  kilosort: True  # sorting with kilosort
-  units: True      # extract spike trains from sorted data
-  AEPs: False         # extract Auditory Evoked Responses
-  PSTH: False
-  spatial: False
-  shuffle: False
-  population: False
-  coherence: False
-  manifold_states: False
-  metronome: False
-  video: False
-
-session_IDs:  
-  - "013608_ppcSIT_2025-01-06_13-20-52"
-  # - "013608_ppcSIT_2025-01-07_08-47-27"
-  # - "013608_ppcSIT_2025-01-07_15-38-23"
-  # - "013608_ppcSIT_2025-01-09_09-09-55"
-  # - "013608_ppcSIT_2025-01-10_09-25-04"
