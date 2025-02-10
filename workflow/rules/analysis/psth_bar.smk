@@ -6,7 +6,9 @@ rule psth_micro:
         units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
     output:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_tgt_bar.pdf'),
-        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_sil_bar.pdf')
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_sil_bar.pdf'),
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_tgt_sta_bar.pdf'),
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_sta_run_bar.pdf')
     script:
         "../../scripts/analysis/psth_micro.py"
 

@@ -1,0 +1,226 @@
+# run snakemake from ../workflow folder:
+# snakemake -n --configfile=../config/EV_SU.yaml --use-conda --cores=20
+#
+# list code changes
+# snakemake -n --configfile=../config/andrey_gpuxxl.yaml -R $(snakemake -n --configfile=../config/andrey_gpuxxl.yaml --cores=20 --list-code-changes | grep dlc)  --touch
+
+
+blocks:  # blocks of pipeline to run
+  meta: True         # pack main metadata into HDF5
+  DLC: False        # Deep lab cut
+  MoSeq: False        # MoSeq
+  descendants: False   # speed, HD etc. from MoSeq and others
+  Audio: False       # process audio data
+  LFP: False          # extract LFP
+  neurosuite: False  # sorting with neurosuite / klustakwik
+  kilosort: False  # sorting with kilosort
+  units: True      # extract spike trains from sorted data
+  AEPs: False         # extract Auditory Evoked Responses
+  PSTH_bar: False
+  PSTH_bootstrap: False
+  PSTH_shuffle: False
+  spatial: False
+  population: True
+  coherence: False
+  manifold_states: True
+  metronome: False
+  video: False
+
+
+# source of raw data
+#src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/raw"
+src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
+#src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
+
+# destination for processed data
+#dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
+dst_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/"
+
+# neurosuite / klustakwik config files
+template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/60_SIT_2023-08-11_16-23-36.xml"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/manual.json"
+ndm_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
+kkwik_path: "/home/sobolev/apps/kkwik/"
+kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
+
+kilosort:
+  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/kilosort.json"
+  probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/probe.json"
+  save_preprocessed: False
+
+# single units config: which sorter to use
+units:
+  source: 'neurosuite'
+
+# deep lab cut config files
+dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
+dlc_shuffle: 3
+dlc_trainingsetindex: 0
+
+# moseq config files
+moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
+cuda_device_to_use: 3
+
+# LFP configuration
+lfp:
+  s_rate: 1000  # sampling rate in Hz
+  aep_dur: 0.25  # Auditory evoked response duration in sec
+
+# analysis configurations
+psth:
+  micro:
+    latency: 0.25
+    bin_count: 51
+  macro:
+    latency: 7.25
+    bin_count: 31
+  bootstrap:
+    latency: 0.25
+    bin_count: 51
+    boot_iter_count: 100
+    shuf_iter_count: 100
+
+# neural manifolds
+nMAP_electrodes:
+    '013829': [1, 2]
+    '009265': [1, 2]
+    '009266': [1, 2]
+    '57': [1]
+    '60': [1, 2]
+
+nMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.1
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# behavioral manifolds
+bMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.12
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# metronome
+metronome:
+  split_ratio: 0.5
+
+# Evoked / sustained manifold
+nMAP_EV_SU:
+  bin_size: 0.01
+  ev_su_lag: 0.12
+  k_width: 200  # sampled as activity matrix bins (10ms)
+  smooth_su_size: 4  #  rectangular kernel size to smooth sustained part
+  smooth_ev_size: 15  #  gaussian kernel size to smooth evoked part
+
+# unit matrix + video merging
+video:
+  duration: 300  # in seconds
+  overlap: 100  # in seconds
+  crop_width: 900
+  crop_height: 768
+  scale_height: 1242
+  overwrite: False
+
+# PCA and pairwise correlations for sustained activity
+coherence:
+  comp_count: 10
+  bin_size: 0.01
+  win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
+  sustained_start: 0.12
+
+
+session_IDs:
+# 013829
+  - "013829_ppcSIT_2024-11-16_11-17-54"
+  - "013829_ppcSIT_2024-11-16_19-31-26"
+  - "013829_ppcSIT_2024-11-17_15-26-16"
+  - "013829_ppcSIT_2024-11-18_08-49-06"
+  - "013829_ppcSIT_2024-11-18_19-59-51"
+  - "013829_ppcSIT_2024-11-19_09-00-18"
+  - "013829_ppcSIT_2024-11-19_21-18-43"
+  - "013829_ppcSIT_2024-11-20_09-26-11"
+  - "013829_ppcSIT_2024-11-20_16-59-28"
+  - "013829_ppcSIT_2024-11-21_09-27-32"
+  - "013829_ppcSIT_2024-11-22_09-17-13"
+  - "013829_ppcSIT_2024-11-24_16-59-20"
+  - "013829_ppcSIT_2024-11-25_10-04-29"
+
+# 009266
+  - "009266_hippoSIT_2023-04-17_17-04-17"
+  - "009266_hippoSIT_2023-04-18_10-10-37"
+  - "009266_hippoSIT_2023-04-18_17-03-10"
+  - "009266_hippoSIT_2023-04-19_10-33-51"
+  - "009266_hippoSIT_2023-04-20_08-57-39"
+  - "009266_hippoSIT_2023-04-21_08-43-00"
+  - "009266_hippoSIT_2023-04-21_13-12-31"
+  - "009266_hippoSIT_2023-04-24_10-08-11"
+  - "009266_hippoSIT_2023-04-24_16-56-55"
+  - "009266_hippoSIT_2023-04-26_08-20-17"
+  - "009266_hippoSIT_2023-05-02_12-22-14"
+  - "009266_hippoSIT_2023-05-04_19-47-15"
+  - "009266_hippoSIT_2023-05-22_09-27-22"
+  - "009266_hippoSIT_2023-05-23_09-18-05"
+  - "009266_hippoSIT_2023-05-25_15-55-57"
+  - "009266_hippoSIT_2023-06-14_08-21-23"
+  - "009266_hippoSIT_2023-06-19_08-58-35"
+
+# 009265
+  - "009265_hippoSIT_2023-02-28_13-16-10"
+  - "009265_hippoSIT_2023-02-28_20-45-04"
+  - "009265_hippoSIT_2023-03-01_10-46-12"
+  - "009265_hippoSIT_2023-03-02_09-32-54"
+  - "009265_hippoSIT_2023-03-02_16-27-42"
+  - "009265_hippoSIT_2023-03-02_20-11-35"
+  - "009265_hippoSIT_2023-03-03_09-37-07"
+  - "009265_hippoSIT_2023-03-03_16-00-47"
+  - "009265_hippoSIT_2023-03-04_11-12-04"
+  - "009265_hippoSIT_2023-03-05_11-52-17"
+  - "009265_hippoSIT_2023-03-05_18-31-32"
+  - "009265_hippoSIT_2023-03-08_18-10-07"
+  - "009265_hippoSIT_2023-03-09_20-03-08"
+  - "009265_hippoSIT_2023-03-10_09-57-34"
+
+# 57
+# selected
+  - "57_SIT_2023-12-22_14-08-07"
+  - "57_SIT_2023-12-22_17-37-18"
+  - "57_SIT_2023-12-28_16-43-28"
+  - "57_SIT_2023-12-29_11-06-26"
+  - "57_SIT_2023-12-29_11-40-14"
+  - "57_SIT_2024-01-02_16-38-05"
+  - "57_SIT_2024-01-02_17-10-09"
+  - "57_SIT_2024-01-03_19-54-59"
+
+  # ALL
+  # - "57_SIT_2023-12-18_14-07-34"  # this is somehow broken
+  # - "57_SIT_2023-12-22_14-08-07"
+  # - "57_SIT_2023-12-22_14-43-58"
+  # - "57_SIT_2023-12-22_17-37-18"
+  # - "57_SIT_2023-12-23_14-21-01"
+  # - "57_SIT_2023-12-28_16-43-28"
+  # - "57_SIT_2023-12-29_11-06-26"
+  # - "57_SIT_2023-12-29_11-40-14"
+  # - "57_SIT_2023-12-29_12-11-46"
+  # - "57_SIT_2024-01-02_14-43-18"
+  # - "57_SIT_2024-01-02_16-38-05"
+  # - "57_SIT_2024-01-02_17-10-09"
+  # - "57_SIT_2024-01-03_19-22-18"
+  # - "57_SIT_2024-01-03_19-54-59"
+  # - "57_SIT_2024-01-04_14-16-22"
+  # - "57_SIT_2024-01-04_14-52-59"
+  # - "57_SIT_2024-01-05_14-35-49"
+  # - "57_SIT_2024-01-05_15-08-34"
+  # - "57_SIT_2024-01-06_16-52-40"
+  # - "57_SIT_2024-01-06_17-25-35"
+  # - "57_SIT_2024-01-07_19-23-28"
+  # - "57_SIT_2024-01-08_15-51-26"
+  # - "57_SIT_2024-01-12_13-23-02"
+  # - "57_SIT_2024-01-15_13-45-22"
+  # - "57_SIT_2024-01-15_14-34-48"

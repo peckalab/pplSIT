@@ -10,12 +10,33 @@ rule w1_w4_tsne_umap:
     script:
         "../../scripts/analysis/w1_w4_tsne_umap.py"
 
-rule nMAP_EV_SU:
+
+rule population_matrices:
     input:
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
-        units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
-        #psths=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_micro.h5'),
+        units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5'),
     output:
-        nMAP_EV_SU=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'nMAP_EV_SU.h5')
+        resp_mx=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'population_matrices.h5')
     script:
-        "../../scripts/analysis/nMAP_EV_SU.py"
+        "../../scripts/analysis/population_matrices.py"
+
+
+rule nMAP_EV_SU_no_convolution:
+    input:
+        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        resp_mx=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'population_matrices.h5')
+    output:
+        nMAP_EV_SU=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'nMAP_EV_SU_noconv.h5')
+    script:
+        "../../scripts/analysis/nMAP_EV_SU_noconv.py"
+
+
+rule nMAP_EV_SU_with_PSTH:
+    input:
+        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        resp_mx=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'population_matrices.h5'),
+        psths=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_micro.h5')
+    output:
+        nMAP_EV_SU=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'nMAP_EV_SU_with_PSTH.h5')
+    script:
+        "../../scripts/analysis/nMAP_EV_SU_with_PSTH.py"

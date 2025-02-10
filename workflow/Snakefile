@@ -88,17 +88,19 @@ target_names_dict = {
         'analysis/psth_bgr_tgt_line.pdf',
         'analysis/psth_bgr_sil_line.pdf',
     ],
+    'PSTH_shuffle': [
+        'analysis/shuffle_micro.h5',
+        'analysis/psth_shuffle_micro.pdf',
+    ],
     'spatial': [
         'analysis/spiking_maps.png',
         'analysis/fr_maps.pdf',
     ],
-    'shuffle': [
-        'analysis/shuffle_micro.h5',
-        'analysis/psth_shuffle_micro.pdf',
-    ],
     'population': [
         #'analysis/W1-W4_tSNE_UMAP.h5',
-        'analysis/nMAP_EV_SU.h5',
+        'analysis/population_matrices.h5',
+        'analysis/nMAP_EV_SU_noconv.h5',
+        'analysis/nMAP_EV_SU_with_PSTH.h5',
     ],
     'coherence': [
         'analysis/coherence.h5',

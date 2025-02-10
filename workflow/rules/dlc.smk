@@ -45,9 +45,9 @@ ruleorder: create_labeled_processed_video > create_labeled_raw_video
 
 rule create_labeled_raw_video:
     input:
-        video_path = join(config["src_path"],"{animal}","{session}","{videoname}.avi"),
-        DLC_h5_path = join(config["dst_path"],"{animal}","{session}","dlc","{videoname}"+DLC_scorer+".h5"),
-        DLC_h5_path_meta = join(config["dst_path"],"{animal}","{session}","dlc","{videoname}"+DLC_scorer+"_meta.pickle")
+        video_path = ancient(join(config["src_path"],"{animal}","{session}","{videoname}.avi")),
+        DLC_h5_path = ancient(join(config["dst_path"],"{animal}","{session}","dlc","{videoname}"+DLC_scorer+".h5")),
+        DLC_h5_path_meta = ancient(join(config["dst_path"],"{animal}","{session}","dlc","{videoname}"+DLC_scorer+"_meta.pickle"))
     output:
         labeled_raw_video = join(config["dst_path"],"{animal}","{session}","{videoname}_labeled.mp4")
     params:
@@ -62,8 +62,8 @@ rule create_labeled_raw_video:
 # TODO: This rule is WiP
 rule create_labeled_processed_video:
     input:
-        DLC_h5_path = lambda wildcards: join(config["dst_path"],"{animal}","{session}","dlc",get_videoname(wildcards,config)+DLC_scorer+".h5"),
-        DLC_h5_path_meta = lambda wildcards: join(config["dst_path"],"{animal}","{session}","dlc",get_videoname(wildcards,config)+DLC_scorer+"_meta.pickle"),
+        DLC_h5_path = lambda wildcards: ancient(join(config["dst_path"],"{animal}","{session}","dlc",get_videoname(wildcards,config)+DLC_scorer+".h5")),
+        DLC_h5_path_meta = lambda wildcards: ancient(join(config["dst_path"],"{animal}","{session}","dlc",get_videoname(wildcards,config)+DLC_scorer+"_meta.pickle")),
         labeled_raw_video = lambda wildcards: join(config["dst_path"],"{animal}","{session}",get_videoname(wildcards,config)+"_labeled.mp4"),
         proc_video = join(config["src_path"],"{animal}","{session}","video.avi"),
     output:
@@ -83,7 +83,7 @@ rule create_labeled_processed_video:
 
 rule synch_dlc_100Hz:
     input:
-        DLC_h5_path = lambda wildcards: join(config["dst_path"],"{animal}","{session}","dlc",get_videoname(wildcards,config)+DLC_scorer+".h5"),
+        DLC_h5_path = lambda wildcards: ancient(join(config["dst_path"],"{animal}","{session}","dlc",get_videoname(wildcards,config)+DLC_scorer+".h5")),
         events = join(config["src_path"],"{animal}","{session}","events.csv"),
         session_cfg = join(config["src_path"],"{animal}","{session}","{session}.json"),
         timestamps_raw = lambda wildcards: join(config["src_path"],"{animal}","{session}",get_videoname(wildcards,config)+".csv"),

@@ -28,7 +28,7 @@ def get_videoname(wildcards, config):
 
 rule apply_moseq:
     input:
-        DLC_h5_path = lambda wildcards: join(config["dst_path"],"{animal}","{session}","dlc",get_videoname(wildcards,config)+DLC_scorer+".h5"),
+        DLC_h5_path = lambda wildcards: ancient(join(config["dst_path"],"{animal}","{session}","dlc",get_videoname(wildcards,config)+DLC_scorer+".h5")),
     output:
         moseq_csv_path = join(config["dst_path"],"{animal}","{session}","moseq","moseq.csv"),
     params:

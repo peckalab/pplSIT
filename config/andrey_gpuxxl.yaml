@@ -1,10 +1,36 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl.yaml --use-conda --rerun-triggers mtime --cores=1
+# snakemake -n --configfile=../config/andrey_gpuxxl.yaml --use-conda --cores=10
+#
+# list code changes
+# snakemake -n --configfile=../config/andrey_gpuxxl.yaml -R $(snakemake -n --configfile=../config/andrey_gpuxxl.yaml --cores=20 --list-code-changes | grep dlc)  --touch
+
+
+blocks:  # blocks of pipeline to run
+  meta: True         # pack main metadata into HDF5
+  DLC: False        # Deep lab cut
+  MoSeq: False        # MoSeq
+  descendants: False   # speed, HD etc. from MoSeq and others
+  Audio: False       # process audio data
+  LFP: False          # extract LFP
+  neurosuite: False  # sorting with neurosuite / klustakwik
+  kilosort: False  # sorting with kilosort
+  units: True      # extract spike trains from sorted data
+  AEPs: False         # extract Auditory Evoked Responses
+  PSTH_bar: False
+  PSTH_bootstrap: False
+  PSTH_shuffle: False
+  spatial: False
+  population: True
+  coherence: False
+  manifold_states: True
+  metronome: False
+  video: False
+
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/raw"
-#src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
-src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
+src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
+#src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
 
 # destination for processed data
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
@@ -24,7 +50,7 @@ kilosort:
 
 # single units config: which sorter to use
 units:
-  source: 'kilosort'
+  source: 'neurosuite'
 
 # deep lab cut config files
 dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
@@ -106,45 +132,25 @@ coherence:
   sustained_start: 0.12
 
 
-blocks:  # blocks of pipeline to run
-  meta: False         # pack main metadata into HDF5
-  DLC: False        # Deep lab cut
-  MoSeq: False        # MoSeq
-  descendants: True   # speed, HD etc. from MoSeq and others
-  Audio: False       # process audio data
-  LFP: False          # extract LFP
-  neurosuite: False  # sorting with neurosuite / klustakwik
-  kilosort: False  # sorting with kilosort
-  units: False      # extract spike trains from sorted data
-  AEPs: False         # extract Auditory Evoked Responses
-  PSTH: False
-  spatial: False
-  shuffle: False
-  population: False
-  coherence: False
-  manifold_states: False
-  metronome: False
-  video: False
-
 session_IDs:  
 # 009266
-  # - "009266_hippoSIT_2023-04-17_17-04-17"
-  # - "009266_hippoSIT_2023-04-18_10-10-37"
-  # - "009266_hippoSIT_2023-04-18_17-03-10"
-  # - "009266_hippoSIT_2023-04-19_10-33-51"
-  # - "009266_hippoSIT_2023-04-20_08-57-39"
-  # - "009266_hippoSIT_2023-04-21_08-43-00"
-  # - "009266_hippoSIT_2023-04-21_13-12-31"
-  # - "009266_hippoSIT_2023-04-24_10-08-11"
-  # - "009266_hippoSIT_2023-04-24_16-56-55"
-  # - "009266_hippoSIT_2023-04-26_08-20-17"
-  # - "009266_hippoSIT_2023-05-02_12-22-14"
-  # - "009266_hippoSIT_2023-05-04_19-47-15"
-  # - "009266_hippoSIT_2023-05-22_09-27-22"
-  # - "009266_hippoSIT_2023-05-23_09-18-05"
-  # - "009266_hippoSIT_2023-05-25_15-55-57"
-  # - "009266_hippoSIT_2023-06-14_08-21-23"
-  # - "009266_hippoSIT_2023-06-19_08-58-35"
+  - "009266_hippoSIT_2023-04-17_17-04-17"
+  - "009266_hippoSIT_2023-04-18_10-10-37"
+  - "009266_hippoSIT_2023-04-18_17-03-10"
+  - "009266_hippoSIT_2023-04-19_10-33-51"
+  - "009266_hippoSIT_2023-04-20_08-57-39"
+  - "009266_hippoSIT_2023-04-21_08-43-00"
+  - "009266_hippoSIT_2023-04-21_13-12-31"
+  - "009266_hippoSIT_2023-04-24_10-08-11"
+  - "009266_hippoSIT_2023-04-24_16-56-55"
+  - "009266_hippoSIT_2023-04-26_08-20-17"
+  - "009266_hippoSIT_2023-05-02_12-22-14"
+  - "009266_hippoSIT_2023-05-04_19-47-15"
+  - "009266_hippoSIT_2023-05-22_09-27-22"
+  - "009266_hippoSIT_2023-05-23_09-18-05"
+  - "009266_hippoSIT_2023-05-25_15-55-57"
+  - "009266_hippoSIT_2023-06-14_08-21-23"
+  - "009266_hippoSIT_2023-06-19_08-58-35"
 
 # # 009265
   # - "009265_hippoSIT_2023-02-24_09-53-26"
@@ -170,10 +176,10 @@ session_IDs:
   # - "009265_hippoSIT_2023-04-20_11-39-02"
 
 # 008229
-  - "008229_hippoSIT_2022-05-16_20-36-44"
-  - "008229_hippoSIT_2022-05-17_21-44-43"
-  - "008229_hippoSIT_2022-05-18_14-36-18"
-  - "008229_hippoSIT_2022-05-20_15-54-39"
+  # - "008229_hippoSIT_2022-05-16_20-36-44"
+  # - "008229_hippoSIT_2022-05-17_21-44-43"
+  # - "008229_hippoSIT_2022-05-18_14-36-18"
+  # - "008229_hippoSIT_2022-05-20_15-54-39"
 
 
 

@@ -11,8 +11,8 @@ blocks:  # blocks of pipeline to run
   AEPs: False         # extract Auditory Evoked Responses
   PSTH_bar: True
   PSTH_bootstrap: True
+  PSTH_shuffle: False
   spatial: False
-  shuffle: False
   population: False
   coherence: False
   manifold_states: False
