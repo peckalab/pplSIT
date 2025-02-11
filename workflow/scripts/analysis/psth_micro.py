@@ -46,6 +46,8 @@ idxs_run_ev = np.where(speed_ev > speed_max)[0]
 idxs_bgr_ev = np.where(sound_events[:, 1] == 1)[0]
 idxs_sil_ev = np.where(sound_events[:, 1] == 0)[0]
 idxs_tgt_ev = np.where(sound_events[:, 1] == 2)[0]
+idxs_di1_ev = np.where(sound_events[:, 1] == 3)[0]
+idxs_di2_ev = np.where(sound_events[:, 1] == 4)[0]  # for the moment limit to 2 distractors
 
 stim_comb_idxs = [
     [idxs_bgr_ev, idxs_tgt_ev],  # standard BGR / TGT
@@ -68,7 +70,7 @@ color_combs = [
     ['navy', 'tab:blue'],
 ]
 
-# bar plot figures
+# TGT, BGR, SIL bar plot figures
 for fig_id, stim_comb in enumerate(stim_comb_idxs):
     #idx_ev_1 = stim_comb[0]
     #idx_ev_2 = stim_comb[1]
@@ -100,3 +102,57 @@ for fig_id, stim_comb in enumerate(stim_comb_idxs):
             
     fig.tight_layout()
     fig.savefig(snakemake.output[fig_id])
+
+
+# distractor figures
+if len(idxs_di1_ev) < 5 or len(idxs_di2_ev) < 5:
+    # not enough samples, write empty file
+    f_name = os.path.join(os.path.dirname(snakemake.output[0]), 'psth_distractors.pdf')
+    fig = plt.figure(figsize=(4, 4))
+    fig.savefig(f_name)
+
+else:
+    label_combs = [
+        ['TGT', 'Dis1'],
+        ['TGT', 'Dis2'],
+        ['Dis1', 'Dis2']
+    ]
+
+    color_combs = [
+        ['tab:orange', 'navy'],
+        ['tab:orange', 'green'],
+        ['navy', 'green'],
+    ]
+
+    # saving in batches of 150 otherwise image is too large
+    batch_size = 100
+    batch_count = int(np.ceil(len(units_to_plot)/batch_size))
+
+    for k in range(batch_count):
+        units_selected = units_to_plot[k*batch_size:(k+1)*batch_size]
+
+        rows = len(units_selected)
+        cols = 3
+        fig = plt.figure(figsize=(4*cols, 4*rows))
+
+        for i, unit_name in enumerate(units_selected):
+            for j, (idxs_ev_1, idxs_ev_2) in enumerate([(idxs_tgt_ev, idxs_di1_ev), (idxs_tgt_ev, idxs_di2_ev), (idxs_di1_ev, idxs_di2_ev)]):
+
+                bins, psth1 = get_spike_counts(spike_times[unit_name], sound_events[idxs_ev_1][:, 0], hw=hw, bin_count=bc)
+                bins, psth2 = get_spike_counts(spike_times[unit_name], sound_events[idxs_ev_2][:, 0], hw=hw, bin_count=bc)
+                
+                ax = fig.add_subplot(rows, cols, 3*i + j + 1)
+                ax.hist(bins[:-1], bins=bins, weights=psth1, edgecolor='black', color=color_combs[j][0], alpha=0.7, label=label_combs[j][0])
+                ax.hist(bins[:-1], bins=bins, weights=psth2, edgecolor='black', color=color_combs[j][1], alpha=0.7, label=label_combs[j][1])
+                ax.axvline(0, color='black', ls='--')
+                ax.axvspan(0, bgr_dur, alpha=0.3, color='gray')
+                ax.axvspan(0 - hw, 0 - hw + bgr_dur, alpha=0.3, color='gray')
+                ax.set_title(unit_name, fontsize=14)
+                ax.legend(loc='lower right', prop={'size': 10})
+                ax.set_xlim(-hw, hw)
+                if i % 3 == 0:
+                    ax.set_ylabel("Firing Rate, Hz", fontsize=14)
+                
+        f_name = os.path.join(os.path.dirname(snakemake.output[0]), 'psth_distractors_%s.pdf' % str(k+1))
+        fig.tight_layout()
+        fig.savefig(f_name)

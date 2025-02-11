@@ -9,6 +9,7 @@ rule psth_micro:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_sil_bar.pdf'),
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_tgt_sta_bar.pdf'),
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_sta_run_bar.pdf')
+        #os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_distractors.pdf')
     script:
         "../../scripts/analysis/psth_micro.py"
 
