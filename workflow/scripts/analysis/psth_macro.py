@@ -12,6 +12,7 @@ sys.path.append(parent_dir)
 
 from utils.psth import get_spike_counts
 from utils.neurosuite import get_unit_names_sorted
+from utils.events import get_sound_event_periods
 
 
 with h5py.File(snakemake.input[0], 'r') as f:
@@ -41,6 +42,15 @@ macro_times = [
     [ tl[trials[:, 0].astype(np.int32)][:, 0] ],  # trial onset
 ]
 
+# distractors
+dis1_pers = np.array(get_sound_event_periods(sound_events, 3))
+dis2_pers = np.array(get_sound_event_periods(sound_events, 4))
+
+if len(dis1_pers) > 0 and len(dis2_pers) > 0:
+    macro_times.append([dis1_pers[:, 0], dis2_pers[:, 0]])  # distractor onset
+else:
+    macro_times.append([[], []])  # no distractors
+
 # add noise offsets (silence without reward)
 noise_offset_idxs = []
 for i in range(len(tl)):
@@ -52,16 +62,20 @@ for i in range(len(tl)):
 #     noise_offset_times = tl[np.array(noise_offset_idxs)][:, 0]
 #     macro_times.append([ noise_offset_times ])  # noise offset
 
-hw_bc = [[7, 51], [7, 51], [6, 49], [12, 49]]
-spans = [(0, tgt_dur), (-tgt_dur, 0), (0, hw_bc[2][0]), (-10, 0)]
-colors = [('green', 'black'), ('green', 'black'), ('tab:blue',), ('gray',)]
-alphas = [(0.8, 0.5), (0.8, 0.5), (0.9,), (0.8,)]
-labels = [('success', 'miss'), ('success', 'miss'), ('bgr',), ('noise',)]
-titles = ['Target onset', 'Target offset', 'Trial onset', 'Noise offset']
+hw_bc = [[7, 57], [7, 57], [7, 57], [5, 41], [12, 49]]
+spans = [(0, tgt_dur), (-tgt_dur, 0), (0, hw_bc[2][0]), (0, 0.25), (-10, 0)]
+colors = [('green', 'black'), ('green', 'black'), ('tab:blue',), ('navy', 'green'), ('gray',)]
+alphas = [(0.8, 0.5), (0.8, 0.5), (0.9,), (0.5, 0.8), (0.8,)]
+labels = [('success', 'miss'), ('success', 'miss'), ('bgr',), ('dis1', 'dis2'), ('noise',)]
+titles = ['Target onset', 'Target offset', 'Trial onset', 'Distractor onset', 'Noise offset']
 
 for j, times in enumerate(macro_times):
     rows = int(np.ceil(len(unit_names)/3))
     fig = plt.figure(figsize=(15, rows*4))
+
+    if len(times[0]) == 0:
+        fig.savefig(dst_files[j])  # empty figure
+        continue
 
     for i, unit_name in enumerate(unit_names):
         ax = fig.add_subplot(rows, 3, i+1)

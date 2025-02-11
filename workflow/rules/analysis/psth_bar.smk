@@ -20,7 +20,8 @@ rule psth_macro:
     output:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_tgt_onset.pdf'),
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_tgt_offset.pdf'),
-        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_trial_onset.pdf')
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_trial_onset.pdf'),
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_distractors_onset.pdf')
         #os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_noise_offset.pdf')
     script:
         "../../scripts/analysis/psth_macro.py"

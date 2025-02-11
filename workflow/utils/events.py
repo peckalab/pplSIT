@@ -22,12 +22,32 @@ def get_event_periods(tl, event_type):
 def get_sound_event_periods(sound_events, event_type):
     t_periods = []
     curr_period = []
+    if sound_events[0][1] == event_type:  # event starts with the first pulse
+        curr_period.append(sound_events[0][0])
     for i in range(len(sound_events) - 1):  # always starts with BGR, so ignore first pulse
         if sound_events[i-1][1] != event_type and sound_events[i][1] == event_type:  # start of the period
             curr_period.append(sound_events[i][0])
         if sound_events[i+1][1] != event_type and sound_events[i][1] == event_type:  # end of the period
             # !!! time of the FIRST PULSE AFTER period end
             curr_period.append(sound_events[i+1][0])
+
+            t_periods.append(curr_period)
+            curr_period = []
+    return t_periods
+
+
+def get_sound_event_period_idxs(sound_events, event_type):
+    # TODO: make DRY, union with the function above
+    t_periods = []
+    curr_period = []
+    if sound_events[0][1] == event_type:  # event starts with the first pulse
+        curr_period.append(0)
+    for i in range(len(sound_events) - 1):  # always starts with BGR, so ignore first pulse
+        if sound_events[i-1][1] != event_type and sound_events[i][1] == event_type:  # start of the period
+            curr_period.append(i)
+        if sound_events[i+1][1] != event_type and sound_events[i][1] == event_type:  # end of the period
+            # !!! time of the FIRST PULSE AFTER period end
+            curr_period.append(i+1)
 
             t_periods.append(curr_period)
             curr_period = []
