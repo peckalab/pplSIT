@@ -81,7 +81,10 @@ target_names_dict = {
         'analysis/psth_trial_onset.pdf',
         #'analysis/psth_noise_offset.pdf',
         'analysis/psth_bgr_tgt_bar.pdf',
-        'analysis/psth_bgr_sil_bar.pdf'
+        'analysis/psth_bgr_sil_bar.pdf',
+        'analysis/psth_bgr_sil_bar.pdf',
+        #'analysis/psth_bgr_sta_AL_PH.pdf',
+        #'analysis/psth_bgr_sta_AL_tgt.pdf'
     ],
     'PSTH_bootstrap': [
         'analysis/psth_micro.h5',

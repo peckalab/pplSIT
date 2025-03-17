@@ -25,3 +25,15 @@ rule psth_macro:
         #os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_noise_offset.pdf')
     script:
         "../../scripts/analysis/psth_macro.py"
+
+rule psth_micro_state:
+    input:
+        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5'),
+        ensembles=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'ensembles.h5')
+    output:
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_sta_AL_PH.pdf'),
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_sta_AL_tgt.pdf'),
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_tgt_AL_PH.pdf'),
+    script:
+        "../../scripts/analysis/psth_micro_state.py"

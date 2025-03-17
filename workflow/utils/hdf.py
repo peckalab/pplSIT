@@ -30,6 +30,7 @@ class H5NAMES:
     o_COM =       {'name': 'occupancy_center_of_mass', 'dims': ['epochs: original, conflict, control and all', 'rho, phi in polar coords.']}
     best_m_rot  = {'name': 'best_match_rotation', 'dims': ['match between: A-B, B-C, A-C', 'correlation profile']}
     anat_pos    = {'name': 'anatomical_position', 'dims': ['XY']}
+    kilosort    = {'name': 'kilosort_info', 'dims': ['Amplitude, ContamPct, amp, channel, depth, FR, label']}
 
 
 def create_dataset(h5name, where, descriptor, dataset):

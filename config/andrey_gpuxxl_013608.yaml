@@ -15,13 +15,13 @@ blocks:  # blocks of pipeline to run
   Audio: False       # process audio data
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
-  kilosort: False  # sorting with kilosort
+  kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
   PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
-  spatial: True
+  spatial: False
   population: False
   coherence: False
   manifold_states: False
@@ -29,7 +29,7 @@ blocks:  # blocks of pipeline to run
   video: False
 
 session_IDs:  
-  - "013608_ppcSIT_2025-01-06_13-20-52"
+  # - "013608_ppcSIT_2025-01-06_13-20-52"
   # - "013608_ppcSIT_2025-01-07_08-47-27"
   # - "013608_ppcSIT_2025-01-07_15-38-23"
   # - "013608_ppcSIT_2025-01-09_09-09-55"
@@ -45,7 +45,14 @@ session_IDs:
   # - "013608_ppcSIT_2025-01-23_08-46-51"
   # - "013608_ppcSIT_2025-01-24_08-19-45"
   # - "013608_ppcSIT_2025-01-27_09-00-20"
-  - "013608_ppcSIT_2025-01-29_12-34-08"
+  # - "013608_ppcSIT_2025-01-29_12-34-08"
+  # - "013608_ppcSIT_2025-02-18_14-15-52"
+  # - "013608_ppcSIT_2025-02-19_13-50-59"
+  # - "013608_ppcSIT_2025-02-27_08-56-52"
+  - "013608_ppcSIT_2025-02-28_16-23-29"
+  - "013608_ppcSIT_2025-03-03_08-55-30"
+  - "013608_ppcSIT_2025-03-04_09-17-16"
+  - "013608_ppcSIT_2025-03-05_10-33-41"
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -76,9 +83,10 @@ units:
   source: 'kilosort'
 
 # deep lab cut config files
-dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
-dlc_shuffle: 3
-dlc_trainingsetindex: 0
+#dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
+dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT_newSetup-Miguel-2025-01-24/config.yaml"
+dlc_shuffle: 1
+dlc_trainingsetindex: 1
 
 # moseq config files
 moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'

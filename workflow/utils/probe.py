@@ -23,12 +23,28 @@ def oe2kilosort(oe_xml_path):
     x_pos = probe.findall('ELECTRODE_XPOS')[0]
     y_pos = probe.findall('ELECTRODE_YPOS')[0]
 
+    xc = [float(x) for x in x_pos.attrib.values()]
+    yc = [float(y) for y in y_pos.attrib.values()]
+    kcoords = [int(desc.split(':')[1]) for ch, desc in channels.attrib.items()]
+    ch_count = len(channels.attrib)
+
+    # get channel map
+    ch_map = [x for x in root.findall('SIGNALCHAIN')[0].findall('PROCESSOR') if dict(x.items())['name'] == 'Channel Map'][0]
+    channels_xml = list(list(ch_map.findall('CUSTOM_PARAMETERS')[0])[0])  # taking the first "stream"
+
+    # compute mapping indices
+    channel_map_list = [int(ch.attrib['index']) for ch in channels_xml]
+    if 384 in channel_map_list: channel_map_list.remove(384)
+
+    channels_probe = [int(ch[2:]) for ch in channels.attrib.keys()]
+    idxs_channels = [channels_probe.index(ch) for ch in channel_map_list]
+
     return {
-        'chanMap': [int(ch[2:]) for ch in channels.attrib.keys()],
-        'xc': [float(x) for x in x_pos.attrib.values()],
-        'yc': [float(y) for y in y_pos.attrib.values()],
-        'kcoords': [int(desc.split(':')[1]) for ch, desc in channels.attrib.items()],
-        'n_chan': len(channels.attrib)
+        'chanMap': [x for x in range(ch_count)],
+        'xc': [xc[i] for i in idxs_channels],
+        'yc': [yc[i] for i in idxs_channels],
+        'kcoords': [kcoords[i] for i in idxs_channels],
+        'n_chan': ch_count
     }
 
 

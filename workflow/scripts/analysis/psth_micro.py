@@ -54,13 +54,15 @@ stim_comb_idxs = [
     [idxs_sil_ev, idxs_bgr_ev],  # standard SIL / BGR
     [np.intersect1d(idxs_bgr_ev, idxs_sta_ev), np.intersect1d(idxs_tgt_ev, idxs_sta_ev)],  # BGR stationary / TGT stationary
     [np.intersect1d(idxs_bgr_ev, idxs_sta_ev), np.intersect1d(idxs_bgr_ev, idxs_run_ev)],  # BGR stationary / BGR run
+    [np.intersect1d(idxs_sil_ev, idxs_sta_ev), np.intersect1d(idxs_sil_ev, idxs_run_ev)],  # SIL stationary / SIL run
 ]
 
 label_combs = [
     ['BGR', 'TGT'],
     ['SIL', 'BGR'],
     ['BGR sta', 'TGT sta'],
-    ['BGR sta', 'BGR run']
+    ['BGR sta', 'BGR run'],
+    ['SIL sta', 'SIL run'],
 ]
 
 color_combs = [
@@ -68,6 +70,7 @@ color_combs = [
     ['grey', 'tab:blue'],
     ['tab:blue', 'tab:orange'],
     ['navy', 'tab:blue'],
+    ['grey', 'tab:red'],
 ]
 
 # TGT, BGR, SIL bar plot figures

@@ -18,8 +18,11 @@ video_path = [snakemake.input.video_path]
 session = snakemake.params.session
 animal = snakemake.params.animal
 
-DLCScorer = deeplabcut.analyze_videos(dlc_config_path,video_path,shuffle=3, videotype='avi',save_as_csv=True,trainingsetindex=0,allow_growth=True, \
-                                      destfolder=join(snakemake.config["dst_path"],animal,session,'dlc'))
+DLCScorer = deeplabcut.analyze_videos(
+    dlc_config_path,video_path,shuffle=dlc_shuffle, videotype='avi',\
+    save_as_csv=True,trainingsetindex=dlc_trainingsetindex,allow_growth=True, \
+    destfolder=join(snakemake.config["dst_path"],animal,session,'dlc')
+)
 
 
 

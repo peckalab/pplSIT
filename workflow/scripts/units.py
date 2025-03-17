@@ -10,7 +10,7 @@ sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
 from utils.neurosuite import load_clu_res, XMLHero
-from utils.kilosort import load_ks_units
+from utils.kilosort import load_ks_units_before, load_ks_units_after
 from utils.spiketrain import instantaneous_rate, spike_idxs
 from utils.hdf import create_dataset, H5NAMES
 from utils.spatial import place_field_2D, map_stats, get_field_patches
@@ -25,6 +25,7 @@ metric_names = (H5NAMES.o_maps, H5NAMES.f_maps, H5NAMES.sparsity, H5NAMES.select
 
 # loading spike data
 sorted_data_path = os.path.dirname(snakemake.input[1])
+
 
 if snakemake.config['units']['source'] == 'neurosuite':
     # neurosuite: read from XML
@@ -43,13 +44,18 @@ else:
     # kilosort: read from settings.json
     kilosort_settings_file = os.path.join(sorted_data_path, 'settings.json')
     probe_file = os.path.join(sorted_data_path, 'probe.json')
+    clu_info_file = os.path.join(sorted_data_path, 'cluster_info.tsv')
     with open(kilosort_settings_file, 'r') as json_file:
         sampling_rate = json.load(json_file)['fs']
     with open(probe_file, 'r') as json_file:
         probe = json.load(json_file)
 
     # loading unit data from kilosort
-    units, positions = load_ks_units(sorted_data_path)
+    positions, unit_info = None, None
+    if os.path.exists(clu_info_file):
+        units, unit_info = load_ks_units_after(sorted_data_path)
+    else:
+        units, positions = load_ks_units_before(sorted_data_path)
 
 
 # loading timeline
@@ -76,6 +82,8 @@ for electrode_idx in units.keys():
 
         if positions is not None:
             create_dataset(snakemake.output[0], unit_name, H5NAMES.anat_pos, positions[electrode_idx][unit_idx])
+        if unit_info is not None:
+            create_dataset(snakemake.output[0], unit_name, H5NAMES.kilosort, unit_info[electrode_idx][unit_idx])
 
         # spatial metrics
         xy_range = [-0.5, 0.5, -0.5, 0.5]  # make fixed for cross-comparisons
