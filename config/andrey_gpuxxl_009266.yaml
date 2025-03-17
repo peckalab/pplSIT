@@ -1,11 +1,11 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl_013829.yaml --use-conda --cores=20
+# snakemake -n --configfile=../config/andrey_gpuxxl_009266.yaml --use-conda --cores=20
 
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
-  descendants: True   # speed, HD etc. from MoSeq and others
+  descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
@@ -17,37 +17,32 @@ blocks:  # blocks of pipeline to run
   PSTH_shuffle: False
   PSTH_bnMAPs: True
   spatial: False
-  population: True
+  population: False
   coherence: False
-  manifold_states: True
+  manifold_states: False
   metronome: False
   video: False
 
 
 session_IDs:  
-  # - "013829_ppcSIT_2024-11-06_20-06-31"
-  # - "013829_ppcSIT_2024-11-07_08-38-36"
-  # - "013829_ppcSIT_2024-11-08_08-38-51"
-  # - "013829_ppcSIT_2024-11-10_15-19-36"
-  # - "013829_ppcSIT_2024-11-11_09-10-59"
-  # - "013829_ppcSIT_2024-11-11_16-35-07"
-  # - "013829_ppcSIT_2024-11-12_10-07-58"
-  # - "013829_ppcSIT_2024-11-13_13-13-13"
-  # - "013829_ppcSIT_2024-11-14_11-07-32"
-  # - "013829_ppcSIT_2024-11-15_15-48-45"
-  # - "013829_ppcSIT_2024-11-16_11-17-54"
-  # - "013829_ppcSIT_2024-11-16_19-31-26"
-  # - "013829_ppcSIT_2024-11-17_15-26-16"
-  # - "013829_ppcSIT_2024-11-18_08-49-06"
-  # - "013829_ppcSIT_2024-11-18_19-59-51"
-  # - "013829_ppcSIT_2024-11-19_09-00-18"
-  - "013829_ppcSIT_2024-11-19_21-18-43"
-  # - "013829_ppcSIT_2024-11-20_09-26-11"
-  # - "013829_ppcSIT_2024-11-20_16-59-28"
-  # - "013829_ppcSIT_2024-11-21_09-27-32"
-  # - "013829_ppcSIT_2024-11-22_09-17-13"
-  # - "013829_ppcSIT_2024-11-24_16-59-20"
-  # - "013829_ppcSIT_2024-11-25_10-04-29"
+# 009266
+  - "009266_hippoSIT_2023-04-17_17-04-17"
+  - "009266_hippoSIT_2023-04-18_10-10-37"
+  - "009266_hippoSIT_2023-04-18_17-03-10"
+  - "009266_hippoSIT_2023-04-19_10-33-51"
+  - "009266_hippoSIT_2023-04-20_08-57-39"
+  - "009266_hippoSIT_2023-04-21_08-43-00"
+  - "009266_hippoSIT_2023-04-21_13-12-31"
+  - "009266_hippoSIT_2023-04-24_10-08-11"
+  - "009266_hippoSIT_2023-04-24_16-56-55"
+  - "009266_hippoSIT_2023-04-26_08-20-17"
+  - "009266_hippoSIT_2023-05-02_12-22-14"
+  - "009266_hippoSIT_2023-05-04_19-47-15"
+  - "009266_hippoSIT_2023-05-22_09-27-22"
+  - "009266_hippoSIT_2023-05-23_09-18-05"
+  - "009266_hippoSIT_2023-05-25_15-55-57"
+  - "009266_hippoSIT_2023-06-14_08-21-23"
+  - "009266_hippoSIT_2023-06-19_08-58-35"
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"

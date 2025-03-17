@@ -86,6 +86,12 @@ target_names_dict = {
         #'analysis/psth_bgr_sta_AL_PH.pdf',
         #'analysis/psth_bgr_sta_AL_tgt.pdf'
     ],
+    'PSTH_bnMAPs': [
+        'analysis/psth_bnMAPs_sil_sta_bU_sta_bE.pdf',
+        'analysis/psth_bnMAPs_sil_sta_bU_run_bU.pdf',
+        'analysis/psth_bnMAPs_bgr_sta_bU_sta_bE.pdf',
+        'analysis/psth_bnMAPs_bgr_sta_bU_run_bU.pdf',
+    ],
     'PSTH_bootstrap': [
         'analysis/psth_micro.h5',
         'analysis/psth_bgr_tgt_line.pdf',

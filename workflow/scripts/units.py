@@ -26,7 +26,7 @@ metric_names = (H5NAMES.o_maps, H5NAMES.f_maps, H5NAMES.sparsity, H5NAMES.select
 # loading spike data
 sorted_data_path = os.path.dirname(snakemake.input[1])
 
-
+positions, unit_info = None, None
 if snakemake.config['units']['source'] == 'neurosuite':
     # neurosuite: read from XML
     xml_files = [f for f in os.listdir(sorted_data_path) if f.find('.xml') > 0]
@@ -38,7 +38,6 @@ if snakemake.config['units']['source'] == 'neurosuite':
 
     # loading unit data from .clu / .res
     units = load_clu_res(sorted_data_path)  # spikes are in samples, not seconds
-    positions = None
 
 else:
     # kilosort: read from settings.json
@@ -51,7 +50,6 @@ else:
         probe = json.load(json_file)
 
     # loading unit data from kilosort
-    positions, unit_info = None, None
     if os.path.exists(clu_info_file):
         units, unit_info = load_ks_units_after(sorted_data_path)
     else:
