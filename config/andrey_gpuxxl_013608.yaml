@@ -21,6 +21,7 @@ blocks:  # blocks of pipeline to run
   PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
+  PSTH_bnMAPs: False
   spatial: False
   population: False
   coherence: False
@@ -103,6 +104,7 @@ psth:
     latency: 0.25
     bin_count: 51
     shuf_iter_count: 100
+    figsize: 4
   macro:
     latency: 7.25
     bin_count: 31
@@ -164,3 +166,6 @@ coherence:
   bin_size: 0.01
   win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
   sustained_start: 0.12
+
+PSTH_micro_bnMAPs:
+  units: []  # leave empty for all units

@@ -5,7 +5,7 @@ blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
-  descendants: True   # speed, HD etc. from MoSeq and others
+  descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
@@ -25,6 +25,7 @@ blocks:  # blocks of pipeline to run
 
 
 session_IDs:  
+  # these are more A1
   # - "013829_ppcSIT_2024-11-06_20-06-31"
   # - "013829_ppcSIT_2024-11-07_08-38-36"
   # - "013829_ppcSIT_2024-11-08_08-38-51"
@@ -35,19 +36,21 @@ session_IDs:
   # - "013829_ppcSIT_2024-11-13_13-13-13"
   # - "013829_ppcSIT_2024-11-14_11-07-32"
   # - "013829_ppcSIT_2024-11-15_15-48-45"
-  # - "013829_ppcSIT_2024-11-16_11-17-54"
-  # - "013829_ppcSIT_2024-11-16_19-31-26"
-  # - "013829_ppcSIT_2024-11-17_15-26-16"
-  # - "013829_ppcSIT_2024-11-18_08-49-06"
-  # - "013829_ppcSIT_2024-11-18_19-59-51"
-  # - "013829_ppcSIT_2024-11-19_09-00-18"
+
+  # these are both A1 / PPC (HPC)
+  - "013829_ppcSIT_2024-11-16_11-17-54"
+  - "013829_ppcSIT_2024-11-16_19-31-26"
+  - "013829_ppcSIT_2024-11-17_15-26-16"
+  - "013829_ppcSIT_2024-11-18_08-49-06"
+  - "013829_ppcSIT_2024-11-18_19-59-51"
+  - "013829_ppcSIT_2024-11-19_09-00-18"
   - "013829_ppcSIT_2024-11-19_21-18-43"
-  # - "013829_ppcSIT_2024-11-20_09-26-11"
-  # - "013829_ppcSIT_2024-11-20_16-59-28"
-  # - "013829_ppcSIT_2024-11-21_09-27-32"
-  # - "013829_ppcSIT_2024-11-22_09-17-13"
-  # - "013829_ppcSIT_2024-11-24_16-59-20"
-  # - "013829_ppcSIT_2024-11-25_10-04-29"
+  - "013829_ppcSIT_2024-11-20_09-26-11"
+  - "013829_ppcSIT_2024-11-20_16-59-28"
+  - "013829_ppcSIT_2024-11-21_09-27-32"
+  - "013829_ppcSIT_2024-11-22_09-17-13"
+  - "013829_ppcSIT_2024-11-24_16-59-20"
+  - "013829_ppcSIT_2024-11-25_10-04-29"
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -92,6 +95,7 @@ psth:
   micro:
     latency: 0.25
     bin_count: 51
+    figsize: 4
   macro:
     latency: 7.25
     bin_count: 31
@@ -103,7 +107,7 @@ psth:
 
 # neural manifolds
 nMAP_electrodes:
-    '013829': [1, 2]
+    '013829': [1]
     '009265': [1, 2]
     '009266': [1, 2]
     '57': [1]
@@ -155,3 +159,6 @@ coherence:
   bin_size: 0.01
   win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
   sustained_start: 0.12
+
+PSTH_micro_bnMAPs:
+  units: []  # leave empty for all units

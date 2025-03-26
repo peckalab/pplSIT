@@ -1,5 +1,5 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl.yaml --use-conda --cores=10
+# snakemake -n --configfile=../config/andrey_gpuxxl_57.yaml --use-conda --cores=20
 #
 # list code changes
 # snakemake -n --configfile=../config/andrey_gpuxxl.yaml -R $(snakemake -n --configfile=../config/andrey_gpuxxl.yaml --cores=20 --list-code-changes | grep dlc)  --touch
@@ -16,13 +16,14 @@ blocks:  # blocks of pipeline to run
   kilosort: False  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: False
+  PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
+  PSTH_bnMAPs: True
   spatial: False
-  population: True
+  population: False
   coherence: False
-  manifold_states: True
+  manifold_states: False
   metronome: False
   video: False
 
@@ -34,7 +35,7 @@ session_IDs:
   - "57_SIT_2023-12-28_16-43-28"
   - "57_SIT_2023-12-29_11-06-26"
   - "57_SIT_2023-12-29_11-40-14"
-  - "57_SIT_2023-12-29_12-11-46"
+  # - "57_SIT_2023-12-29_12-11-46"  # exclude from pop analysis
   - "57_SIT_2024-01-02_14-43-18"
   - "57_SIT_2024-01-02_16-38-05"
   - "57_SIT_2024-01-02_17-10-09"
@@ -43,7 +44,7 @@ session_IDs:
   - "57_SIT_2024-01-04_14-16-22"
   - "57_SIT_2024-01-04_14-52-59"
   - "57_SIT_2024-01-05_14-35-49"
-  - "57_SIT_2024-01-05_15-08-34"
+  # - "57_SIT_2024-01-05_15-08-34"  # exclude from pop analysis
   - "57_SIT_2024-01-06_16-52-40"
   - "57_SIT_2024-01-06_17-25-35"
   - "57_SIT_2024-01-07_19-23-28"
@@ -97,6 +98,7 @@ psth:
   micro:
     latency: 0.25
     bin_count: 51
+    figsize: 4
   macro:
     latency: 7.25
     bin_count: 31
@@ -160,3 +162,6 @@ coherence:
   win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
   sustained_start: 0.12
 
+
+PSTH_micro_bnMAPs:
+  units: []  # leave empty for all units

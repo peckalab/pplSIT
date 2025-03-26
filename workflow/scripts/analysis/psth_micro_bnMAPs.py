@@ -23,6 +23,11 @@ with h5py.File(snakemake.input[1], 'r') as f:
     units_to_plot = get_unit_names_sorted([name for name in f])
     for unit_name in units_to_plot:
         spike_times[unit_name] = np.array(f[unit_name]['spike_times'])
+# filter units for publications, if needed
+special_units = snakemake.config['PSTH_micro_bnMAPs']['units']
+if len(special_units) > 0:
+    units_to_plot = [unit for unit in units_to_plot if unit in special_units]
+
 
 with h5py.File(snakemake.input[2], 'r') as f:
     speed = np.array(f['speed'])
@@ -51,6 +56,7 @@ ev_names = {0: 'SIL', 1: 'BGR', 2: 'TGT', -1: 'NOI'}
 
 hw = snakemake.config['psth']['micro']['latency']
 bc = snakemake.config['psth']['micro']['bin_count']
+figsize = snakemake.config['psth']['micro']['figsize']
 
 speed_max = 0.04
 #speed_ev = tl[sound_events[:, 2].astype(np.int32)][:, 3]  # speed taken from timeline
@@ -149,7 +155,7 @@ for fig_id, stim_comb in enumerate(stim_comb_idxs):
     idxs_ev_2 = stim_comb[1]
 
     # figure / file for each stimulus combination
-    fig = plt.figure(figsize=(4*cols, 4*rows))
+    fig = plt.figure(figsize=(figsize*cols, figsize*rows))
 
     for i, unit_name in enumerate(units_to_plot):
         bins, psth1 = get_spike_counts(spike_times[unit_name], sound_events[idxs_ev_1][:, 0], hw=hw, bin_count=bc)
