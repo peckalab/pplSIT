@@ -35,6 +35,7 @@ k_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal,
 # include rules here
 include: "rules/copy.smk"
 include: "rules/pack.smk"
+include: "rules/performance.smk"
 include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
 include: "rules/kilosort.smk"
@@ -57,6 +58,7 @@ include: "rules/analysis/video.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
+    'performance':    ['performance.h5'],
     'DLC':     ['DLC_100Hz.h5', 'video_labeled.mp4'],
     'MoSeq':   [
         'MoSeq.h5', 

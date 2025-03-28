@@ -7,6 +7,7 @@
 
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
+  performance: True   # performance metrics
   DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
@@ -14,12 +15,12 @@ blocks:  # blocks of pipeline to run
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: False  # sorting with kilosort
-  units: True      # extract spike trains from sorted data
+  units: False      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: True
+  PSTH_bar: False
   PSTH_bootstrap: False
   PSTH_shuffle: False
-  PSTH_bnMAPs: True
+  PSTH_bnMAPs: False
   spatial: False
   population: False
   coherence: False
