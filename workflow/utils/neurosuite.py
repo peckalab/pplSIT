@@ -141,6 +141,16 @@ def unit_id_to_number(unit_id):
     return int(elec_num + unit_num)
 
 
-def get_unit_names_sorted(unit_names):
+def zz_get_unit_names_sorted(unit_names):
     unit_sort_idxs = np.argsort(np.array([unit_id_to_number(u) for u in unit_names]))
     return [unit_names[i] for i in unit_sort_idxs]
+
+
+def get_unit_names_sorted(unit_names):
+    unit_ids = np.zeros([len(unit_names), 2])
+    unit_ids[:, 0] = np.array([x.split('-')[0] for x in unit_names])
+    unit_ids[:, 1] = np.array([x.split('-')[1] for x in unit_names])
+
+    unit_ids[np.lexsort((unit_ids[:, 1], unit_ids[:, 0]))]
+    
+    return ['-'.join([str(int(x[0])), str(int(x[1]))]) for x in unit_ids]
