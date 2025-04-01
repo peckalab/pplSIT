@@ -10,7 +10,12 @@ sys.path.append(parent_dir)
 
 from utils.neurosuite import get_unit_names_sorted
 from utils.psth import get_spike_counts
+from utils.maths import pval2text
 
+
+s_path  = os.path.dirname(snakemake.input[0])
+session = os.path.basename(s_path)
+sound_phase_lock_file = os.path.join(s_path, 'analysis', 'sound_phase_lock.h5')
 
 # reading some configs
 with h5py.File(snakemake.input[0], 'r') as f:
@@ -58,11 +63,11 @@ stim_comb_idxs = [
 ]
 
 label_combs = [
-    ['BGR', 'TGT'],
-    ['SIL', 'BGR'],
-    ['BGR sta', 'TGT sta'],
-    ['BGR sta', 'BGR run'],
-    ['SIL sta', 'SIL run'],
+    ['bgr', 'tgt'],
+    ['sil', 'bgr'],
+    ['bgr_sta', 'tgt_sta'],
+    ['bgr_sta', 'bgr_run'],
+    ['sil_sta', 'sil_run'],
 ]
 
 color_combs = [
@@ -91,9 +96,23 @@ for fig_id, stim_comb in enumerate(stim_comb_idxs):
         bins, psth1 = get_spike_counts(spike_times[unit_name], sound_events[idxs_ev_1][:, 0], hw=hw, bin_count=bc)
         bins, psth2 = get_spike_counts(spike_times[unit_name], sound_events[idxs_ev_2][:, 0], hw=hw, bin_count=bc)
         
+        # if sound phase locking exists - plot with the label
+        label1 = label_combs[fig_id][0]
+        label2 = label_combs[fig_id][1]
+        if os.path.exists(sound_phase_lock_file):
+            with h5py.File(sound_phase_lock_file, 'r') as snd_f:
+                if label_combs[fig_id][0] in snd_f:
+                    MRL = np.array(snd_f[label_combs[fig_id][0]][unit_name]['MRL_real'])
+                    pv  = np.array(snd_f[label_combs[fig_id][0]][unit_name]['p_value'])
+                    label1 += f" ({MRL:.2f}; {pval2text(pv)})"
+                if label_combs[fig_id][1] in snd_f:
+                    MRL = np.array(snd_f[label_combs[fig_id][1]][unit_name]['MRL_real'])
+                    pv  = np.array(snd_f[label_combs[fig_id][1]][unit_name]['p_value'])
+                    label2 += f" ({MRL:.2f}; {pval2text(pv)})"
+
         ax = fig.add_subplot(rows, cols, i+1)
-        ax.hist(bins[:-1], bins=bins, weights=psth1, edgecolor='black', color=color_combs[fig_id][0], alpha=0.7, label=label_combs[fig_id][0])
-        ax.hist(bins[:-1], bins=bins, weights=psth2, edgecolor='black', color=color_combs[fig_id][1], alpha=0.7, label=label_combs[fig_id][1])
+        ax.hist(bins[:-1], bins=bins, weights=psth1, edgecolor='black', color=color_combs[fig_id][0], alpha=0.7, label=label1)
+        ax.hist(bins[:-1], bins=bins, weights=psth2, edgecolor='black', color=color_combs[fig_id][1], alpha=0.7, label=label2)
         ax.axvline(0, color='black', ls='--')
         ax.axvspan(0, bgr_dur, alpha=0.3, color='gray')
         ax.axvspan(0 - hw, 0 - hw + bgr_dur, alpha=0.3, color='gray')
