@@ -9,6 +9,7 @@ sys.path.append(parent_dir)
 
 from utils.neurosuite import get_unit_names_sorted
 from utils.psth import get_shuffled
+from utils.states import get_state_as_periods
 
 
 def get_phases(pulse_times, spk_times, offset=0.25):
@@ -55,18 +56,29 @@ idxs_di1_ev = np.where(sound_events[:, 1] == 3)[0]
 idxs_di2_ev = np.where(sound_events[:, 1] == 4)[0]
 
 
-unit_MRLs = {}
-conditions = ['bgr_sta', 'bgr_run', 'bgr', 'tgt']
-cond_idxs  = [
-    np.intersect1d(idxs_sta_ev, idxs_bgr_ev),
-    np.intersect1d(idxs_run_ev, idxs_bgr_ev),
-    idxs_bgr_ev,
-    idxs_tgt_ev
-]
+# build conditions
+bgr_sta_mx, idxs_bgr_sta_ev = get_state_as_periods(s_path, 'BGR', 'STA', None, 4)  # kind of correct way
+bgr_run_mx, idxs_bgr_run_ev = get_state_as_periods(s_path, 'BGR', 'RUN', None, 2, strip_l=1)  # kind of correct way
+cond_idxs  = {
+    'bgr': idxs_bgr_ev,
+    'tgt': idxs_tgt_ev,
+    'bgr_sta': idxs_bgr_sta_ev,
+    'bgr_run': idxs_bgr_run_ev
+}
 
+# if state ensembles exist, compute for them too
+ensembles_f = os.path.join(s_path, 'analysis', 'ensembles.h5')
+if os.path.exists(ensembles_f):
+    bgr_sta_al_mx, idxs_bgr_sta_al_ev = get_state_as_periods(s_path, 'BGR', 'STA', 'AL', 4)
+    bgr_sta_al_mx, idxs_bgr_sta_ph_ev = get_state_as_periods(s_path, 'BGR', 'STA', 'PH', 2, strip_l=1)
+
+    cond_idxs['bgr_sta_al'] = idxs_bgr_sta_al_ev
+    cond_idxs['bgr_sta_ph'] = idxs_bgr_sta_ph_ev
+
+unit_MRLs = {}
 
 # computing phases for diff conditions
-for k, idxs_to_phase in enumerate(cond_idxs):
+for k, (cond_name, idxs_to_phase) in enumerate(cond_idxs.items()):
     MRLs_by_event_type = {}
     for j, (unit_id, spk_times) in enumerate(spike_times.items()):
         
@@ -114,9 +126,9 @@ for k, idxs_to_phase in enumerate(cond_idxs):
             "MRLs_shuffled": MRLs_shuffled,
             "p_value": p_value
         }
-        print(f"{session}: unit {unit_id} phase lock done ({j} from {len(spike_times)}); ev type: {conditions[k]}")
+        print(f"{session}: unit {unit_id} phase lock done ({j} from {len(spike_times)}); ev type: {cond_name}")
         
-    unit_MRLs[conditions[k]] = dict(MRLs_by_event_type)
+    unit_MRLs[cond_name] = dict(MRLs_by_event_type)
 
 # dump to H5
 with h5py.File(snakemake.output[0], 'w') as f:

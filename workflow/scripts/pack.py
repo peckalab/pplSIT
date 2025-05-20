@@ -259,7 +259,7 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
         y_mf = median_filter(pos_at_freq[:, 2], size=200)
 
         # building timeline
-        width = 50  # 100 points ~= 1 sec with at 100Hz
+        width = 100  # 100 points ~= 1 sec with at 100Hz
         kernel = signal.gaussian(width, std=(width) / 7.2)
 
         x_smooth = np.convolve(x_mf, kernel, 'same') / kernel.sum()

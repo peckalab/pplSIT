@@ -91,3 +91,24 @@ def get_idxs_neuro_state(source, session, idxs_ev_sample, fit_type='tSNE', fit_p
     state_patches = get_field_patches(selected_map, 0.3)
 
     return get_idxs_in_patches(fit, state_patches, extent, bin_count=bin_count)
+
+
+def get_idxs_as_periods(idxs_events):
+    if len(idxs_events) == 0:
+        return np.array([])
+        
+    idxs_to_idxs = np.where(np.diff(idxs_events) > 1)[0]
+    if len(idxs_to_idxs) == 0:
+        return np.array([idxs_events[0], idxs_events[-1]])
+    
+    # periods - indices to TL where was silent
+    periods       = np.zeros([len(idxs_to_idxs) + 1, 2])
+    periods[0]    = np.array([0, idxs_to_idxs[0]])
+    periods[1:-1] = np.column_stack([idxs_to_idxs[:-1] + 1, idxs_to_idxs[1:]])
+    periods[-1]   = np.array([idxs_to_idxs[-1]+1, len(idxs_events) - 1])
+    periods       = periods.astype(np.int32)
+    
+    periods_ev = []
+    for per in periods:
+        periods_ev.append([idxs_events[per[0]], idxs_events[per[1]]])
+    return np.array(periods_ev, dtype=np.int32)

@@ -14,7 +14,7 @@ from utils.neurosuite import get_unit_names_sorted
 # some configs
 hw = snakemake.config['psth']['bootstrap']['latency']
 bc = snakemake.config['psth']['bootstrap']['bin_count']
-iter_count = snakemake.config['psth']['bootstrap']['shuf_iter_count']
+iter_count = snakemake.config['psth']['bootstrap']['boot_iter_count']
 event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters
 event_type_names = ['SIL', 'BGR', 'TGT', 'NOI']  # SIL, BGR, TGT, NOI - order matters
 
