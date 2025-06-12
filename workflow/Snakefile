@@ -55,7 +55,7 @@ include: "rules/analysis/manifold_states.smk"
 include: "rules/analysis/metronome.smk"
 include: "rules/analysis/video.smk"
 include: "rules/analysis/sound_phase_lock.smk"
-
+include: "rules/analysis/activity_matrices.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
@@ -128,7 +128,8 @@ target_names_dict = {
         'analysis/metronome/shuffle.h5'
     ],
     'video': ['video/videos.ready'],
-    'sound_phase_lock': ['analysis/sound_phase_lock.h5']
+    'sound_phase_lock': ['analysis/sound_phase_lock.h5'],
+    'activity_matrices': ['analysis/activity_matrices.h5']
 }
 
 def collect_target_names():
