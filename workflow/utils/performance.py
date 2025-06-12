@@ -79,6 +79,15 @@ def calculate_performance(tl, trial_idxs, cfg):
         X_target, Y_target = trial_idxs[i][2], trial_idxs[i][3]
         count = 0
 
+        d_target = np.hypot(X_target, Y_target)
+        R1 = arena_r - target_r
+        R2 = 2 * target_r
+        # if R2 is larger than R1 + d_target, the two discs don't overlap
+        if R2 > R1 + d_target:
+            # no valid fake islands exist; skip this trial
+            print(f"Skipping trial {i} due to no valid fake islands.")
+            continue
+
         while np.isnan(fake_island_centers_x[:, i]).any():
             angle = 2 * np.pi * np.random.rand()
             r = arena_r * np.sqrt(np.random.rand())
