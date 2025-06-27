@@ -1,6 +1,7 @@
 import h5py, os, sys, json
 import numpy as np
 import scipy.stats as scipystats
+from scipy import signal
 
 
 # import util functions from utils module
@@ -34,6 +35,15 @@ with h5py.File(snakemake.input[1], 'r') as f:
 # matrix is always [units x time]
 unit_mx_database = {}
 
+# smoothing kernels
+kernels = {
+    10: signal.windows.gaussian(10, std=(10) / 7.2),
+    20: signal.windows.gaussian(20, std=(20) / 7.2),
+    50: signal.windows.gaussian(50, std=(50) / 7.2),
+    100: signal.windows.gaussian(100, std=(100) / 7.2),
+    500: signal.windows.gaussian(500, std=(500) / 7.2),
+}
+
 # 10, 50, 250 ms binning
 for bin_size in [0.01, 0.05, 0.25]:
     t_bins = sound_events[:, 0]
@@ -50,11 +60,32 @@ for bin_size in [0.01, 0.05, 0.25]:
     for i, (unit_name, s_times) in enumerate(spike_times.items()):
         unit_mx[i], _ = np.histogram(s_times, bins=t_bins)
 
-    unit_mx_database[int(bin_size) * 100] = {
+    unit_mx_stats = {
         'mx': unit_mx.copy(),
         'mx_z': scipystats.zscore(unit_mx, axis=1),
         'bins': t_bins.copy(),
     }
+
+    for kernel_size, kernel in kernels.items():
+        unit_mx_sm   = unit_mx.copy()
+        unit_mx_sm_z = unit_mx.copy()
+        for i in range(len(unit_mx_sm)):
+            unit_mx_sm[i] = np.convolve(unit_mx_sm[i], kernel, 'same') / kernel.sum()
+        unit_mx_stats[f'mx_sm{kernel_size}'] = unit_mx_sm
+        unit_mx_stats[f'mx_sm{kernel_size}_z'] = scipystats.zscore(unit_mx_sm, axis=1)
+
+    unit_mx_database[int(bin_size * 1000)] = unit_mx_stats
+
+with h5py.File(snakemake.output[0], 'w') as f:
+    for key, mx_dict in unit_mx_database.items():
+        grp = f.create_group(f"mx_{key}ms")
+
+        for name, ds in mx_dict.items():
+            grp.create_dataset(name, data=ds)
+
+
+"""
+
 
 
 # next two are interpolated to sound event binnning
@@ -100,9 +131,4 @@ unit_mx_database[1000] = {
     'bins': t_bins.copy(),
 }
 
-with h5py.File(snakemake.output[0], 'w') as f:
-    for key, mx_dict in unit_mx_database.items():
-        grp = f.create_group(f"mx_{key}ms")
-
-        for name, ds in mx_dict.items():
-            grp.create_dataset(name, data=ds)
+"""

@@ -51,7 +51,7 @@ def get_speaker_positions(source, session):
     elif session_datetime < date2:
         ch_pos = channel_positions_2
     else:
-        print('TODO: update channel / speaker positions!')
+        #print('TODO: update channel / speaker positions!')
         ch_pos = channel_positions_3
         
     chs_tgt = cfg['sound']['sounds']['target']['channels']

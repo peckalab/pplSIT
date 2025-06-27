@@ -47,7 +47,7 @@ def get_state_as_periods(s_path, sound_state, loc_state, att_state, min_dur, spe
 
         # apply optional smoothing, aimed to increase periods a bit
         width = 40  # it's actually 10 seconds
-        kernel = signal.gaussian(width, std=(width) / 7.2)
+        kernel = signal.windows.gaussian(width, std=(width) / 7.2)
         ens_ev_smooth = np.convolve(ens_ev, kernel, 'same') / kernel.sum()
 
         idxs_dict['AL'] = np.where(ens_ev_smooth > 0)[0]

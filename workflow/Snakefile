@@ -56,6 +56,9 @@ include: "rules/analysis/metronome.smk"
 include: "rules/analysis/video.smk"
 include: "rules/analysis/sound_phase_lock.smk"
 include: "rules/analysis/activity_matrices.smk"
+include: "rules/analysis/covariance.smk"
+include: "rules/analysis/segments.smk"
+include: "rules/analysis/vectors.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
@@ -129,7 +132,16 @@ target_names_dict = {
     ],
     'video': ['video/videos.ready'],
     'sound_phase_lock': ['analysis/sound_phase_lock.h5'],
-    'activity_matrices': ['analysis/activity_matrices.h5']
+    'activity_matrices': ['analysis/activity_matrices.h5'],
+    'covariance': [
+        'analysis/covariance/covariance.h5',
+        'analysis/covariance/covariance.pdf'
+    ],
+    'segments': ['analysis/segments.h5'],
+    'vectors': [
+        'analysis/vectors/progression.h5',
+        'analysis/vectors/averages.h5'
+    ]
 }
 
 def collect_target_names():

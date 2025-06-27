@@ -14,12 +14,12 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
+  LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: True
+  PSTH_bar: False
   PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
@@ -31,6 +31,8 @@ blocks:  # blocks of pipeline to run
   video: False
   sound_phase_lock: False
   activity_matrices: True
+  covariance: False
+  vectors: True
 
 session_IDs:  
   # - "013608_ppcSIT_2025-01-06_13-20-52"
@@ -98,7 +100,10 @@ cuda_device_to_use: 3
 
 # LFP configuration
 lfp:
-  s_rate: 1000  # sampling rate in Hz
+  n_channels: 384
+  source_rate: 30000 # original LFP sampling rate in Hz
+  target_rate: 1000  # target LFP sampling rate in Hz
+  chunk_size_sec: 10  # chunk size for conversion in seconds
   aep_dur: 0.25  # Auditory evoked response duration in sec
 
 # analysis configurations
@@ -176,6 +181,30 @@ PSTH_micro_bnMAPs:
 sound_phase_lock:
   n_shuffles: 100
   ipi_for_shuffle: 0.25
+
+segments:
+  tgt_sta_min_pulses: 20
+  bgr_sta_min_pulses: 12
+  sil_sta_min_pulses: 12
+  bgr_run_min_pulses: 2
+  sil_run_min_pulses: 4
+  dis_sta_min_pulses: 4
+  visits:
+    min_pulses: 8
+    radius: 0.05
+
+
+vectors:
+  min_mfr: 0.5
+  unit_mx:
+    group: 'mx_50ms'
+    type: 'mx_sm20_z'
+    step: 5
+  units_to_exclude:
+    '013608_ppcSIT_2025-01-14_10-20-14': ['2-142', '2-234', '3-217', '4-198']
+    '013608_ppcSIT_2025-01-15_14-56-18': ['2-166', '2-288', '3-258', '4-231']
+    '013608_ppcSIT_2025-01-20_09-38-20': ['2-160', '2-241', '3-221', '4-201']
+    '013608_ppcSIT_2025-01-23_08-46-51': ['2-171', '2-279', '3-252', '4-234']
 
 # STAs anti-correlated (almost all IN with high firing)
 # 1-138, 1-147, 1-448 (IN, drops FR in TGT), 2-401 (same), 3-47, 4-334, 4-55
