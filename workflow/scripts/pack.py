@@ -182,7 +182,7 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
             pos_at_freq[i] = (t, positions[curr_idx][1], positions[curr_idx][2])
 
         # save trials
-        t_count = len(np.unique(events[events[:, -1] != 0][:, -2]))
+        t_count = len(np.unique(events[events[:, -1] > 0][:, -2])) # only positive states should be counted, because -1 is session timeout
         trials = np.zeros((t_count, 6))
         for i in range(t_count):
             t_start_idx = (np.abs(pos_at_freq[:, 0] - events[2*i][0])).argmin()
