@@ -78,6 +78,13 @@ for electrode_idx in units.keys():
         create_dataset(snakemake.output[0], unit_name, H5NAMES.inst_rate, i_rate)
         create_dataset(snakemake.output[0], unit_name, H5NAMES.spike_idxs, s_idxs)
 
+        # mean firing
+        mean_rate = len(spiketrain) / (tl[-1][0] - tl[0][0])  # mean firing rate - spike count / time
+        create_dataset(snakemake.output[0], unit_name, H5NAMES.mfr, mean_rate)
+
+        robust_rate = 1 / np.median(np.diff(spiketrain))  #  mean firing rate - 1 / median(ISI)
+        create_dataset(snakemake.output[0], unit_name, H5NAMES.mfr_robust, robust_rate)
+
         if positions is not None:
             create_dataset(snakemake.output[0], unit_name, H5NAMES.anat_pos, positions[electrode_idx][unit_idx])
         if unit_info is not None:

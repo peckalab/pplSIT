@@ -4,7 +4,8 @@ class H5NAMES:
     inst_rate =   {'name': 'inst_rate', 'dims': ['instantaneous firing rate at ~100Hz']}
     spike_times = {'name': 'spike_times', 'dims': ['spike times in seconds']}
     spike_idxs =  {'name': 'spike_idxs', 'dims': ['indices to timeline when spikes occured']}
-    mfr =         {'name': 'mean_firing_rate', 'dims': ['epochs: original, conflict, control and all']}
+    mfr =         {'name': 'mean_firing_rate', 'dims': ['mean firing rate - spike count / time']}
+    mfr_robust  = {'name': 'mean_firing_rate_robust', 'dims': ['mean firing rate - 1 / median(ISI)']}
     isi_cv =      {'name': 'isi_coeff_var', 'dims': ['epochs: original, conflict, control and all']}
     isi_fano =    {'name': 'isi_fano_factor', 'dims': ['epochs: original, conflict, control and all']}
     o_maps =      {'name': 'occupancy_maps', 'dims': [

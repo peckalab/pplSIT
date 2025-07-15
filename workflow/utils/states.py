@@ -32,6 +32,8 @@ def get_state_as_periods(s_path, sound_state, loc_state, att_state, min_dur, spe
         'BGR': np.where(sound_events[:, 1] == 1)[0],
         'TGT': np.where(sound_events[:, 1] == 2)[0],
         'SIL': np.where(sound_events[:, 1] == 0)[0],
+        'DI1': np.where(sound_events[:, 1] == 3)[0],
+        'DI2': np.where(sound_events[:, 1] == 4)[0],
         'RUN': np.where(speed_ev > speed_th)[0],
         'STA': np.where(speed_ev < speed_th)[0],
     }
@@ -45,7 +47,7 @@ def get_state_as_periods(s_path, sound_state, loc_state, att_state, min_dur, spe
 
         # apply optional smoothing, aimed to increase periods a bit
         width = 40  # it's actually 10 seconds
-        kernel = signal.gaussian(width, std=(width) / 7.2)
+        kernel = signal.windows.gaussian(width, std=(width) / 7.2)
         ens_ev_smooth = np.convolve(ens_ev, kernel, 'same') / kernel.sum()
 
         idxs_dict['AL'] = np.where(ens_ev_smooth > 0)[0]
