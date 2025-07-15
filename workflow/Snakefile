@@ -57,6 +57,7 @@ include: "rules/analysis/video.smk"
 include: "rules/analysis/sound_phase_lock.smk"
 include: "rules/analysis/activity_matrices.smk"
 include: "rules/analysis/covariance.smk"
+include: "rules/analysis/ensembles.smk"
 include: "rules/analysis/segments.smk"
 include: "rules/analysis/vectors.smk"
 
@@ -137,6 +138,7 @@ target_names_dict = {
         'analysis/covariance/covariance.h5',
         'analysis/covariance/covariance.pdf'
     ],
+    'ensembles': ['analysis/ensembles.h5'],
     'segments': ['analysis/segments.h5'],
     'vectors': [
         'analysis/vectors/progression.h5',

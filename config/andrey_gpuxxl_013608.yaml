@@ -23,7 +23,7 @@ blocks:  # blocks of pipeline to run
   PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
-  spatial: False
+  spatial: True
   population: False
   coherence: False
   manifold_states: False
@@ -31,7 +31,8 @@ blocks:  # blocks of pipeline to run
   video: False
   sound_phase_lock: False
   activity_matrices: True
-  covariance: False
+  ensembles: True
+  covariance: True
   vectors: True
 
 session_IDs:  
@@ -42,13 +43,13 @@ session_IDs:
   # - "013608_ppcSIT_2025-01-10_09-25-04"
   # - "013608_ppcSIT_2025-01-13_14-01-40"
   - "013608_ppcSIT_2025-01-14_10-20-14"
-  # - "013608_ppcSIT_2025-01-15_14-56-18"
+  - "013608_ppcSIT_2025-01-15_14-56-18"
   # - "013608_ppcSIT_2025-01-16_09-49-21"
   # - "013608_ppcSIT_2025-01-17_10-07-00"
-  # - "013608_ppcSIT_2025-01-20_09-38-20"
+  - "013608_ppcSIT_2025-01-20_09-38-20"
   # - "013608_ppcSIT_2025-01-21_08-50-02"
   # - "013608_ppcSIT_2025-01-22_12-59-00"
-  # - "013608_ppcSIT_2025-01-23_08-46-51"
+  - "013608_ppcSIT_2025-01-23_08-46-51"
   # - "013608_ppcSIT_2025-01-24_08-19-45"
   # - "013608_ppcSIT_2025-01-27_09-00-20"
   # - "013608_ppcSIT_2025-01-29_12-34-08"
@@ -57,8 +58,8 @@ session_IDs:
   # - "013608_ppcSIT_2025-02-27_08-56-52"
   # - "013608_ppcSIT_2025-02-28_16-23-29"
   # - "013608_ppcSIT_2025-03-03_08-55-30"
-  # - "013608_ppcSIT_2025-03-04_09-17-16"
-  # - "013608_ppcSIT_2025-03-05_10-33-41"
+  - "013608_ppcSIT_2025-03-04_09-17-16"
+  - "013608_ppcSIT_2025-03-05_10-33-41"
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -183,6 +184,7 @@ sound_phase_lock:
   ipi_for_shuffle: 0.25
 
 segments:
+  ensembles: True
   tgt_sta_min_pulses: 20
   bgr_sta_min_pulses: 12
   sil_sta_min_pulses: 12
@@ -195,7 +197,7 @@ segments:
 
 
 vectors:
-  min_mfr: 0.5
+  min_mfr: 0.005
   unit_mx:
     group: 'mx_50ms'
     type: 'mx_sm20_z'
@@ -205,6 +207,24 @@ vectors:
     '013608_ppcSIT_2025-01-15_14-56-18': ['2-166', '2-288', '3-258', '4-231']
     '013608_ppcSIT_2025-01-20_09-38-20': ['2-160', '2-241', '3-221', '4-201']
     '013608_ppcSIT_2025-01-23_08-46-51': ['2-171', '2-279', '3-252', '4-234']
+    '013608_ppcSIT_2025-03-04_09-17-16': ['2-314', '2-380']
+    '013608_ppcSIT_2025-03-05_10-33-41': ['2-307', '2-392']
+
+ensembles:
+    '013608_ppcSIT_2025-01-14_10-20-14': 
+      'AL': ['2-142', '2-234', '3-217', '4-198']
+    '013608_ppcSIT_2025-01-15_14-56-18': 
+      'AL': ['2-166', '2-288', '3-258', '4-231']
+    '013608_ppcSIT_2025-01-20_09-38-20': 
+      'AL': ['2-160', '2-241', '3-221', '4-201']
+    '013608_ppcSIT_2025-01-23_08-46-51': 
+      'AL': ['2-171', '2-279', '3-252', '4-234']
+    '013608_ppcSIT_2025-03-04_09-17-16':
+      'AL': ['2-314', '2-380']
+    '013608_ppcSIT_2025-03-05_10-33-41':
+      'AL': ['2-307', '2-392']
+
+
 
 # STAs anti-correlated (almost all IN with high firing)
 # 1-138, 1-147, 1-448 (IN, drops FR in TGT), 2-401 (same), 3-47, 4-334, 4-55

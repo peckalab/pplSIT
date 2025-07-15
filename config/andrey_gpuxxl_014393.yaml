@@ -30,18 +30,22 @@ blocks:  # blocks of pipeline to run
   metronome: False
   video: False
   sound_phase_lock: False
+  activity_matrices: True
+  ensembles: True
+  covariance: True
+  vectors: True
 
 session_IDs:  
-  - "014393_ppcSIT_2025-04-16_11-20-15"
-  - "014393_ppcSIT_2025-04-16_21-25-03"
-  - "014393_ppcSIT_2025-04-23_09-23-02"
+  # - "014393_ppcSIT_2025-04-16_11-20-15"
+  # - "014393_ppcSIT_2025-04-16_21-25-03"
+  # - "014393_ppcSIT_2025-04-23_09-23-02"
   - "014393_ppcSIT_2025-04-23_20-27-09"
-  - "014393_ppcSIT_2025-04-24_08-57-16"
+  # - "014393_ppcSIT_2025-04-24_08-57-16"
   - "014393_ppcSIT_2025-04-24_20-53-08"
-  - "014393_ppcSIT_2025-04-25_08-42-15"
+  # - "014393_ppcSIT_2025-04-25_08-42-15"
   - "014393_ppcSIT_2025-04-25_15-42-45"
-  - "014393_ppcSIT_2025-04-28_09-57-10"
-  - "014393_ppcSIT_2025-04-29_09-05-50"
+  # - "014393_ppcSIT_2025-04-28_09-57-10"
+  # - "014393_ppcSIT_2025-04-29_09-05-50"
   - "014393_ppcSIT_2025-04-29_22-10-49"
 
 
@@ -85,7 +89,10 @@ cuda_device_to_use: 3
 
 # LFP configuration
 lfp:
-  s_rate: 1000  # sampling rate in Hz
+  n_channels: 384
+  source_rate: 30000 # original LFP sampling rate in Hz
+  target_rate: 1000  # target LFP sampling rate in Hz
+  chunk_size_sec: 10  # chunk size for conversion in seconds
   aep_dur: 0.25  # Auditory evoked response duration in sec
 
 # analysis configurations
@@ -163,3 +170,42 @@ PSTH_micro_bnMAPs:
 sound_phase_lock:
   n_shuffles: 100
   ipi_for_shuffle: 0.25
+
+sound_phase_lock:
+  n_shuffles: 100
+  ipi_for_shuffle: 0.25
+
+segments:
+  ensembles: True
+  tgt_sta_min_pulses: 20
+  bgr_sta_min_pulses: 12
+  sil_sta_min_pulses: 12
+  bgr_run_min_pulses: 2
+  sil_run_min_pulses: 4
+  dis_sta_min_pulses: 4
+  visits:
+    min_pulses: 8
+    radius: 0.05
+
+
+vectors:
+  min_mfr: 0.005
+  unit_mx:
+    group: 'mx_50ms'
+    type: 'mx_sm20_z'
+    step: 5
+  units_to_exclude:
+    '014393_ppcSIT_2025-04-23_20-27-09': ['2-300', '3-350']
+    '014393_ppcSIT_2025-04-24_20-53-08': ['2-324', '3-281', '4-282']
+    '014393_ppcSIT_2025-04-25_15-42-45': ['1-349', '3-280', '4-284']
+    '014393_ppcSIT_2025-04-29_22-10-49': ['1-164', '3-371']
+
+ensembles:
+    '014393_ppcSIT_2025-04-23_20-27-09': 
+      'AL': ['2-300', '3-350']
+    '014393_ppcSIT_2025-04-24_20-53-08': 
+      'AL': ['2-324', '3-281', '4-282']
+    '014393_ppcSIT_2025-04-25_15-42-45': 
+      'AL': ['1-349', '3-280', '4-284']
+    '014393_ppcSIT_2025-04-29_22-10-49': 
+      'AL': ['1-164', '3-371']
