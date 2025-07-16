@@ -3,7 +3,7 @@ from scipy import signal
 from utils.neurosuite import XMLHero, DatHero
 
 
-def get_sound_events_from_ADC(adc_file, ts_file, sounds_file, events_file, channel=11, event_th=300, s_rate=30300):
+def get_sound_events_from_ADC(adc_file, adc_ts_file, sounds_file, events_file, ephys_ts_file, channel=11, event_th=300, s_rate=30300):
     # read ADC channel with sound pulses
     dh = DatHero(adc_file, s_rate=s_rate, ch_no=12)
     channel_data = dh.get_single_channel(channel)
@@ -30,10 +30,12 @@ def get_sound_events_from_ADC(adc_file, ts_file, sounds_file, events_file, chann
         periods.append(pair)
     periods = np.array(periods)  # these are all pairs of sample indices
 
-    # convert samples indices into actual times in seconds
-    timestamps = np.load(ts_file)
-    p_begs = timestamps[periods[:, 0]] - timestamps[0]
-    p_ends = timestamps[periods[:, 1]] - timestamps[0]
+    # convert samples indices into actual times in seconds, with the zero as the start of ephys recording
+    # start of ephys recording is NOT the same as the start of ADC recording
+    adc_timestamps = np.load(adc_ts_file)
+    ephys_timestamps = np.load(ephys_ts_file)
+    p_begs = adc_timestamps[periods[:, 0]] - ephys_timestamps[0]  # start of the period in seconds
+    p_ends = adc_timestamps[periods[:, 1]] - ephys_timestamps[0]  # end of the period in seconds
     period_times = np.column_stack([p_begs, p_ends])
 
     events_exp = np.loadtxt(events_file, skiprows=1, delimiter=',')

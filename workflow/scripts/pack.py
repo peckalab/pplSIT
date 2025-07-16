@@ -218,13 +218,14 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
                 
             elif offset['type'] == 'OneBox_ADC':  # sync events from One Box ADC
                 adc_file = os.path.join(src, animal, session, 'ADC.dat')
-                ts_file  = os.path.join(src, animal, session, 'ADC_timestamps.npy')
-                if not os.path.exists(adc_file) or not os.path.exists(ts_file):
+                adc_ts_file  = os.path.join(src, animal, session, 'ADC_timestamps.npy')
+                ephys_ts_file = os.path.join(src, animal, session, 'timestamps.npy')
+                if not os.path.exists(adc_file) or not os.path.exists(adc_ts_file):
                     raise FileNotFoundError('Need ADC files to sync sound events, but they are not found')
 
                 event_th = int(offset['threshold'])
                 adc_channel = int(offset['channel'])
-                ev_ephys, ev_synced = get_sound_events_from_ADC(adc_file, ts_file, snd_file, ev_file, adc_channel, event_th)
+                ev_ephys, ev_synced = get_sound_events_from_ADC(adc_file, adc_ts_file, snd_file, ev_file, ephys_ts_file, adc_channel, event_th=event_th)
 
             elif offset['type'] == 'microphones':  # sync events from microphones
                 raise NotImplementedError
