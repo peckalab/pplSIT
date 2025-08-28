@@ -30,6 +30,7 @@ blocks:  # blocks of pipeline to run
   metronome: False
   video: False
   sound_phase_lock: False
+  segments: True
   activity_matrices: True
   ensembles: True
   covariance: True

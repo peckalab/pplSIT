@@ -1,35 +1,76 @@
 import os
 
 
+rule aeps_lfp_metrics:
+    input:
+        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        lfp=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5'),
+        lfp_base=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp_base.h5')
+    output:
+        aeps_lfp_metrics=os.path.join(config['dst_path'], '{animal}', '{session}', 'aeps_lfp_metrics.h5')
+    script:
+        "../../scripts/analysis/aeps_lfp_metrics.py"
+
+
 rule extract_aeps:
     input:
         manual=os.path.join(config['src_path'], '{animal}', '{session}', 'manual.json'),
         lfp=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5'),
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        lfp_base=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp_base.h5'),
+        aeps_lfp_metrics=os.path.join(config['dst_path'], '{animal}', '{session}', 'aeps_lfp_metrics.h5')
     output:
         aeps=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEPs.h5')
     script:
         "../../scripts/analysis/aeps_extract.py"
         
 
-rule compute_aep_components:
+rule aeps_ITPC:
     input:
         aeps=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEPs.h5'),
-        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5')
+        segm=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'segments.h5')
     output:
-        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'AEP_components.h5')
+        ITPC=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'aeps_ITPC.h5')
     script:
-        "../../scripts/analysis/aeps_comps.py"
+        "../../scripts/analysis/aeps_ITPC.py"
         
 
-rule plot_AEP_component_maps:
+rule aeps_ITPC_plot:
     input:
-        os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
-        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'AEP_components.h5')
+        ITPC=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'aeps_ITPC.h5')
     output:
-        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'aeps_maps.pdf')
+        ITPC_plots=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'aeps_ITPC.pdf')
     script:
-        "../../scripts/analysis/aeps_maps.py"
+        "../../scripts/analysis/aeps_ITPC_plot.py"
+        
+
+rule aeps_EV_SU_metrics:
+    input:
+        aeps=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEPs.h5')
+    output:
+        metrics=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'aeps_EV_SU_metrics.h5')
+    script:
+        "../../scripts/analysis/aeps_EV_SU_metrics.py"
+        
+
+# rule compute_aep_components:
+#     input:
+#         aeps=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEPs.h5'),
+#         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5')
+#     output:
+#         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'AEP_components.h5')
+#     script:
+#         "../../scripts/analysis/aeps_comps.py"
+        
+
+# rule plot_AEP_component_maps:
+#     input:
+#         os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+#         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'AEP_components.h5')
+#     output:
+#         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'aeps_maps.pdf')
+#     script:
+#         "../../scripts/analysis/aeps_maps.py"
 
 
 rule plot_AEP_profiles:

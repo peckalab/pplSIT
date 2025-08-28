@@ -12,12 +12,12 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
+  LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: False  # sorting with kilosort
   units: False      # extract spike trains from sorted data
-  AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: False
+  AEPs: True         # extract Auditory Evoked Responses
+  PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
@@ -27,6 +27,12 @@ blocks:  # blocks of pipeline to run
   manifold_states: False
   metronome: False
   video: False
+  sound_phase_lock: False
+  segments: True
+  activity_matrices: False
+  ensembles: False
+  covariance: False
+  vectors: False
 
 session_IDs:
   - "57_SIT_2023-12-22_14-08-07"
@@ -56,8 +62,8 @@ session_IDs:
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/raw"
-src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
-#src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
+#src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
+src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
 
 # destination for processed data
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
@@ -90,8 +96,16 @@ cuda_device_to_use: 3
 
 # LFP configuration
 lfp:
-  s_rate: 1000  # sampling rate in Hz
+  n_channels: 72
+  source_rate: 30000 # original LFP sampling rate in Hz
+  target_rate: 1000  # target LFP sampling rate in Hz
+  chunk_size_sec: 10  # chunk size for conversion in seconds
   aep_dur: 0.25  # Auditory evoked response duration in sec
+  aep_pre: 0.12
+  aep_sig: 0.125
+  baseline:
+    min_duration_ms: 500
+    stationary_thresh: 0.04  # m/s
 
 # analysis configurations
 psth:
@@ -166,3 +180,15 @@ coherence:
 
 PSTH_micro_bnMAPs:
   units: []  # leave empty for all units
+
+segments:
+  ensembles: False
+  tgt_sta_min_pulses: 20
+  bgr_sta_min_pulses: 12
+  sil_sta_min_pulses: 12
+  bgr_run_min_pulses: 2
+  sil_run_min_pulses: 4
+  dis_sta_min_pulses: 4
+  visits:
+    min_pulses: 8
+    radius: 0.05

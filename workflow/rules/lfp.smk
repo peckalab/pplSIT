@@ -14,6 +14,17 @@ rule extract_lfp_raw:
         "../scripts/lfp.py"
 
 
+rule extract_lfp_baseline:
+    input:
+        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5')
+    output:
+        lfp_base=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp_base.h5')
+    script:
+        "../scripts/analysis/lfp_base.py"
+
+
+
 # # Replace the sampling rate value for ndm lfp
 # rule update_lfp_rate:
 #     input:

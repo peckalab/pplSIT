@@ -72,12 +72,19 @@ target_names_dict = {
     ],
     'descendants': ['descendants.h5'],
     'Audio':   [],
-    'LFP':     ['lfp.h5'],
+    'LFP':     [
+        'lfp.h5',
+        'lfp_base.h5',
+        'aeps_lfp_metrics.h5',
+    ],
     'AEPs':    [
         'AEPs.h5', 
-        'analysis/AEP_components.h5', 
-        'analysis/aeps_maps.pdf', 
-        'analysis/aeps_profiles.pdf'
+        #'analysis/AEP_components.h5', 
+        #'analysis/aeps_maps.pdf', 
+        'analysis/aeps_profiles.pdf',
+        'analysis/aeps_ITPC.h5',
+        'analysis/aeps_ITPC.pdf',
+        'analysis/aeps_EV_SU_metrics.h5'
     ],
     'neurosuite': ['neurosuite/neurosuite.ready'],
     'kilosort':   ['kilosort/kilosort.ready'],

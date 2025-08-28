@@ -17,16 +17,17 @@ with h5py.File(snakemake.input[0], 'r') as f:
     tl           = np.array(f['processed']['timeline'])
     tgt_mx       = np.array(f['processed']['target_matrix'])
     sound_events = np.array(f['processed']['sound_events'])
+
 # Compute stationary_during_sound
-stationary_thresh = snakemake.config['AEPs']['speed_thresh']
+stationary_thresh = snakemake.config['lfp']['baseline']['stationary_thresh']
 stationary_during_sound = np.array([np.all(tl[int(tl_idx):int(sound_events[idx+1,2]),3]<stationary_thresh) if idx<len(sound_events[:,2])-1 else np.all(tl[int(tl_idx):,3]<stationary_thresh) for idx, tl_idx in enumerate(sound_events[:,2])])
 
 # load AEPs    
 aeps = {}
 with h5py.File(snakemake.input[1], 'r') as f:
     for area in f:
-        ds_name = [x for x in f[area] if x.find('filt') > 0][0]
-        aeps[area] = np.array(f[area][ds_name])
+        #ds_name = [x for x in f[area] if x.find('filt') > 0][0]
+        aeps[area] = np.array(f[area]['avg_across_channels'])
 
 aep_dur = snakemake.config['lfp']['aep_dur']  # AEP duration in sec
         
@@ -151,8 +152,10 @@ for k, (area, aeps_mx) in enumerate(aeps.items()):
         ax.grid()
         if k == 0:
             ax.set_ylabel(r'LFP, $\mu$V', fontsize=14)
-        for j, (key, value) in enumerate(AEP_metrics_lims[area].items()):
-            ax.axvline(value[0], color='black', ls='--', lw=1)
-            ax.axvline(value[1], color='black', ls='--', lw=1)
+
+        if area in AEP_metrics_lims:
+            for j, (key, value) in enumerate(AEP_metrics_lims[area].items()):
+                ax.axvline(value[0], color='black', ls='--', lw=1)
+                ax.axvline(value[1], color='black', ls='--', lw=1)
 
 fig.savefig(snakemake.output[0])

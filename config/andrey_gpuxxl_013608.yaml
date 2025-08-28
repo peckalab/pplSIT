@@ -19,7 +19,7 @@ blocks:  # blocks of pipeline to run
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: False
+  PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
@@ -29,7 +29,8 @@ blocks:  # blocks of pipeline to run
   manifold_states: False
   metronome: False
   video: False
-  sound_phase_lock: False
+  sound_phase_lock: True
+  segments: True
   activity_matrices: True
   ensembles: True
   covariance: True
@@ -58,8 +59,8 @@ session_IDs:
   # - "013608_ppcSIT_2025-02-27_08-56-52"
   # - "013608_ppcSIT_2025-02-28_16-23-29"
   # - "013608_ppcSIT_2025-03-03_08-55-30"
-  - "013608_ppcSIT_2025-03-04_09-17-16"
-  - "013608_ppcSIT_2025-03-05_10-33-41"
+  # - "013608_ppcSIT_2025-03-04_09-17-16"
+  # - "013608_ppcSIT_2025-03-05_10-33-41"
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
