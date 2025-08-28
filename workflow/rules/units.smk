@@ -14,5 +14,8 @@ rule dump_units:
         clu=guess_sorter
     output:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
+    params:
+        session = "{session}",
+        animal = "{animal}"
     script:
         "../scripts/units.py"

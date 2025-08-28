@@ -28,6 +28,9 @@ rule move_dat_from_subfolder:
                     subprocess.run(['ln', adc_ts_path, os.path.join(session_path, 'ADC_timestamps.npy')])
                 else:
                     subprocess.run(['ln', dat_path, output.dat])
+                    ts_path = os.path.join(dirpath, 'timestamps.npy')
+                    if os.path.exists(ts_path):
+                        subprocess.run(['ln', ts_path, os.path.join(session_path, 'timestamps.npy')])
 
         if dat_path is None:
             raise ValueError("There should be at least one .dat file in the session path")

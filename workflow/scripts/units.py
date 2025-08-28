@@ -35,6 +35,7 @@ if snakemake.config['units']['source'] == 'neurosuite':
 
     neurosuite_settings_file = os.path.join(sorted_data_path, xml_files[0])
     sampling_rate = XMLHero(neurosuite_settings_file).get_sampling_rate()
+    timestamps_path = None
 
     # loading unit data from .clu / .res
     units = load_clu_res(sorted_data_path)  # spikes are in samples, not seconds
@@ -44,6 +45,7 @@ else:
     kilosort_settings_file = os.path.join(sorted_data_path, 'settings.json')
     probe_file = os.path.join(sorted_data_path, 'probe.json')
     clu_info_file = os.path.join(sorted_data_path, 'cluster_info.tsv')
+    timestamps_path = os.path.join(snakemake.config['src_path'], snakemake.params['animal'], snakemake.params['session'], 'timestamps.npy')
     with open(kilosort_settings_file, 'r') as json_file:
         sampling_rate = json.load(json_file)['fs']
     with open(probe_file, 'r') as json_file:
@@ -70,7 +72,14 @@ for electrode_idx in units.keys():
         unit_name = '%s-%s' % (electrode_idx, unit_idx)
 
         # 3 main ways to store a spiketrain
-        s_times = spiketrain/sampling_rate  # spike times in seconds
+        if timestamps_path is not None:
+            # kilosort: read from timestamps
+            timestamps = np.load(timestamps_path)
+            s_times = timestamps[spiketrain] - timestamps[0] # timestamps in seconds
+        else:
+            # neurosuite: assume sampling rate is known
+            s_times = spiketrain / sampling_rate  # spike times in seconds
+        
         i_rate  = instantaneous_rate(s_times, tl[:, 0])  # instantaneous rate, sampling to timeline
         s_idxs  = spike_idxs(s_times, tl[:, 0])  # timeline indices of individual spikes
 
