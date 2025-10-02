@@ -1,3 +1,4 @@
+import hashlib
 
 
 def pval2text(p_val):
@@ -13,3 +14,7 @@ def pval2text(p_val):
         return '****'
     else:
         return '*****'
+    
+
+def hex_hash(text, length=10):
+    return hashlib.sha1(text.encode()).hexdigest()[:length]

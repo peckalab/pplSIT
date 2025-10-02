@@ -195,3 +195,25 @@ def pop_activity_phase_shifted(s_path, bins_bgr, bins_tgt, electrodes=[1, 2], do
         w_mx.append(stats.zscore(pop_act)) # stay in events space
 
     return np.column_stack(w_mx)
+
+
+def autocorr(x):
+    x = x - np.nanmean(x)
+    result = np.correlate(x, x, mode='full')
+    mid = len(result) // 2
+    result = result[mid:] / result[mid]  # normalize
+    return result
+
+
+def sliding_metrics(x, win_size):
+    var_list, ent_list = [], []
+    for i in range(len(x) - win_size + 1):
+        window = x[i:i + win_size]
+        if np.any(np.isnan(window)):
+            var_list.append(np.nan)
+            ent_list.append(np.nan)
+            continue
+        hist, _ = np.histogram(window, bins=10, density=True)
+        ent_list.append(stats.entropy(hist + 1e-10))  # avoid log(0)
+        var_list.append(np.var(window))
+    return np.array(var_list), np.array(ent_list)

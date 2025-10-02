@@ -13,8 +13,6 @@ from utils.psth import get_spike_counts
 from utils.neurosuite import get_unit_names_sorted
 
 # configuration
-event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters
-event_type_names = ['SIL', 'BGR', 'TGT', 'NOI']  # SIL, BGR, TGT, NOI - order matters
 hw = snakemake.config['psth']['bootstrap']['latency']
 bc = snakemake.config['psth']['bootstrap']['bin_count']
 iter_count = snakemake.config['psth']['bootstrap']['boot_iter_count']
@@ -33,25 +31,42 @@ with h5py.File(snakemake.input[1], 'r') as f:
     for unit_name in f:
         spike_times[unit_name] = np.array(f[unit_name]['spike_times'])
 
-# first do bootstrapping
-profiles = np.zeros([len(event_types), len(unit_names), iter_count, bc-1])
-profile_stats = np.zeros([len(event_types), len(unit_names), 5, bc-1])
+#event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters
+#event_type_names = ['SIL', 'BGR', 'TGT', 'NOI']  # SIL, BGR, TGT, NOI - order matters
 
-for j, event_id in enumerate(event_types):  # sound events
-    # absolute indices to sound events
-    idxs_pool = []  # some events here will be added twice to avoid bias from previous event at the moment of switch
-    for k in range(len(sound_events)):
-        # first event if special as there is no preceeding event
-        if k == 0 and sound_events[k][1] == event_id:
-            idxs_pool.append(k)
+# basic states
+event_idxs_pool = {
+    'SIL': np.where(sound_events[:, 1] == 0)[0],
+    'BGR': np.where(sound_events[:, 1] == 1)[0],
+    'TGT': np.where(sound_events[:, 1] == 2)[0],
+    'NOI': np.where(sound_events[:, 1] ==-1)[0]
+}
+
+# complex states
+state_names  = ['idxs_tgt_sta_succ', 'idxs_bgr_sta', 'idxs_bgr_run', 'idxs_sil_sta', 'idxs_sil_run']
+with h5py.File(snakemake.input[2], 'r') as f:
+    for st_name in state_names:
+        event_idxs_pool[st_name] = np.array(f[st_name])
+
+# now do bootstrapping
+profiles = np.zeros([len(event_idxs_pool), len(unit_names), iter_count, bc-1])
+profile_stats = np.zeros([len(event_idxs_pool), len(unit_names), 5, bc-1])
+
+for j, (state_id, idxs_pool) in enumerate(event_idxs_pool.items()):
+    # # absolute indices to sound events
+    # idxs_pool = []  # some events here will be added twice to avoid bias from previous event at the moment of switch
+    # for k in range(len(sound_events)):
+    #     # first event if special as there is no preceeding event
+    #     if k == 0 and sound_events[k][1] == event_id:
+    #         idxs_pool.append(k)
             
-        elif sound_events[k][1] == event_id:
-            if sound_events[k-1][1] != event_id:
-                if not k+1 >= len(sound_events):
-                    idxs_pool.append(k+1)  # add next event instead of the first one in a sequence to avoid bias
-            else:
-                idxs_pool.append(k)
-    idxs_pool = np.array(idxs_pool)
+    #     elif sound_events[k][1] == event_id:
+    #         if sound_events[k-1][1] != event_id:
+    #             if not k+1 >= len(sound_events):
+    #                 idxs_pool.append(k+1)  # add next event instead of the first one in a sequence to avoid bias
+    #         else:
+    #             idxs_pool.append(k)
+    # idxs_pool = np.array(idxs_pool)
     
     for u, unit_name in enumerate(unit_names):
         
@@ -85,7 +100,7 @@ for j, event_id in enumerate(event_types):  # sound events
         
 # save to H5
 with h5py.File(snakemake.output[0], 'w') as f:
-    for i, event_name in enumerate(event_type_names):
+    for i, event_name in enumerate(event_idxs_pool.keys()):
         grp_ev = f.create_group(event_name)
 
         for j, unit_name in enumerate(unit_names):

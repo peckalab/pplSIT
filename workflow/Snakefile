@@ -88,7 +88,10 @@ target_names_dict = {
     ],
     'neurosuite': ['neurosuite/neurosuite.ready'],
     'kilosort':   ['kilosort/kilosort.ready'],
-    'units':   ['units.h5'],
+    'units':   [
+        'units.h5',
+        'units/unit_response_metrics.h5',
+    ],
     'PSTH_bar':    [
         'analysis/psth_tgt_onset.pdf',
         'analysis/psth_tgt_offset.pdf',
