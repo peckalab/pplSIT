@@ -140,8 +140,8 @@ def calculate_performance(tl, trial_idxs, cfg):
             temp_correct = np.logical_and(scwr[temp_index] < (time_slot + 1) * time_bin_length, scwr[temp_index] > 0)
             proportion_correct_bs_fake[bs, time_slot] = temp_correct.sum() / float(amount_trials)
 
-        confidence_interval_bs_fake[0, time_slot] = np.percentile(proportion_correct_bs_fake[:, time_slot], 84.1) - np.median(proportion_correct_bs_fake[:, time_slot])
-        confidence_interval_bs_fake[1, time_slot] = np.percentile(proportion_correct_bs_fake[:, time_slot], 15.9) - np.median(proportion_correct_bs_fake[:, time_slot])
+        confidence_interval_bs_fake[0, time_slot] = np.percentile(proportion_correct_bs_fake[:, time_slot], 97.5) - np.median(proportion_correct_bs_fake[:, time_slot])
+        confidence_interval_bs_fake[1, time_slot] = np.percentile(proportion_correct_bs_fake[:, time_slot], 2.5) - np.median(proportion_correct_bs_fake[:, time_slot])
         
     # compute performance metrics
     c_median = 100 * np.median(proportion_correct_bs_fake, axis=0)
