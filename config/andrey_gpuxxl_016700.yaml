@@ -1,55 +1,66 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl_009266.yaml --use-conda --cores=20
+# snakemake -n --configfile=../config/andrey_gpuxxl_016700.yaml --use-conda --cores=20
+#
+# mount nevermind via SSHFS
+# sshfs sobolev@10.153.172.1:/nevermind.neuro/share/ag-grothe nevermind
+# sshfs andrey@10.153.170.1:/storage2 storage2
+# unmount
+# sudo diskutil umount force /Users/andrey/nevermind
 
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   performance: True   # performance metrics
-  DLC: False        # Deep lab cut
-  MoSeq: False        # MoSeq
+  DLC: True        # Deep lab cut
+  MoSeq: True        # MoSeq
   descendants: True   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
-  kilosort: False  # sorting with kilosort
+  kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: True         # extract Auditory Evoked Responses
   PSTH_bar: True
-  PSTH_bootstrap: False
+  PSTH_bootstrap: True
   PSTH_shuffle: False
   PSTH_bnMAPs: False
   spatial: False
   population: True
   coherence: False
-  manifold_states: False
+  manifold_states: True
   metronome: False
   video: False
   sound_phase_lock: True
   segments: True
-  activity_matrices: True
+  activity_matrices: False
   ensembles: False
   covariance: False
   vectors: False
   CCR: True
-  
+
 session_IDs:  
-# 009266
-  - "009266_hippoSIT_2023-04-17_17-04-17"
-  - "009266_hippoSIT_2023-04-18_10-10-37"
-  - "009266_hippoSIT_2023-04-18_17-03-10"
-  - "009266_hippoSIT_2023-04-19_10-33-51"
-  - "009266_hippoSIT_2023-04-20_08-57-39"
-  - "009266_hippoSIT_2023-04-21_08-43-00"
-  - "009266_hippoSIT_2023-04-21_13-12-31"
-  - "009266_hippoSIT_2023-04-24_10-08-11"
-  - "009266_hippoSIT_2023-04-24_16-56-55"
-  - "009266_hippoSIT_2023-04-26_08-20-17"
-  - "009266_hippoSIT_2023-05-02_12-22-14"
-  - "009266_hippoSIT_2023-05-04_19-47-15"
-  - "009266_hippoSIT_2023-05-22_09-27-22"
-  - "009266_hippoSIT_2023-05-23_09-18-05"
-  - "009266_hippoSIT_2023-05-25_15-55-57"
-  - "009266_hippoSIT_2023-06-14_08-21-23"
-  - "009266_hippoSIT_2023-06-19_08-58-35"
+  # - "016700_ppcSIT_2025-11-03_12-12-04"
+  # - "016700_ppcSIT_2025-11-03_12-17-35"
+  # - "016700_ppcSIT_2025-11-03_12-20-47"
+  # - "016700_ppcSIT_2025-11-03_12-23-51"
+
+  # - "016700_ppcSIT_2025-11-03_12-26-49"
+  # - "016700_ppcSIT_2025-11-03_12-29-40"
+  # - "016700_ppcSIT_2025-11-03_12-32-20"
+  # - "016700_ppcSIT_2025-11-03_12-36-07"
+  # - "016700_ppcSIT_2025-11-04_20-23-08"
+
+  - "016700_ppcSIT_2025-11-10_16-59-58"
+  - "016700_ppcSIT_2025-11-11_10-06-07"
+  - "016700_ppcSIT_2025-11-12_10-23-15"
+  - "016700_ppcSIT_2025-11-13_09-07-44"
+  - "016700_ppcSIT_2025-11-13_21-27-17"  # 3-4
+  - "016700_ppcSIT_2025-11-14_10-20-29"  # 3-4
+  - "016700_ppcSIT_2025-11-14_15-52-25"
+  - "016700_ppcSIT_2025-11-17_10-50-51"
+  - "016700_ppcSIT_2025-11-18_13-18-07"  # 3-4
+  - "016700_ppcSIT_2025-11-19_13-11-14"  # 3-4
+
+
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -59,26 +70,31 @@ src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 
+pack:
+  drift_coeff: 0.000016666
+
 # neurosuite / klustakwik config files
-template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/neurosuite.xml"
-template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/manual.json"
+template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/neurosuite.xml"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/manual.json"
 ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
 kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
-kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
+kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 500 -UseFeatures"
 
 kilosort:
-  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/kilosort.json"
-  probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/probe.json"
+  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/kilosort.json"
+  probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/probe.json"
   save_preprocessed: False
+  cuda_device: 2
 
 # single units config: which sorter to use
 units:
-  source: 'neurosuite'
+  source: 'kilosort'
 
 # deep lab cut config files
-dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
-dlc_shuffle: 3
-dlc_trainingsetindex: 0
+#dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
+dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT_newSetup-Miguel-2025-01-24/config.yaml"
+dlc_shuffle: 1
+dlc_trainingsetindex: 1
 
 # moseq config files
 moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
@@ -86,7 +102,7 @@ cuda_device_to_use: 1
 
 # LFP configuration
 lfp:
-  n_channels: 64
+  n_channels: 384
   source_rate: 30000 # original LFP sampling rate in Hz
   target_rate: 1000  # target LFP sampling rate in Hz
   chunk_size_sec: 10  # chunk size for conversion in seconds
@@ -94,11 +110,11 @@ lfp:
   aep_pre: 0.12
   aep_sig: 0.125
   artifacts:
-    z_thresh: 5.0
-    win_ms: 100
-    step_ms: 50
-    min_dur_ms: 100
-    merge_gap_ms: 1000
+    z_thresh: 8.0
+    win_ms: 200
+    step_ms: 100
+    min_dur_ms: 500
+    merge_gap_ms: 2000
   aep_ITPC:
     area: 'A1'
     metric: 'avg_across_channels'  # weighted_avg, zscored_avg, raw_AEPs (last is 2D)
@@ -108,16 +124,14 @@ lfp:
   EV_SU:
     kernel_sizes: [0, 4, 8, 12, 16]
 
-sound_phase_lock:
-  n_shuffles: 100
-  ipi_for_shuffle: 0.25
-  
+
 # analysis configurations
 psth:
   micro:
     latency: 0.25
-    bin_count: 31
-    figsize: 2.5
+    bin_count: 51
+    shuf_iter_count: 100
+    figsize: 4
   macro:
     latency: 7.25
     bin_count: 31
@@ -125,15 +139,14 @@ psth:
     latency: 0.25
     bin_count: 51
     boot_iter_count: 100
-    shuf_iter_count: 100
 
 # neural manifolds
 nMAP_electrodes:
-    '013829': [1, 2]
     '009265': [1, 2]
     '009266': [1, 2]
     '57': [1]
     '60': [1, 2]
+    '016700': [1, 2, 3, 4]
 
 nMAP_segmentation:
   ft: 'tSNE'
@@ -162,9 +175,9 @@ metronome:
 nMAP_EV_SU:
   bin_size: 0.01
   ev_su_lag: 0.12
-  k_width: 200  # sampled as activity matrix per event bins (250ms)
+  k_width: 200  # sampled as activity matrix bins (10ms)
   smooth_su_size: 4  #  rectangular kernel size to smooth sustained part
-  smooth_ev_size: 4  #  rectangular kernel size to smooth evoked part
+  smooth_ev_size: 20  #  gaussian kernel size to smooth evoked part
 
 # unit matrix + video merging
 video:
@@ -183,11 +196,15 @@ coherence:
   sustained_start: 0.12
 
 PSTH_micro_bnMAPs:
-  units: ['1-13', '2-4', '2-5']  # leave empty for all units
+  units: []  # leave empty for all units
+
+sound_phase_lock:
+  n_shuffles: 100
+  ipi_for_shuffle: 0.25
 
 segments:
   ensembles: False
-  tgt_sta_min_pulses: 20
+  tgt_sta_min_pulses: 13
   bgr_sta_min_pulses: 12
   sil_sta_min_pulses: 12
   bgr_run_min_pulses: 2
@@ -197,22 +214,25 @@ segments:
     min_pulses: 8
     radius: 0.05
 
-AEPs:
-  aep_lfp_metrics_thresholds:
-    "009266_hippoSIT_2023-04-17_17-04-17": [1200, 300]  # SNR, amplitude
-    "009266_hippoSIT_2023-04-18_10-10-37": [1500, 400]
-    "009266_hippoSIT_2023-04-18_17-03-10": [2000, 300]
-    "009266_hippoSIT_2023-04-19_10-33-51": [3000, 400]
-    "009266_hippoSIT_2023-04-20_08-57-39": [5000, 400]
-    "009266_hippoSIT_2023-04-21_08-43-00": [6000, 600]
-    "009266_hippoSIT_2023-04-21_13-12-31": [3500, 500]
-    "009266_hippoSIT_2023-04-24_10-08-11": [1000, 500]
-    "009266_hippoSIT_2023-04-24_16-56-55": [2000, 500]
-    "009266_hippoSIT_2023-04-26_08-20-17": [2500, 600]
-    "009266_hippoSIT_2023-05-02_12-22-14": [2000, 500]
-    "009266_hippoSIT_2023-05-04_19-47-15": [1500, 500]
-    "009266_hippoSIT_2023-05-22_09-27-22": [5000, 600]
-    "009266_hippoSIT_2023-05-23_09-18-05": [2600, 600]
-    "009266_hippoSIT_2023-05-25_15-55-57": [5000, 700]
-    "009266_hippoSIT_2023-06-14_08-21-23": [600, 300]
-    "009266_hippoSIT_2023-06-19_08-58-35": [2500, 400]
+
+vectors:
+  min_mfr: 0.005
+  unit_mx:
+    group: 'mx_50ms'
+    type: 'mx_sm20_z'
+    step: 5
+  units_to_exclude:
+    '014393_ppcSIT_2025-04-23_20-27-09': ['2-300', '3-350']
+    '014393_ppcSIT_2025-04-24_20-53-08': ['2-324', '3-281', '4-282']
+    '014393_ppcSIT_2025-04-25_15-42-45': ['1-349', '3-280', '4-284']
+    '014393_ppcSIT_2025-04-29_22-10-49': ['1-164', '3-371']
+
+ensembles:
+    '014393_ppcSIT_2025-04-23_20-27-09': 
+      'AL': ['2-300', '3-350']
+    '014393_ppcSIT_2025-04-24_20-53-08': 
+      'AL': ['2-324', '3-281', '4-282']
+    '014393_ppcSIT_2025-04-25_15-42-45': 
+      'AL': ['1-349', '3-280', '4-284']
+    '014393_ppcSIT_2025-04-29_22-10-49': 
+      'AL': ['1-164', '3-371']

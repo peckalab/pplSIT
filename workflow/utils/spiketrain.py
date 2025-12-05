@@ -91,6 +91,9 @@ def unit_response_metrics_per_condition(spike_times, stimuli, conditions, respon
     #conditions = np.unique(stimuli[:, 1])
 
     for cond_id, cond_idxs in conditions.items():
+        if len(cond_idxs) < 5:
+            continue
+
         #stim_times = stimuli[stimuli[:, 1] == cond][:, 0]
         stim_times = stimuli[cond_idxs]
         n_trials = len(stim_times)

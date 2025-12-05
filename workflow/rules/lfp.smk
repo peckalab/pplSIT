@@ -9,19 +9,31 @@ rule extract_lfp_raw:
     input:
         dat=k_path('{animal}', '{session}', '{session}.dat')
     output:
-        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5')
+        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'lfp.h5')
     script:
-        "../scripts/lfp.py"
+        "../scripts/lfp/lfp.py"
+
+
+rule extract_lfp_artifacts:
+    input:
+        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'lfp.h5')
+    output:
+        artifacts=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'artifacts.h5'),
+        artifacts_pdf=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'artifacts.pdf')
+    script:
+        "../scripts/lfp/artifacts.py"
 
 
 rule extract_lfp_baseline:
     input:
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
-        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5')
+        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'lfp.h5'),
+        artifacts=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'artifacts.h5')
     output:
-        lfp_base=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp_base.h5')
+        lfp_base=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'baseline.h5'),
+        lfp_base_plot=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'baseline.pdf')
     script:
-        "../scripts/analysis/lfp_base.py"
+        "../scripts/lfp/baseline.py"
 
 
 

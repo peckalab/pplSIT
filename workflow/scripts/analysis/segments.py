@@ -106,7 +106,6 @@ for i, tgt_xy in enumerate(tgt_sta_succ_mx):
             idxs_flat += list(np.arange(rec[0], rec[1]))
         visits_idxs[titles[j]] = np.array(idxs_flat)
 
-
 results = {
     'tgt_sta_succ_mx': tgt_sta_succ_mx,
     'idxs_tgt_sta_succ': idxs_tgt_sta_succ,

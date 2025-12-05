@@ -9,8 +9,8 @@ blocks:  # blocks of pipeline to run
   kilosort: False  # sorting with kilosort
   units: False      # complete spike sorting with neurosuite / klustakwik
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: True
-  PSTH_bootstrap: True
+  PSTH_bar: False
+  PSTH_bootstrap: False
   PSTH_shuffle: False
   spatial: False
   population: False
@@ -18,6 +18,7 @@ blocks:  # blocks of pipeline to run
   manifold_states: False
   metronome: False
   video: False
+  CCR: False
 
 src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
@@ -59,6 +60,10 @@ lfp:
 AEPs:
   speed_thresh: 0.04  # m/s
 
+sound_phase_lock:
+  n_shuffles: 100
+  ipi_for_shuffle: 0.25
+  
 # analysis configurations
 psth:
   micro:

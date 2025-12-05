@@ -19,6 +19,9 @@ with h5py.File(snakemake.input[0], 'r') as f:
 with h5py.File(snakemake.input[1], 'r') as f:
     lfp = np.array(f['lfp'])
 
+with h5py.File(snakemake.input[2], 'r') as f:
+    artifact_mask = np.array(f['artifact_mask']).astype(bool)
+
 # clip artifacts
 # for i in range(len(lfp)):
 #     std = lfp[i].std()
@@ -26,11 +29,11 @@ with h5py.File(snakemake.input[1], 'r') as f:
 
 # or set artifacts to 0. Ideally exclude these periods, but
 # because it depends on the channel it's too complex
-artifact_idxs_all = []
-for i in range(len(lfp)):
-    artf_idxs = np.where(np.abs(lfp[i]) > 4*lfp[i].std())[0]
-    lfp[i][artf_idxs] = 0
-    artifact_idxs_all.append(artf_idxs)
+# artifact_idxs_all = []
+# for i in range(len(lfp)):
+#     artf_idxs = np.where(np.abs(lfp[i]) > 4*lfp[i].std())[0]
+#     lfp[i][artf_idxs] = 0
+#     artifact_idxs_all.append(artf_idxs)
 
 # time x channels
 lfp = lfp.T
@@ -72,13 +75,25 @@ speed_upsampled = interp_func(time_lfp)  # same length as LFP time
 stationary_segments = []
 running_segments = []
 
+# if there is less than 4 ITIs, that's a celibration / test recording. 
+# Just use the whole session to compute baseline.
+if len(inter_trial_periods) < 4:
+    inter_trial_periods = [
+        [0, int(tl[-1][0] * fs_lfp)]
+    ]
+
 for start, end in inter_trial_periods:
     seg_speed = speed_upsampled[start:end]
     seg_lfp = lfp[start:end]
+    seg_artifact = artifact_mask[start:end]
 
     # Find continuous blocks of stationary and running
     stationary_mask = seg_speed < stationary_thresh
     running_mask = seg_speed >= stationary_thresh
+    
+    # Exclude artifacts
+    stationary_mask = stationary_mask & (~seg_artifact)
+    running_mask = running_mask & (~seg_artifact)
 
     def extract_segments(mask):
         segments = []
@@ -107,5 +122,23 @@ for start, end in inter_trial_periods:
 baseline_mean, baseline_std, baseline_ci_lower, baseline_ci_upper = compute_bootstrapped_baseline(stationary_segments, running_segments)
 
 with h5py.File(snakemake.output[0], 'w') as f:
-    base_mx = np.vstack([baseline_mean, baseline_std, baseline_ci_lower, baseline_ci_upper]).T
+    base_mx = np.vstack([baseline_mean, baseline_std, baseline_ci_lower, baseline_ci_upper]).T  # channels x 4
     f.create_dataset('lfp_base', data=base_mx)
+
+
+
+# plot for debugging
+import matplotlib.pyplot as plt
+fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+
+ax1 = axes[0]
+ax1.errorbar(np.arange(len(baseline_mean)), baseline_mean, yerr=baseline_std, fmt='.')
+ax1.set_title("Baseline mean ± std")
+
+ax2 = axes[1]
+width = baseline_ci_upper - baseline_ci_lower
+ax2.plot(width, '.-')
+ax2.set_title("CI width per channel")
+
+fig.tight_layout()
+fig.savefig(snakemake.output[1])

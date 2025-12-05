@@ -60,6 +60,7 @@ include: "rules/analysis/covariance.smk"
 include: "rules/analysis/ensembles.smk"
 include: "rules/analysis/segments.smk"
 include: "rules/analysis/vectors.smk"
+include: "rules/analysis/CCR.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
@@ -73,18 +74,20 @@ target_names_dict = {
     'descendants': ['descendants.h5'],
     'Audio':   [],
     'LFP':     [
-        'lfp.h5',
-        'lfp_base.h5',
-        'aeps_lfp_metrics.h5',
+        'LFP/lfp.h5',
+        'LFP/baseline.h5',
+        'LFP/artifacts.h5',
+        'LFP/artifacts.pdf'
     ],
     'AEPs':    [
-        'AEPs.h5', 
+        'AEP/AEPs.h5', 
+        'AEP/aeps_lfp_metrics.h5',
         #'analysis/AEP_components.h5', 
         #'analysis/aeps_maps.pdf', 
-        'analysis/aeps_profiles.pdf',
-        'analysis/aeps_ITPC.h5',
-        'analysis/aeps_ITPC.pdf',
-        'analysis/aeps_EV_SU_metrics.h5'
+        'AEP/aeps_profiles.pdf',
+        'AEP/aeps_ITPC.h5',
+        'AEP/aeps_ITPC.pdf',
+        'AEP/aeps_EV_SU_metrics.h5'
     ],
     'neurosuite': ['neurosuite/neurosuite.ready'],
     'kilosort':   ['kilosort/kilosort.ready'],
@@ -127,6 +130,9 @@ target_names_dict = {
         'analysis/population_matrices.h5',
         'analysis/nMAP_EV_SU_noconv.h5',
         'analysis/nMAP_EV_SU_with_PSTH.h5',
+    ],
+    'CCR': [
+        'CCR/CCR_LFP_pop_conds.h5',
     ],
     'coherence': [
         'analysis/coherence.h5',

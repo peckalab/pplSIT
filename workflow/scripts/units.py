@@ -19,7 +19,8 @@ from utils.spatial import bins2meters, cart2pol
 
 # unit metrics to compute
 metric_names = (H5NAMES.o_maps, H5NAMES.f_maps, H5NAMES.sparsity, H5NAMES.selectivity, \
-                H5NAMES.spat_info, H5NAMES.peak_FR, H5NAMES.f_patches, H5NAMES.f_COM, \
+                H5NAMES.spat_info, H5NAMES.peak_FR, H5NAMES.spat_info_ns, H5NAMES.peak_FR_ns, \
+                H5NAMES.f_patches, H5NAMES.f_COM, \
                 H5NAMES.pfr_center, H5NAMES.occ_info, H5NAMES.o_patches, H5NAMES.o_COM)
 
 
@@ -107,14 +108,21 @@ for electrode_idx in units.keys():
         # keep only spiking when running? > 4cm/s
         #s_idxs = np.intersect1d(s_idxs, run_idxs)
 
-        # compute 2D maps: occupancy and firing rate (place fields)
+        # compute 2D maps: occupancy and firing rate (place fields) for 
+        # a) the whole session
         unit_pos = tl[s_idxs][:, 1:3]
         traj_pos = tl[:, 1:3]
         #xy_range = [tl[:, 1].min(), tl[:, 1].max(), tl[:, 2].min(), tl[:, 2].max()]
         o_map, s1_map, s2_map, f_map = place_field_2D(traj_pos, unit_pos, s_rate_pos, bin_size=bin_size, xy_range=xy_range)
-
-        # firing map metrics
         sparsity, selectivity, spat_info, peak_FR = map_stats(f_map, o_map)
+
+        # b) no stimulus periods only
+        idxs_tl_nostim = np.where(tl[:, 6] == 0)[0]
+        unit_pos = tl[np.intersect1d(s_idxs, idxs_tl_nostim)][:, 1:3]
+        traj_pos = tl[idxs_tl_nostim][:, 1:3]
+        #xy_range = [tl[:, 1].min(), tl[:, 1].max(), tl[:, 2].min(), tl[:, 2].max()]
+        o_map_ns, s1_map_ns, s2_map_ns, f_map_ns = place_field_2D(traj_pos, unit_pos, s_rate_pos, bin_size=bin_size, xy_range=xy_range)
+        _, _, spat_info_ns, peak_FR_ns = map_stats(f_map_ns, o_map_ns)
 
         # place field metrics
         patches = get_field_patches(f_map)  # 2D matrix, patches labeled according to the size
@@ -134,7 +142,7 @@ for electrode_idx in units.keys():
         o_COM_rho, o_COM_phi = cart2pol(*bins2meters(x, y, xy_range))     # largest field COM, in polar coords.
 
         # iterate over metrics, order should match metric_names defined above
-        for i, ds in enumerate([o_map, f_map, sparsity, selectivity, spat_info, peak_FR, \
+        for i, ds in enumerate([o_map, f_map, sparsity, selectivity, spat_info, peak_FR, spat_info_ns, peak_FR_ns, \
             patches, (f_COM_rho, f_COM_phi), (pfr_rho, pfr_phi), occ_info, \
             o_patches, (o_COM_rho, o_COM_phi)]):
             create_dataset(snakemake.output[0], unit_name, metric_names[i], np.array(ds))

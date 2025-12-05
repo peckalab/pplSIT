@@ -36,59 +36,76 @@ wavelet = 'cmor1.5-1.0'  # Complex Morlet: balance between time and frequency re
 scales = pywt.central_frequency(wavelet) * fs / frequencies
 
 collected = {}
+n_shuffles = 100
 for k, (state_name, idxs_state) in enumerate(state_idxs.items()):
-    # === COMPUTE CWT ===
-    # Returns: (n_trials, n_freqs, n_samples)
-    cwt_all = np.array([
-        pywt.cwt(trial, scales, wavelet, sampling_period=1/fs)[0]
-        for trial in lfp_trials[idxs_state]
-    ])
-    
-    # === ITPC ===
-    # Phase normalization
-    phases_real = cwt_all / np.abs(cwt_all)
-    itpc_real = np.abs(np.mean(phases_real, axis=0))  # shape: (n_freqs, n_samples)
-    
-    # === POWER ===
-    power_real = np.mean(np.abs(cwt_all) ** 2, axis=0)  # shape: (n_freqs, n_samples)
-    
-    # === Special: power for a DIP point at 50-70ms ===
-    power_all = np.abs(cwt_all) ** 2  # shape: (n_trials, n_freqs, n_samples)
+    # Extract trials
+    trials = lfp_trials[idxs_state]          # (n_trials, n_samples)
 
+    # ======== STEP 0: reject trials with NaNs ========
+    good_mask = ~np.any(np.isnan(trials), axis=1)
+    trials = trials[good_mask]
+
+    if len(trials) == 0:
+        print(f"No usable trials for {state_name}")
+        continue
+
+    # ======== STEP 1: Compute CWT only for good trials ========
+    cwt_list = []
+    for tr in trials:
+        coeffs, _ = pywt.cwt(tr, scales, wavelet, sampling_period=1/fs)
+        cwt_list.append(coeffs)
+
+    # (n_trials_good, n_freqs, n_samples)
+    cwt_all = np.stack(cwt_list, axis=0)
+
+    # ======== STEP 2: ITPC ========
+    # phase normalization
+    # guard against division by zero
+    amp = np.abs(cwt_all)
+    with np.errstate(invalid='ignore', divide='ignore'):
+        phases = cwt_all / amp
+
+    # ITPC: use nanmean in case some values behave badly
+    itpc_real = np.abs(np.nanmean(phases, axis=0))   # (n_freqs, n_samples)
+
+    # ======== STEP 3: Power ========
+    power_all = amp ** 2                             # (n_trials, n_freqs, n_samples)
+    power_real = np.nanmean(power_all, axis=0)       # (n_freqs, n_samples)
+
+    # DIP power 50–70 ms
     freq_mask = (frequencies >= 1) & (frequencies <= 80)
     time_mask = (times >= 50) & (times <= 70)
-   
-    power_subset = power_all[:, freq_mask, :][:, :, time_mask]  # shape: (n_trials, selected_freqs, selected_times)
-    power_avg_per_trial = power_subset.mean(axis=(0, 2))
-    
-    # === Compute trial-shuffled null ===
-    n_shuffles = 100
+
+    power_subset = power_all[:, freq_mask, :][:, :, time_mask]
+    power_avg_per_trial = np.nanmean(power_subset, axis=(1, 2))
+
+    # ======== STEP 4: Shuffle-based null ITPC ========
+    n_good_trials = phases.shape[0]
     itpc_null = np.zeros((n_shuffles, len(frequencies), n_samples))
-    
+
     for i in range(n_shuffles):
-        shifted_phases = np.empty_like(phases_real)
-    
-        for trial in range(phases_real.shape[0]):
-            shift = np.random.randint(0, n_samples)  # random circular shift
-            shifted_phases[trial] = np.roll(phases_real[trial], shift=shift, axis=1)
-    
-        itpc_null[i] = np.abs(np.mean(shifted_phases, axis=0))
-    
-    # === STEP 3: Compute Z-score or p-value
-    itpc_shuf_mean = np.mean(itpc_null, axis=0)
-    itpc_shuf_std = np.std(itpc_null, axis=0)
+        shifted = np.empty_like(phases)
+        for t in range(n_good_trials):
+            shift = np.random.randint(0, n_samples)
+            shifted[t] = np.roll(phases[t], shift=shift, axis=1)
+
+        itpc_null[i] = np.abs(np.nanmean(shifted, axis=0))
+
+    # ======== STEP 5: Statistics ========
+    itpc_shuf_mean = np.nanmean(itpc_null, axis=0)
+    itpc_shuf_std  = np.nanstd(itpc_null, axis=0)
+
     itpc_shuf_z = (itpc_real - itpc_shuf_mean) / (itpc_shuf_std + 1e-5)
 
+    # p-value: nonparametric
     p_val = np.mean(itpc_null >= itpc_real[None, :, :], axis=0)
     significant_mask = p_val < 0.05
 
-    itpc_threshold = np.percentile(itpc_null, 95, axis=0)  # shape: (freqs, times)
+    # 95th percentile threshold
+    itpc_threshold = np.nanpercentile(itpc_null, 95, axis=0)
     non_phaselocked_mask = itpc_real < itpc_threshold
 
-    # Optional: threshold significance at Z > 2 (roughly p < 0.05, two-sided)
-    #significant_mask = itpc_z > 2
-
-    # collect
+    # ======== collect results ========
     collected[state_name] = {
         'times': times,
         'frequencies': frequencies,
@@ -101,6 +118,76 @@ for k, (state_name, idxs_state) in enumerate(state_idxs.items()):
         'non_phaselocked_mask': non_phaselocked_mask,
         'dip_power': power_avg_per_trial
     }
+
+
+
+
+# collected = {}
+# for k, (state_name, idxs_state) in enumerate(state_idxs.items()):
+#     # === COMPUTE CWT ===
+#     # Returns: (n_trials, n_freqs, n_samples)
+#     cwt_all = np.array([
+#         pywt.cwt(trial, scales, wavelet, sampling_period=1/fs)[0]
+#         for trial in lfp_trials[idxs_state]
+#     ])
+    
+#     # === ITPC ===
+#     # Phase normalization
+#     phases_real = cwt_all / np.abs(cwt_all)
+#     itpc_real = np.abs(np.mean(phases_real, axis=0))  # shape: (n_freqs, n_samples)
+    
+#     # === POWER ===
+#     power_real = np.mean(np.abs(cwt_all) ** 2, axis=0)  # shape: (n_freqs, n_samples)
+    
+#     # === Special: power for a DIP point at 50-70ms ===
+#     power_all = np.abs(cwt_all) ** 2  # shape: (n_trials, n_freqs, n_samples)
+
+#     freq_mask = (frequencies >= 1) & (frequencies <= 80)
+#     time_mask = (times >= 50) & (times <= 70)
+   
+#     power_subset = power_all[:, freq_mask, :][:, :, time_mask]  # shape: (n_trials, selected_freqs, selected_times)
+#     power_avg_per_trial = power_subset.mean(axis=(0, 2))
+    
+#     # === Compute trial-shuffled null ===
+#     n_shuffles = 100
+#     itpc_null = np.zeros((n_shuffles, len(frequencies), n_samples))
+    
+#     for i in range(n_shuffles):
+#         shifted_phases = np.empty_like(phases_real)
+    
+#         for trial in range(phases_real.shape[0]):
+#             shift = np.random.randint(0, n_samples)  # random circular shift
+#             shifted_phases[trial] = np.roll(phases_real[trial], shift=shift, axis=1)
+    
+#         itpc_null[i] = np.abs(np.mean(shifted_phases, axis=0))
+    
+#     # === STEP 3: Compute Z-score or p-value
+#     itpc_shuf_mean = np.mean(itpc_null, axis=0)
+#     itpc_shuf_std = np.std(itpc_null, axis=0)
+#     itpc_shuf_z = (itpc_real - itpc_shuf_mean) / (itpc_shuf_std + 1e-5)
+
+#     p_val = np.mean(itpc_null >= itpc_real[None, :, :], axis=0)
+#     significant_mask = p_val < 0.05
+
+#     itpc_threshold = np.percentile(itpc_null, 95, axis=0)  # shape: (freqs, times)
+#     non_phaselocked_mask = itpc_real < itpc_threshold
+
+#     # Optional: threshold significance at Z > 2 (roughly p < 0.05, two-sided)
+#     #significant_mask = itpc_z > 2
+
+#     # collect
+#     collected[state_name] = {
+#         'times': times,
+#         'frequencies': frequencies,
+#         'power_real': power_real,
+#         'itpc_real': itpc_real,
+#         'itpc_shuf_mean': itpc_shuf_mean,
+#         'itpc_shuf_std': itpc_shuf_std,
+#         'itpc_shuf_z': itpc_shuf_z,
+#         'significant_mask': significant_mask,
+#         'non_phaselocked_mask': non_phaselocked_mask,
+#         'dip_power': power_avg_per_trial
+#     }
 
 with h5py.File(snakemake.output[0], 'w') as f:
     for state_name, idxs_state in state_idxs.items():

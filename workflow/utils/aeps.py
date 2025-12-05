@@ -2,6 +2,7 @@ import os
 import numpy as np
 from scipy import signal
 from scipy import stats
+from scipy.ndimage import convolve1d
 
 
 AEP_metrics_lims = {
@@ -73,3 +74,36 @@ def compute_metric(aeps, method, t_l, t_r, k_width=20):
     metric_smooth = np.convolve(metric_z, kernel, 'same') / kernel.sum()
     
     return metric, metric_smooth
+
+
+def nanmean_filter1d(x, size, axis=0):
+    # mask = 1 if finite else 0
+    m = np.isfinite(x).astype(float)
+
+    # replace NaN with 0
+    x_filled = np.nan_to_num(x, nan=0.0)
+
+    kernel = np.ones(size)
+
+    # Sum of values
+    x_sum = convolve1d(x_filled, kernel, axis=axis, mode='nearest')
+
+    # Count of finite values
+    m_sum = convolve1d(m, kernel, axis=axis, mode='nearest')
+
+    # Avoid divide-by-zero
+    out = x_sum / np.maximum(m_sum, 1e-8)
+    out[m_sum == 0] = np.nan
+
+    return out
+
+
+def interp_nan_1d(x):
+    x = np.asarray(x, float)
+    nans = np.isnan(x)
+    if not np.any(nans):
+        return x
+
+    t = np.arange(len(x))
+    x[nans] = np.interp(t[nans], t[~nans], x[~nans])
+    return x

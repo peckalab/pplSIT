@@ -18,6 +18,8 @@ class H5NAMES:
     selectivity = {'name': 'selectivity', 'dims': ['epochs: original, conflict, control and all']}
     spat_info =   {'name': 'spatial_information', 'dims': ['epochs: original, conflict, control and all']}
     peak_FR =     {'name': 'peak_firing_rate', 'dims': ['epochs: original, conflict, control and all']}
+    spat_info_ns ={'name': 'spatial_information_nostim', 'dims': ['epochs: original, conflict, control and all']}
+    peak_FR_ns =  {'name': 'peak_firing_rate_nostim', 'dims': ['epochs: original, conflict, control and all']}
     f_patches =   {'name': 'field_patches', 'dims': [
         'epochs: original, conflict, control and all', 'X, bins', 'Y, bins'
     ]}

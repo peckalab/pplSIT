@@ -59,5 +59,5 @@ with h5py.File(snakemake.output[0], 'w') as h5f:
             lfp_idx += write_len
 
             if start > print_perc:
-                print(f"LFP: {start/10}% done")
+                print(f"LFP: {start / n_samples_total * 100:.1f}% done")
                 print_perc += n_samples_total / 10

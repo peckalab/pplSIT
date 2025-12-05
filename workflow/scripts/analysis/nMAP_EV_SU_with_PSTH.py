@@ -80,6 +80,10 @@ event_ids = {1: 'BGR', 2: 'TGT', 0: 'SIL', -1: 'NOI'}
 psth_bins, psths_all = get_psth_matrix(snakemake.input[2], electrodes)
 conditions = list(psths_all.keys())
 
+# Critical fix: as noise condition is very short, many PSTHs can be none
+# As actually noise condition was silent, replace NOI with SIL
+psths_all['NOI'] = psths_all['SIL']
+
 # taking only the evoked profile part (important - this is not periodic!)
 idx_s = int(psth_bins.shape[0]/2)
 idx_e = idx_s + ev_bin_count # int(np.ceil(idx_s/2))

@@ -18,17 +18,18 @@ blocks:  # blocks of pipeline to run
   PSTH_shuffle: True
   PSTH_bnMAPs: False
   spatial: False
-  population: False
+  population: True
   coherence: False
   manifold_states: False
   metronome: False
   video: False
-  sound_phase_lock: False
+  sound_phase_lock: True
   segments: True
   activity_matrices: False
   ensembles: False
   covariance: False
   vectors: False
+  CCR: True
 
 session_IDs:  
   # these are more A1
@@ -100,6 +101,12 @@ lfp:
   aep_dur: 0.25  # Auditory evoked response duration in sec
   aep_pre: 0.12
   aep_sig: 0.125
+  artifacts:
+    z_thresh: 5.0
+    win_ms: 100
+    step_ms: 50
+    min_dur_ms: 100
+    merge_gap_ms: 1000
   aep_ITPC:
     area: 'A1'
     metric: 'avg_across_channels'  # weighted_avg, zscored_avg, raw_AEPs (last is 2D)
@@ -109,7 +116,11 @@ lfp:
   EV_SU:
     kernel_sizes: [0, 4, 8, 12, 16]
 
+sound_phase_lock:
+  n_shuffles: 100
+  ipi_for_shuffle: 0.25
 
+  
 # analysis configurations
 psth:
   micro:
@@ -161,8 +172,8 @@ nMAP_EV_SU:
   bin_size: 0.01
   ev_su_lag: 0.12
   k_width: 200  # sampled as activity matrix per event bins (250ms)
-  smooth_su_size: 4  #  rectangular kernel size to smooth sustained part
-  smooth_ev_size: 15  #  gaussian kernel size to smooth evoked part
+  smooth_su_size: 4 #  rectangular kernel size to smooth sustained part
+  smooth_ev_size: 4  #  gaussian kernel size to smooth evoked part
 
 # unit matrix + video merging
 video:

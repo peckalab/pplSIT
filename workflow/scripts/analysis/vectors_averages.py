@@ -61,7 +61,10 @@ with h5py.File(segm_file, 'r') as f:
         event_matrices['PH'] = np.vstack([bgr_sta_PH_mx, sil_sta_PH_mx])
 
 # filtering units
-idxs_special = [unit_ids.index(x) for x in smk_cfg['units_to_exclude'][session]]
+if session in smk_cfg['units_to_exclude']:
+    idxs_special = [unit_ids.index(x) for x in smk_cfg['units_to_exclude'][session]]
+else:
+    idxs_special = []
 idxs_mfr_min = np.where(unit_mfrs > smk_cfg['min_mfr'])[0]
 
 idxs_units_filt = np.setdiff1d(idxs_mfr_min, idxs_special)

@@ -24,7 +24,8 @@ rule population_matrices:
 rule nMAP_EV_SU_no_convolution:
     input:
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
-        resp_mx=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'population_matrices.h5')
+        units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5'),
+        psths=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_micro.h5')
     output:
         nMAP_EV_SU=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'nMAP_EV_SU_noconv.h5')
     script:

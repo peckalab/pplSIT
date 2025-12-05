@@ -37,7 +37,7 @@ unit_file = snakemake.input[1]
 actm_file = snakemake.input[2]
 segm_file = snakemake.input[3]
 
-spike_times, unit_sic = {}, {}
+spike_times, unit_sic, unit_sic_nostim = {}, {}, {}
 with h5py.File(meta_file, 'r') as f:
     tl = np.array(f['processed']['timeline'])
     tgt_mx = np.array(f['processed']['target_matrix'])
@@ -48,9 +48,10 @@ with h5py.File(unit_file, 'r') as f:
     for unit_name in unit_names:
         spike_times[unit_name]  = np.array(f[unit_name]['spike_times'])
         unit_sic[unit_name] = float(np.array(f[unit_name]['spatial_information']))
+        unit_sic_nostim[unit_name] = float(np.array(f[unit_name]['spatial_information_nostim']))
 
 # mean firing rates
-FR_mx = np.zeros([len(unit_names), 3])  # mean rate, median ISI, SIC
+FR_mx = np.zeros([len(unit_names), 4])  # mean rate, median ISI, SIC
 for i, unit_id in enumerate(unit_names):
     spiketrain = spike_times[unit_id]
     
@@ -59,7 +60,7 @@ for i, unit_id in enumerate(unit_names):
     isis = np.diff(spiketrain)
     robust_rate = 1 / np.median(isis)
 
-    FR_mx[i] = np.array([mean_rate, robust_rate, unit_sic[unit_id]])
+    FR_mx[i] = np.array([mean_rate, robust_rate, unit_sic[unit_id], unit_sic_nostim[unit_id]])
 
 
 # getting experimental states
@@ -69,8 +70,8 @@ idxs_states = ['idxs_tgt_sta', 'idxs_bgr_sta', 'idxs_sil_sta', 'idxs_bgr_run', '
 with h5py.File(segm_file, 'r') as f:
     event_idxs = {}
     for idxs_name in idxs_states:
-        event_idxs[idxs_name] = np.array(f[idxs_name])
-
+        if idxs_name in f:
+            event_idxs[idxs_name] = np.array(f[idxs_name])
 
 # # positions and speed
 # x_pos_ev = tl[sound_events[:, 2].astype(np.int32)][:, 1]
@@ -289,7 +290,7 @@ with PdfPages(snakemake.output[1]) as pdf:
         # ----------------- correlations, MFR / SIC, Scree, PC1 corrs
         diffs = []
         bins = np.linspace(-1, 1, 51)
-        fig, axes = plt.subplots(1, 4, figsize=(16, 5))
+        fig, axes = plt.subplots(1, 5, figsize=(16, 5))
 
         # corr histogram plot
         ax = axes[0]
@@ -323,9 +324,21 @@ with PdfPages(snakemake.output[1]) as pdf:
         ax.set_ylabel('SIC, bits', fontsize=14)
         ax.axhline(0.1, ls='--', color='black')
         ax.legend()
+        
+        # MFR / SIC - no stimulus
+        ax = axes[2]
+        for i, clu_id in enumerate(list(set(labels))):
+            idxs_clu = np.where(labels == clu_id)[0]
+            ax.scatter(FR_mx[idxs_clu][:, 0], FR_mx[idxs_clu][:, 3], color=colors[i], alpha=0.7, label=str(clu_id))
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+        ax.set_xlabel('MFR, Hz', fontsize=14)
+        ax.set_ylabel('SIC (no stim.), bits', fontsize=14)
+        ax.axhline(0.1, ls='--', color='black')
+        ax.legend()
 
         # PC1 corr matrix
-        ax = axes[2]
+        ax = axes[3]
         ax.imshow(corr_mx, cmap='coolwarm', vmin=-1, vmax=1)
         ax.set_xticks(range(corr_mx.shape[0]))
         ax.set_xticklabels([key for key in eignvectors.keys()], rotation=60)
@@ -333,7 +346,7 @@ with PdfPages(snakemake.output[1]) as pdf:
         ax.set_yticklabels([key for key in eignvectors.keys()])
 
         # Scree on PCA
-        ax = axes[3]
+        ax = axes[4]
         for cond_name, exp_r in exp_ratios.items():
             ax.plot(np.arange(len(exp_r)), exp_r, linewidth=2, label=cond_name)
         ax.legend()

@@ -66,14 +66,14 @@ fig, axes = plt.subplots(rows, cols, figsize=(6*cols, 4.5*rows))
 
 for k, (area, aeps_mx) in enumerate(aeps.items()):
     # means
-    aeps_bgr_mean = aeps_mx[sound_events[:, 1] == 1].mean(axis=0)
-    aeps_tgt_mean = aeps_mx[sound_events[:, 1] == 2].mean(axis=0)
-    aeps_bgr_sta_mean = aeps_mx[(sound_events[:, 1] == 1) & (stationary_during_sound)].mean(axis=0)
-    aeps_bgr_run_mean = aeps_mx[(sound_events[:, 1] == 1) & (~stationary_during_sound)].mean(axis=0)
-    aeps_tgt_sta_mean = aeps_mx[(sound_events[:, 1] == 2) & (stationary_during_sound)].mean(axis=0)
-    aeps_sil_mean = aeps_mx[sound_events[:, 1] == 0].mean(axis=0)
-    aeps_1st_succ = aeps_mx[tgt_mx[tgt_mx[:, 4] == 1][:, 0]].mean(axis=0)
-    aeps_1st_rewd = aeps_mx[tgt_mx[tgt_mx[:, 4] == 1][:, 1] + 1].mean(axis=0)
+    aeps_bgr_mean = np.nanmean(aeps_mx[sound_events[:, 1] == 1], axis=0)
+    aeps_tgt_mean = np.nanmean(aeps_mx[sound_events[:, 1] == 2], axis=0)
+    aeps_bgr_sta_mean = np.nanmean(aeps_mx[(sound_events[:, 1] == 1) & (stationary_during_sound)], axis=0)
+    aeps_bgr_run_mean = np.nanmean(aeps_mx[(sound_events[:, 1] == 1) & (~stationary_during_sound)], axis=0)
+    aeps_tgt_sta_mean = np.nanmean(aeps_mx[(sound_events[:, 1] == 2) & (stationary_during_sound)], axis=0)
+    aeps_sil_mean = np.nanmean(aeps_mx[sound_events[:, 1] == 0], axis=0)
+    aeps_1st_succ = np.nanmean(aeps_mx[tgt_mx[tgt_mx[:, 4] == 1][:, 0]], axis=0)
+    aeps_1st_rewd = np.nanmean(aeps_mx[tgt_mx[tgt_mx[:, 4] == 1][:, 1] + 1], axis=0)
 
     # counts
     aeps_bgr_count = np.sum(sound_events[:, 1] == 1)

@@ -47,7 +47,8 @@ results = {}
 for condition_id in idxs_states.keys():
     cond_mx = np.zeros([len(spike_times), 14])  # 14 metrics should be
     for i, (unit_id, metrics) in enumerate(all_unit_metrics.items()):
-        cond_mx[i] = np.array(list(metrics[condition_id].values()))
+        if condition_id in metrics:
+            cond_mx[i] = np.array(list(metrics[condition_id].values()))
 
     results[condition_id] = cond_mx.copy()
 

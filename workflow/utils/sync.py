@@ -10,7 +10,7 @@ def get_sound_events_from_ADC(adc_file, adc_ts_file, sounds_file, events_file, e
 
     # smoothing and thresholding
     kernel_width = s_rate / 100  # need to test if good enough for high frequencies
-    kernel = signal.gaussian(kernel_width, std=(kernel_width) / 7.2)
+    kernel = signal.windows.gaussian(kernel_width, std=(kernel_width) / 7.2)
 
     data_smooth = np.convolve(np.abs(channel_data - channel_data.mean()), kernel, 'same') / kernel.sum()
 
@@ -43,7 +43,8 @@ def get_sound_events_from_ADC(adc_file, adc_ts_file, sounds_file, events_file, e
     events_csv[:, 0] = events_csv[:, 0] - events_exp[0][0]
 
     # first shift by the delay of the ephys start
-    shift = events_csv[0][0] - period_times[0][0]
+    adc_to_ephys_shift = adc_timestamps[0] - ephys_timestamps[0]
+    shift = events_csv[0][0] - period_times[0][0] + adc_to_ephys_shift
     events_csv[:, 0] = events_csv[:, 0] - shift
 
     # next linearly correct the drift by finding a time diff between

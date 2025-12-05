@@ -10,23 +10,17 @@ with h5py.File(snakemake.input[0], 'r') as f:
     cfg = json.loads(f['processed'].attrs['parameters'])
 
 with h5py.File(snakemake.input[1], 'r') as f:
-    lfp = np.array(f['lfp'])
-
-# Set artifacts to 0. Ideally exclude these periods, but
-# because it depends on the channel it's too complex
-artifact_idxs_all = []
-for i in range(len(lfp)):
-    artf_idxs = np.where(np.abs(lfp[i]) > 4*lfp[i].std())[0]
-    lfp[i][artf_idxs] = 0
-    artifact_idxs_all.append(artf_idxs)
-
-# time x channels
-lfp = lfp.T
+    lfp = np.array(f['lfp']).T  # time x channels
 
 # baselines for each channel
 with h5py.File(snakemake.input[2], 'r') as f:
     baselines = np.array(f['lfp_base'])
 baseline_stds = baselines[:, 1]
+
+# artifact mask
+with h5py.File(snakemake.input[3], 'r') as f:
+    artifact_mask = np.array(f['artifact_mask']).astype(bool)
+
 
 fs = snakemake.config['lfp']['target_rate']  # Hz
 pre_ms = snakemake.config['lfp']['aep_pre'] * 1000
@@ -46,7 +40,8 @@ base_trials = []
 
 for t in stim_times:
     t = int(t)
-    if t - pre_samp >= 0 and t + post_samp < len(lfp):
+    if (t - pre_samp >= 0 and t + post_samp < len(lfp)) and \
+        (artifact_mask[t - pre_samp : t + post_samp].sum() == 0):  # exclude artifact periods
         segment = lfp[t - pre_samp : t + post_samp, :]  # shape: time x channels
 
         baseline = segment[0:pre_samp, :]
