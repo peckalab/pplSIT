@@ -1,5 +1,5 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl_016700.yaml --use-conda --cores=20
+# snakemake -n --configfile=../config/andrey/014393.yaml --use-conda --cores=20
 #
 # mount nevermind via SSHFS
 # sshfs sobolev@10.153.172.1:/nevermind.neuro/share/ag-grothe nevermind
@@ -10,56 +10,44 @@
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   performance: True   # performance metrics
-  DLC: True        # Deep lab cut
-  MoSeq: True        # MoSeq
-  descendants: True   # speed, HD etc. from MoSeq and others
+  DLC: False        # Deep lab cut
+  MoSeq: False        # MoSeq
+  descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: True          # extract LFP
+  LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
-  AEPs: True         # extract Auditory Evoked Responses
+  AEPs: False         # extract Auditory Evoked Responses
   PSTH_bar: True
-  PSTH_bootstrap: True
+  PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
   spatial: False
-  population: True
+  population: False
   coherence: False
-  manifold_states: True
+  manifold_states: False
   metronome: False
   video: False
-  sound_phase_lock: True
+  sound_phase_lock: False
   segments: True
-  activity_matrices: False
-  ensembles: False
-  covariance: False
-  vectors: False
-  CCR: True
+  activity_matrices: True
+  ensembles: True
+  covariance: True
+  vectors: True
 
 session_IDs:  
-  # - "016700_ppcSIT_2025-11-03_12-12-04"
-  # - "016700_ppcSIT_2025-11-03_12-17-35"
-  # - "016700_ppcSIT_2025-11-03_12-20-47"
-  # - "016700_ppcSIT_2025-11-03_12-23-51"
-
-  # - "016700_ppcSIT_2025-11-03_12-26-49"
-  # - "016700_ppcSIT_2025-11-03_12-29-40"
-  # - "016700_ppcSIT_2025-11-03_12-32-20"
-  # - "016700_ppcSIT_2025-11-03_12-36-07"
-  # - "016700_ppcSIT_2025-11-04_20-23-08"
-
-  - "016700_ppcSIT_2025-11-10_16-59-58"
-  - "016700_ppcSIT_2025-11-11_10-06-07"
-  - "016700_ppcSIT_2025-11-12_10-23-15"
-  - "016700_ppcSIT_2025-11-13_09-07-44"
-  - "016700_ppcSIT_2025-11-13_21-27-17"  # 3-4
-  - "016700_ppcSIT_2025-11-14_10-20-29"  # 3-4
-  - "016700_ppcSIT_2025-11-14_15-52-25"
-  - "016700_ppcSIT_2025-11-17_10-50-51"
-  - "016700_ppcSIT_2025-11-18_13-18-07"  # 3-4
-  - "016700_ppcSIT_2025-11-19_13-11-14"  # 3-4
-
+  # - "014393_ppcSIT_2025-04-16_11-20-15"
+  # - "014393_ppcSIT_2025-04-16_21-25-03"
+  # - "014393_ppcSIT_2025-04-23_09-23-02"
+  - "014393_ppcSIT_2025-04-23_20-27-09"
+  # - "014393_ppcSIT_2025-04-24_08-57-16"
+  - "014393_ppcSIT_2025-04-24_20-53-08"
+  # - "014393_ppcSIT_2025-04-25_08-42-15"
+  - "014393_ppcSIT_2025-04-25_15-42-45"
+  # - "014393_ppcSIT_2025-04-28_09-57-10"
+  # - "014393_ppcSIT_2025-04-29_09-05-50"
+  - "014393_ppcSIT_2025-04-29_22-10-49"
 
 
 # source of raw data
@@ -74,17 +62,17 @@ pack:
   drift_coeff: 0.000016666
 
 # neurosuite / klustakwik config files
-template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/neurosuite.xml"
-template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/manual.json"
+template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/neurosuite.xml"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/manual.json"
 ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
 kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
 kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 500 -UseFeatures"
 
 kilosort:
-  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/kilosort.json"
-  probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/probe.json"
+  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/kilosort.json"
+  probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013608/probe.json"
   save_preprocessed: False
-  cuda_device: 2
+  cuda_device: 0
 
 # single units config: which sorter to use
 units:
@@ -98,7 +86,7 @@ dlc_trainingsetindex: 1
 
 # moseq config files
 moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
-cuda_device_to_use: 1
+cuda_device_to_use: 3
 
 # LFP configuration
 lfp:
@@ -107,23 +95,6 @@ lfp:
   target_rate: 1000  # target LFP sampling rate in Hz
   chunk_size_sec: 10  # chunk size for conversion in seconds
   aep_dur: 0.25  # Auditory evoked response duration in sec
-  aep_pre: 0.12
-  aep_sig: 0.125
-  artifacts:
-    z_thresh: 8.0
-    win_ms: 200
-    step_ms: 100
-    min_dur_ms: 500
-    merge_gap_ms: 2000
-  aep_ITPC:
-    area: 'A1'
-    metric: 'avg_across_channels'  # weighted_avg, zscored_avg, raw_AEPs (last is 2D)
-  baseline:
-    min_duration_ms: 500
-    stationary_thresh: 0.04  # m/s
-  EV_SU:
-    kernel_sizes: [0, 4, 8, 12, 16]
-
 
 # analysis configurations
 psth:
@@ -146,7 +117,6 @@ nMAP_electrodes:
     '009266': [1, 2]
     '57': [1]
     '60': [1, 2]
-    '016700': [1, 2, 3, 4]
 
 nMAP_segmentation:
   ft: 'tSNE'
@@ -202,9 +172,13 @@ sound_phase_lock:
   n_shuffles: 100
   ipi_for_shuffle: 0.25
 
+sound_phase_lock:
+  n_shuffles: 100
+  ipi_for_shuffle: 0.25
+
 segments:
-  ensembles: False
-  tgt_sta_min_pulses: 13
+  ensembles: True
+  tgt_sta_min_pulses: 20
   bgr_sta_min_pulses: 12
   sil_sta_min_pulses: 12
   bgr_run_min_pulses: 2

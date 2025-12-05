@@ -1,12 +1,12 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey_gpuxxl_009266.yaml --use-conda --cores=20
+# snakemake -n --configfile=../config/andrey/013829.yaml --use-conda --cores=20
 
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   performance: True   # performance metrics
   DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
-  descendants: True   # speed, HD etc. from MoSeq and others
+  descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
@@ -14,8 +14,8 @@ blocks:  # blocks of pipeline to run
   units: True      # extract spike trains from sorted data
   AEPs: True         # extract Auditory Evoked Responses
   PSTH_bar: True
-  PSTH_bootstrap: False
-  PSTH_shuffle: False
+  PSTH_bootstrap: True
+  PSTH_shuffle: True
   PSTH_bnMAPs: False
   spatial: False
   population: True
@@ -25,31 +25,39 @@ blocks:  # blocks of pipeline to run
   video: False
   sound_phase_lock: True
   segments: True
-  activity_matrices: True
+  activity_matrices: False
   ensembles: False
   covariance: False
   vectors: False
   CCR: True
-  
+
 session_IDs:  
-# 009266
-  - "009266_hippoSIT_2023-04-17_17-04-17"
-  - "009266_hippoSIT_2023-04-18_10-10-37"
-  - "009266_hippoSIT_2023-04-18_17-03-10"
-  - "009266_hippoSIT_2023-04-19_10-33-51"
-  - "009266_hippoSIT_2023-04-20_08-57-39"
-  - "009266_hippoSIT_2023-04-21_08-43-00"
-  - "009266_hippoSIT_2023-04-21_13-12-31"
-  - "009266_hippoSIT_2023-04-24_10-08-11"
-  - "009266_hippoSIT_2023-04-24_16-56-55"
-  - "009266_hippoSIT_2023-04-26_08-20-17"
-  - "009266_hippoSIT_2023-05-02_12-22-14"
-  - "009266_hippoSIT_2023-05-04_19-47-15"
-  - "009266_hippoSIT_2023-05-22_09-27-22"
-  - "009266_hippoSIT_2023-05-23_09-18-05"
-  - "009266_hippoSIT_2023-05-25_15-55-57"
-  - "009266_hippoSIT_2023-06-14_08-21-23"
-  - "009266_hippoSIT_2023-06-19_08-58-35"
+  # these are more A1
+  # - "013829_ppcSIT_2024-11-06_20-06-31"
+  # - "013829_ppcSIT_2024-11-07_08-38-36"
+  # - "013829_ppcSIT_2024-11-08_08-38-51"
+  # - "013829_ppcSIT_2024-11-10_15-19-36"
+  # - "013829_ppcSIT_2024-11-11_09-10-59"
+  # - "013829_ppcSIT_2024-11-11_16-35-07"
+  # - "013829_ppcSIT_2024-11-12_10-07-58"
+  # - "013829_ppcSIT_2024-11-13_13-13-13"
+  # - "013829_ppcSIT_2024-11-14_11-07-32"
+  # - "013829_ppcSIT_2024-11-15_15-48-45"
+
+  # these are both A1 / PPC (HPC)
+  - "013829_ppcSIT_2024-11-16_11-17-54"
+  - "013829_ppcSIT_2024-11-16_19-31-26"
+  - "013829_ppcSIT_2024-11-17_15-26-16"
+  - "013829_ppcSIT_2024-11-18_08-49-06"
+  - "013829_ppcSIT_2024-11-18_19-59-51"
+  - "013829_ppcSIT_2024-11-19_09-00-18"
+  - "013829_ppcSIT_2024-11-19_21-18-43"
+  - "013829_ppcSIT_2024-11-20_09-26-11"  # very nice HPC cells
+  - "013829_ppcSIT_2024-11-20_16-59-28"
+  - "013829_ppcSIT_2024-11-21_09-27-32"
+  - "013829_ppcSIT_2024-11-22_09-17-13"
+  - "013829_ppcSIT_2024-11-24_16-59-20"
+  - "013829_ppcSIT_2024-11-25_10-04-29"
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -86,7 +94,7 @@ cuda_device_to_use: 1
 
 # LFP configuration
 lfp:
-  n_channels: 64
+  n_channels: 72
   source_rate: 30000 # original LFP sampling rate in Hz
   target_rate: 1000  # target LFP sampling rate in Hz
   chunk_size_sec: 10  # chunk size for conversion in seconds
@@ -111,13 +119,14 @@ lfp:
 sound_phase_lock:
   n_shuffles: 100
   ipi_for_shuffle: 0.25
+
   
 # analysis configurations
 psth:
   micro:
     latency: 0.25
-    bin_count: 31
-    figsize: 2.5
+    bin_count: 51
+    figsize: 4
   macro:
     latency: 7.25
     bin_count: 31
@@ -129,7 +138,7 @@ psth:
 
 # neural manifolds
 nMAP_electrodes:
-    '013829': [1, 2]
+    '013829': [1]
     '009265': [1, 2]
     '009266': [1, 2]
     '57': [1]
@@ -163,8 +172,8 @@ nMAP_EV_SU:
   bin_size: 0.01
   ev_su_lag: 0.12
   k_width: 200  # sampled as activity matrix per event bins (250ms)
-  smooth_su_size: 4  #  rectangular kernel size to smooth sustained part
-  smooth_ev_size: 4  #  rectangular kernel size to smooth evoked part
+  smooth_su_size: 4 #  rectangular kernel size to smooth sustained part
+  smooth_ev_size: 4  #  gaussian kernel size to smooth evoked part
 
 # unit matrix + video merging
 video:
@@ -183,7 +192,7 @@ coherence:
   sustained_start: 0.12
 
 PSTH_micro_bnMAPs:
-  units: ['1-13', '2-4', '2-5']  # leave empty for all units
+  units: []  # leave empty for all units
 
 segments:
   ensembles: False
@@ -196,23 +205,3 @@ segments:
   visits:
     min_pulses: 8
     radius: 0.05
-
-AEPs:
-  aep_lfp_metrics_thresholds:
-    "009266_hippoSIT_2023-04-17_17-04-17": [1200, 300]  # SNR, amplitude
-    "009266_hippoSIT_2023-04-18_10-10-37": [1500, 400]
-    "009266_hippoSIT_2023-04-18_17-03-10": [2000, 300]
-    "009266_hippoSIT_2023-04-19_10-33-51": [3000, 400]
-    "009266_hippoSIT_2023-04-20_08-57-39": [5000, 400]
-    "009266_hippoSIT_2023-04-21_08-43-00": [6000, 600]
-    "009266_hippoSIT_2023-04-21_13-12-31": [3500, 500]
-    "009266_hippoSIT_2023-04-24_10-08-11": [1000, 500]
-    "009266_hippoSIT_2023-04-24_16-56-55": [2000, 500]
-    "009266_hippoSIT_2023-04-26_08-20-17": [2500, 600]
-    "009266_hippoSIT_2023-05-02_12-22-14": [2000, 500]
-    "009266_hippoSIT_2023-05-04_19-47-15": [1500, 500]
-    "009266_hippoSIT_2023-05-22_09-27-22": [5000, 600]
-    "009266_hippoSIT_2023-05-23_09-18-05": [2600, 600]
-    "009266_hippoSIT_2023-05-25_15-55-57": [5000, 700]
-    "009266_hippoSIT_2023-06-14_08-21-23": [600, 300]
-    "009266_hippoSIT_2023-06-19_08-58-35": [2500, 400]
