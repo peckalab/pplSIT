@@ -87,8 +87,8 @@ for j, (state_id, idxs_pool) in enumerate(event_idxs_pool.items()):
         confidence_low  = np.zeros(bc-1)
         confidence_high = np.zeros(bc-1)
         for k, col in enumerate(profiles[j][u].T):
-            confidence_low[k]  = np.percentile(col, 5)
-            confidence_high[k] = np.percentile(col, 95)
+            confidence_low[k]  = np.percentile(col, 2.5)
+            confidence_high[k] = np.percentile(col, 97.5)
 
         profile_stats[j][u] = np.vstack([
             bins[:-1],  

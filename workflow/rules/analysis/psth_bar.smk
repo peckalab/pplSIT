@@ -1,9 +1,15 @@
+import os
+
+def conditional_input(wildcards):
+    f = os.path.join(config['dst_path'], wildcards.animal, wildcards.session, 'analysis', 'sound_phase_lock.h5')
+    return [f] if os.path.exists(f) else []
 
 
 rule psth_micro:
     input:
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
-        units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
+        units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5'),
+        opt = conditional_input
     output:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_tgt_bar.pdf'),
         os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_bgr_sil_bar.pdf'),
