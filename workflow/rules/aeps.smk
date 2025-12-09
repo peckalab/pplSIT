@@ -10,7 +10,7 @@ rule aeps_lfp_metrics:
     output:
         aeps_lfp_metrics=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'aeps_lfp_metrics.h5')
     script:
-        "../../scripts/aeps/aeps_lfp_metrics.py"
+        "../scripts/aeps/aeps_lfp_metrics.py"
 
 
 rule extract_aeps:
@@ -24,7 +24,7 @@ rule extract_aeps:
     output:
         aeps=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'AEPs.h5')
     script:
-        "../../scripts/aeps/aeps_extract.py"
+        "../scripts/aeps/aeps_extract.py"
         
 
 rule aeps_ITPC:
@@ -34,7 +34,7 @@ rule aeps_ITPC:
     output:
         ITPC=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'aeps_ITPC.h5')
     script:
-        "../../scripts/aeps/aeps_ITPC.py"
+        "../scripts/aeps/aeps_ITPC.py"
         
 
 rule aeps_ITPC_plot:
@@ -43,7 +43,7 @@ rule aeps_ITPC_plot:
     output:
         ITPC_plots=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'aeps_ITPC.pdf')
     script:
-        "../../scripts/aeps/aeps_ITPC_plot.py"
+        "../scripts/aeps/aeps_ITPC_plot.py"
         
 
 rule aeps_EV_SU_metrics:
@@ -52,7 +52,7 @@ rule aeps_EV_SU_metrics:
     output:
         metrics=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'aeps_EV_SU_metrics.h5')
     script:
-        "../../scripts/aeps/aeps_EV_SU_metrics.py"
+        "../scripts/aeps/aeps_EV_SU_metrics.py"
         
 
 rule plot_AEP_profiles:
@@ -62,7 +62,7 @@ rule plot_AEP_profiles:
     output:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'aeps_profiles.pdf')
     script:
-        "../../scripts/aeps/aeps_profiles.py"
+        "../scripts/aeps/aeps_profiles.py"
 
 
 # rule compute_aep_components:

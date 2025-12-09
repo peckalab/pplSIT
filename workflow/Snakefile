@@ -61,6 +61,7 @@ include: "rules/analysis/ensembles.smk"
 include: "rules/analysis/segments.smk"
 include: "rules/analysis/vectors.smk"
 include: "rules/analysis/CCR.smk"
+include: "rules/decoders.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
@@ -159,7 +160,8 @@ target_names_dict = {
     'vectors': [
         'analysis/vectors/progression.h5',
         'analysis/vectors/averages.h5'
-    ]
+    ],
+    'decoders': ['decoders/behav_states.h5']
 }
 
 def collect_target_names():
