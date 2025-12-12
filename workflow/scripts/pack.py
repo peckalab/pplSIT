@@ -84,7 +84,7 @@ def build_tgt_matrix(sound_events, trials):
     ]).astype(np.int32)
 
 
-def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=0.000025):  
+def pack(pos_file, ev_file, snd_file, isl_file, cfg_file, man_file, dst_file, drift_coeff=0.000025):  
     """
     Pack independent raw session datasets into a single HDF5 file.
 
@@ -123,7 +123,7 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
         raw.attrs['parameters'] = json.dumps(parameters)
 
         ds_names = ['positions', 'events', 'sounds', 'islands']
-        for i, f_path  in enumerate([pos_file, ev_file, snd_file]):
+        for i, f_path  in enumerate([pos_file, ev_file, snd_file, isl_file]):
             ds_name = ds_names[i]
             if not os.path.exists(f_path):
                 continue
@@ -306,11 +306,12 @@ def pack(pos_file, ev_file, snd_file, cfg_file, man_file, dst_file, drift_coeff=
 
 # actual execution
 pack(
-    snakemake.input[0], 
-    snakemake.input[1], 
-    snakemake.input[2], 
-    snakemake.input[3], 
-    snakemake.input[4],
-    snakemake.output[0],
+    snakemake.input.positions, 
+    snakemake.input.events, 
+    snakemake.input.sounds, 
+    snakemake.input.islands,
+    snakemake.input.cfg,
+    snakemake.input.manual,
+    snakemake.output.meta,
     drift_coeff=snakemake.config['pack']['drift_coeff']
 )
