@@ -65,7 +65,7 @@ include: "rules/decoders.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
-    'performance':    ['performance.h5'],
+    'performance':    ['performance/performance.h5'],
     'DLC':     ['DLC_100Hz.h5', 'video_labeled.mp4'],
     'MoSeq':   [
         'MoSeq.h5', 
