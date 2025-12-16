@@ -53,9 +53,27 @@ moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModel
 
 # LFP configuration
 lfp:
-  s_rate: 1000  # sampling rate in Hz
+  n_channels: 384
+  source_rate: 30000 # original LFP sampling rate in Hz
+  target_rate: 1000  # target LFP sampling rate in Hz
+  chunk_size_sec: 10  # chunk size for conversion in seconds
   aep_dur: 0.25  # Auditory evoked response duration in sec
-
+  aep_pre: 0.12
+  aep_sig: 0.125
+  artifacts:
+    z_thresh: 8.0
+    win_ms: 200
+    step_ms: 100
+    min_dur_ms: 500
+    merge_gap_ms: 2000
+  aep_ITPC:
+    area: 'A1'
+    metric: 'avg_across_channels'  # weighted_avg, zscored_avg, raw_AEPs (last is 2D)
+  baseline:
+    min_duration_ms: 500
+    stationary_thresh: 0.04  # m/s
+  EV_SU:
+    kernel_sizes: [0, 4, 8, 12, 16]
 # AEP configuration
 AEPs:
   speed_thresh: 0.04  # m/s

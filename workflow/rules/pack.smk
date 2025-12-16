@@ -7,14 +7,17 @@ def conditional_input_isl(wildcards):
 # this function checks if continuous.dat exists at all, 
 # if so the final path of dat in the raw folder is used as input,
 # which will trigger its creation in copy.smk (if needed) as well as the adc files if it makes sense
-def is_dat_an_input(wildcards):
+def sync_inputs(wildcards):
     base = os.path.join(config['src_path'], wildcards.animal, wildcards.session)
 
     for dirpath, _, filenames in os.walk(base):
         if "continuous.dat" in filenames:
-            return os.path.join(config['src_path'], '{animal}', '{session}', '{session}.dat')
+            return [
+                os.path.join(config['src_path'], '{animal}', '{session}', '{session}.dat'),
+                os.path.join(config['src_path'], '{animal}', '{session}', 'timestamps.npy'),
+            ]
 
-    return None  # important: return None if not found
+    return []  # important: return [] if not found
 
 rule pack:
     input:
@@ -25,7 +28,7 @@ rule pack:
         cfg = os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.json'),
         manual = os.path.join(config['src_path'], '{animal}', '{session}', 'manual.json'),
         
-        dat = is_dat_an_input,
+        optional_sync_inputs = sync_inputs,
     output:
         meta = os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5')
     script:

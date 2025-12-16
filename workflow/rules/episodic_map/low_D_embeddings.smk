@@ -9,4 +9,4 @@ rule low_D_embeddings:
     output:
         lowD = os.path.join(config['dst_path'], '{animal}', '{session}', 'episodic_map', 'low_D_embeddings.h5')
     script:
-        "../scripts/episodic_map/low_D_embeddings.py"
+        "../../scripts/episodic_map/low_D_embeddings.py"

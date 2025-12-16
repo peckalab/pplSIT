@@ -6,7 +6,8 @@ import subprocess
 # For Neuropixels recordings, also creates a hard link to the ADC raw data file.
 rule move_dat_from_subfolder:
     output:
-        dat=os.path.join(config['src_path'], '{animal}', '{session}', '{session}.dat')
+        dat=os.path.join(config['src_path'], '{animal}', '{session}', '{session}.dat'),
+        ts_path = os.path.join(config['src_path'], '{animal}', '{session}', 'timestamps.npy')
     run:
         import os
         import shutil
@@ -29,8 +30,7 @@ rule move_dat_from_subfolder:
                 else:
                     subprocess.run(['ln', dat_path, output.dat])
                     ts_path = os.path.join(dirpath, 'timestamps.npy')
-                    if os.path.exists(ts_path):
-                        subprocess.run(['ln', ts_path, os.path.join(session_path, 'timestamps.npy')])
+                    subprocess.run(['ln', ts_path, os.path.join(session_path, 'timestamps.npy')])
 
         if dat_path is None:
             raise ValueError("There should be at least one .dat file in the session path")

@@ -112,6 +112,7 @@ for seed in umap_seeds:
     reducer = umap.UMAP(
         n_components=2,
         random_state=int(seed),
+        n_jobs=1,
         **umap_params
     )
     umap_embeddings[int(seed)] = reducer.fit_transform(X_use).astype(np.float32)

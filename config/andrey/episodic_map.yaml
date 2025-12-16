@@ -155,13 +155,6 @@ dlc_trainingsetindex: 1
 moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
 cuda_device_to_use: 3
 
-# LFP configuration
-lfp:
-  n_channels: 384
-  source_rate: 30000 # original LFP sampling rate in Hz
-  target_rate: 1000  # target LFP sampling rate in Hz
-  chunk_size_sec: 10  # chunk size for conversion in seconds
-  aep_dur: 0.25  # Auditory evoked response duration in sec
 
 # analysis configurations
 psth:
