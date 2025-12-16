@@ -57,7 +57,7 @@ def get_sound_events_from_ADC(adc_file, adc_ts_file, sounds_file, events_file, e
     return period_times, events_csv
 
 
-def get_sound_events_from_openephys(dat_file, xml_file, sounds_file, events_file, channel, event_th=200, ipi=0.25):
+def get_sound_events_from_openephys(dat_file, xml_file, sounds_file, events_file, channel, event_th=200, ipi=0.25, bias_correction=0.004):
     """
     returns: 
      - events_detected - sound events (t_start, t_end) detected from ephys
@@ -121,7 +121,7 @@ def get_sound_events_from_openephys(dat_file, xml_file, sounds_file, events_file
     for pulse in pulses:
         idx_ev = np.abs(pulse[0] - events_csv[:, 0]).argmin()
         if np.abs(pulse[0] - events_csv[idx_ev][0]) < max_drift:
-            events_synced[idx_ev][0] = pulse[0]
+            events_synced[idx_ev][0] = pulse[0] - bias_correction # correct for 4ms bias in the pulse detection
 
     # update noise periods
     for noise in noises:
