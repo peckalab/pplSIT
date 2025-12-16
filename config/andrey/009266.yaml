@@ -30,7 +30,8 @@ blocks:  # blocks of pipeline to run
   covariance: False
   vectors: False
   CCR: True
-  
+  state_decoder_ev_su: True
+
 session_IDs:  
 # 009266
   - "009266_hippoSIT_2023-04-17_17-04-17"

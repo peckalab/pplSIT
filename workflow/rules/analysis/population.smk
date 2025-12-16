@@ -25,7 +25,8 @@ rule nMAP_EV_SU_no_convolution:
     input:
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
         units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5'),
-        psths=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_micro.h5')
+        psths=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_micro.h5'),
+        segm=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'segments.h5')
     output:
         nMAP_EV_SU=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'nMAP_EV_SU_noconv.h5')
     script:

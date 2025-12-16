@@ -9,7 +9,7 @@ parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
-from utils.population import unit_activity_matrix
+from utils.population import unit_activity_matrix, align_pc_sign
 from utils.psth import get_psth_matrix, staple_spike_times
 from utils.spiketrain import smooth_gaussian, smooth_rectangular
 
@@ -30,6 +30,13 @@ with h5py.File(snakemake.input[0], 'r') as f:
     tl = np.array(f['processed']['timeline'])
     tgt_mx = np.array(f['processed']['target_matrix'])
     cfg = json.loads(f['processed'].attrs['parameters'])
+
+# reading state indices
+state_ids    = ['idxs_tgt_sta_succ', 'idxs_bgr_sta', 'idxs_bgr_run', 'idxs_sil_sta', 'idxs_sil_run']
+with h5py.File(snakemake.input[3], 'r') as f:
+    state_idxs = {}
+    for idxs_name in state_ids:
+        state_idxs[idxs_name] = np.array(f[idxs_name]).astype(np.int32)
 
 # building unit activity matrix - shape (n_units, n_bins), 10 ms bins
 bins, spikes_uxt = unit_activity_matrix(snakemake.input[0], snakemake.input[1], electrodes)
@@ -115,17 +122,25 @@ SU_PC1 = decomposition.PCA(n_components=2).fit_transform(sustained_z.T)[:, 0]
 EV_PC1 = smooth_rectangular(EV_PC1, smooth_ev_size)
 SU_PC1 = smooth_rectangular(SU_PC1, smooth_su_size)
 
+# fix sign for evoked, also sustained 
+# 0 - Target, 1 - Background STA, 2 - Background RUN, 3 - No stimulus STA, 4 - No stimulus RUN
+state = -1 * np.ones(len(sound_events))
+state[state_idxs['idxs_tgt_sta_succ']] = 0  # Target
+state[state_idxs['idxs_bgr_sta']] = 1        # Background STA
+state[state_idxs['idxs_bgr_run']] = 2        # Background RUN
+state[state_idxs['idxs_sil_sta']] = 3        # No stimulus STA
+state[state_idxs['idxs_sil_run']] = 4        # No stimulus RUN
 
-# fix sign for evoked, also sustained - based only on the fact that no stim periods
-# have usually more running. So SU values should be higher
+# if np.nanmean(EV_PC1[idxs_bgr_ev]) < np.nanmean(EV_PC1[idxs_sil_ev]):
+#     EV_PC1 *= -1
+# if np.nanmean(SU_PC1[idxs_bgr_ev]) > np.nanmean(SU_PC1[idxs_sil_ev]):
+#     SU_PC1 *= -1
+EV_PC1, sign_ev = align_pc_sign(EV_PC1, state, mode="evoked")
+SU_PC1, sign_su = align_pc_sign(SU_PC1, state, mode="sustained")
+
+# Center on no-stim / background
 idxs_bgr_ev = np.where(stim_labels == 1)[0]
 idxs_sil_ev = np.where(stim_labels == 0)[0]
-if np.nanmean(EV_PC1[idxs_bgr_ev]) < np.nanmean(EV_PC1[idxs_sil_ev]):
-    EV_PC1 *= -1
-if np.nanmean(SU_PC1[idxs_bgr_ev]) > np.nanmean(SU_PC1[idxs_sil_ev]):
-    SU_PC1 *= -1
-    
-# 2) Center on no-stim / background
 mu_ns = np.nanmean(EV_PC1[idxs_sil_ev])
 EV_PC1_c = EV_PC1 - mu_ns
 mu_bg = np.nanmean(SU_PC1[idxs_bgr_ev])

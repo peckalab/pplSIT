@@ -30,6 +30,7 @@ blocks:  # blocks of pipeline to run
   covariance: False
   vectors: False
   CCR: True
+  state_decoder_ev_su: True
 
 session_IDs:  
   # these are more A1

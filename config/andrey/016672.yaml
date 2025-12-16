@@ -38,6 +38,7 @@ blocks:  # blocks of pipeline to run
   ensembles: False
   covariance: False
   vectors: True
+  state_decoder_unit_mx: True
 
 session_IDs:  
   # controls
@@ -78,7 +79,7 @@ session_IDs:
   - "016672_devSITactive_2025-10-28_21-02-10"
   - "016672_devSITactive_2025-10-29_13-36-00"
   - "016672_devSITactive_2025-10-30_11-23-50"
-  - "016672_devSITactive_2025-10-31_14-50-34"  # good restored session (26 mins)
+  # - "016672_devSITactive_2025-10-31_14-50-34"  # good restored session (26 mins)
   - "016672_devSITactive_2025-10-31_15-23-44"
   - "016672_devSITactive_2025-11-03_10-39-56"
   - "016672_devSITactive_2025-11-04_10-11-10"
@@ -131,7 +132,7 @@ dlc_trainingsetindex: 1
 
 # moseq config files
 moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
-cuda_device_to_use: 2
+cuda_device_to_use: 3
 
 # LFP configuration
 lfp:

@@ -131,3 +131,9 @@ coherence:
   bin_size: 0.01
   win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
   sustained_start: 0.12
+
+# Behavioral state decoding from neural activity
+state_decoder:
+  aep_type: 'avg_across_channels'
+  kernel_size: '8'
+  unit_mx_electrodes: []

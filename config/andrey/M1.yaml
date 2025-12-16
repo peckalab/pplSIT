@@ -1,9 +1,5 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey/009265.yaml --use-conda --cores=20
-#
-# list code changes
-# snakemake -n --configfile=../config/andrey/009265.yaml -R $(snakemake -n --configfile=./config/andrey/009265.yaml --cores=20 --list-code-changes | grep dlc)  --touch
-
+# snakemake -n --configfile=../config/andrey/M1.yaml --use-conda --cores=20
 
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
@@ -34,14 +30,9 @@ blocks:  # blocks of pipeline to run
   covariance: False
   vectors: False
   CCR: True
-  state_decoder_ev_su: True
+  decoders: False
 
-session_IDs:
-  # - "009265_hippoSIT_2023-02-28_13-16-10"
-  # - "009265_hippoSIT_2023-02-28_20-45-04"
-  # - "009265_hippoSIT_2023-03-01_10-46-12"
-  # - "009265_hippoSIT_2023-03-02_09-32-54"
-  # - "009265_hippoSIT_2023-03-02_16-27-42"  # too small AEPs up to here
+session_IDs:  
   - "009265_hippoSIT_2023-03-02_20-11-35"
   - "009265_hippoSIT_2023-03-03_09-37-07"
   - "009265_hippoSIT_2023-03-03_16-00-47"
@@ -52,20 +43,62 @@ session_IDs:
   - "009265_hippoSIT_2023-03-09_20-03-08"
   - "009265_hippoSIT_2023-03-10_09-57-34"
 
+  - "009266_hippoSIT_2023-04-17_17-04-17"
+  - "009266_hippoSIT_2023-04-18_10-10-37"
+  - "009266_hippoSIT_2023-04-18_17-03-10"
+  - "009266_hippoSIT_2023-04-19_10-33-51"
+  - "009266_hippoSIT_2023-04-20_08-57-39"
+  - "009266_hippoSIT_2023-04-21_08-43-00"
+  - "009266_hippoSIT_2023-04-21_13-12-31"
+  - "009266_hippoSIT_2023-04-24_10-08-11"
+  - "009266_hippoSIT_2023-04-24_16-56-55"
+  - "009266_hippoSIT_2023-04-26_08-20-17"
+  - "009266_hippoSIT_2023-05-02_12-22-14"
+  - "009266_hippoSIT_2023-05-04_19-47-15"
+  - "009266_hippoSIT_2023-05-22_09-27-22"
+  - "009266_hippoSIT_2023-05-23_09-18-05"
+  - "009266_hippoSIT_2023-05-25_15-55-57"
+  - "009266_hippoSIT_2023-06-14_08-21-23"
+  - "009266_hippoSIT_2023-06-19_08-58-35"
+
+  - "013829_ppcSIT_2024-11-16_11-17-54"
+  - "013829_ppcSIT_2024-11-16_19-31-26"
+  - "013829_ppcSIT_2024-11-17_15-26-16"
+  - "013829_ppcSIT_2024-11-18_08-49-06"
+  - "013829_ppcSIT_2024-11-18_19-59-51"
+  - "013829_ppcSIT_2024-11-19_09-00-18"
+  - "013829_ppcSIT_2024-11-19_21-18-43"
+  - "013829_ppcSIT_2024-11-20_09-26-11"  # very nice HPC cells
+  - "013829_ppcSIT_2024-11-20_16-59-28"
+  - "013829_ppcSIT_2024-11-21_09-27-32"
+  - "013829_ppcSIT_2024-11-22_09-17-13"
+  - "013829_ppcSIT_2024-11-24_16-59-20"
+  - "013829_ppcSIT_2024-11-25_10-04-29"
+
+  - "016700_ppcSIT_2025-11-10_16-59-58"
+  - "016700_ppcSIT_2025-11-11_10-06-07"
+  - "016700_ppcSIT_2025-11-12_10-23-15"
+  - "016700_ppcSIT_2025-11-13_09-07-44"
+  - "016700_ppcSIT_2025-11-13_21-27-17"  # 3-4
+  - "016700_ppcSIT_2025-11-14_10-20-29"  # 3-4
+  - "016700_ppcSIT_2025-11-14_15-52-25"
+  - "016700_ppcSIT_2025-11-17_10-50-51"
+  - "016700_ppcSIT_2025-11-18_13-18-07"  # 3-4
+  - "016700_ppcSIT_2025-11-19_13-11-14"  # 3-4
+
 # source of raw data
-#src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/raw"
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
-src_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/raw"
+src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
 
 # destination for processed data
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
-dst_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/data/processed/"
+dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 
 # neurosuite / klustakwik config files
-template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/60_SIT_2023-08-11_16-23-36.xml"
-template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/manual.json"
-ndm_path: "/home/sobolev/nevermind_ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
-kkwik_path: "/home/sobolev/apps/kkwik/"
+template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/neurosuite.xml"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/manual.json"
+ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
+kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
 kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
 
 kilosort:
@@ -84,11 +117,11 @@ dlc_trainingsetindex: 0
 
 # moseq config files
 moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
-cuda_device_to_use: 3
+cuda_device_to_use: 1
 
 # LFP configuration
 lfp:
-  n_channels: 64
+  n_channels: 72
   source_rate: 30000 # original LFP sampling rate in Hz
   target_rate: 1000  # target LFP sampling rate in Hz
   chunk_size_sec: 10  # chunk size for conversion in seconds
@@ -132,10 +165,11 @@ psth:
 
 # neural manifolds
 nMAP_electrodes:
-    "009265": [1, 2]
-    "009266": [1, 2]
-    "57": [1]
-    "60": [1, 2]
+    '013829': [1]
+    '009265': [1, 2]
+    '009266': [1, 2]
+    '57': [1]
+    '60': [1, 2]
 
 nMAP_segmentation:
   ft: 'tSNE'
@@ -165,7 +199,7 @@ nMAP_EV_SU:
   bin_size: 0.01
   ev_su_lag: 0.12
   k_width: 200  # sampled as activity matrix per event bins (250ms)
-  smooth_su_size: 4  #  rectangular kernel size to smooth sustained part
+  smooth_su_size: 4 #  rectangular kernel size to smooth sustained part
   smooth_ev_size: 4  #  gaussian kernel size to smooth evoked part
 
 # unit matrix + video merging
@@ -183,7 +217,6 @@ coherence:
   bin_size: 0.01
   win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
   sustained_start: 0.12
-
 
 PSTH_micro_bnMAPs:
   units: []  # leave empty for all units

@@ -217,3 +217,35 @@ def sliding_metrics(x, win_size):
         ent_list.append(stats.entropy(hist + 1e-10))  # avoid log(0)
         var_list.append(np.var(window))
     return np.array(var_list), np.array(ent_list)
+
+
+def align_pc_sign(pc1, state, mode="evoked"):
+    """
+    pc1   : (N_pulses,) 1st PC time series
+    state : (N_pulses,) labels 0..4: [Tgt, Bgr_sta, Bgr_run, NoStim_sta, NoStim_run]
+    mode  : "evoked" or "sustained"
+    """
+
+    state = np.asarray(state)
+    pc1   = np.asarray(pc1, float)
+
+    sound  = np.isin(state, [0, 1, 2]).astype(float)
+    run    = np.isin(state, [2, 4]).astype(float)
+    target = (state == 0).astype(float)
+
+    Xreg = np.column_stack([sound, run, target])  # (N,3)
+
+    beta, *_ = np.linalg.lstsq(Xreg, pc1, rcond=None)
+    beta_sound, beta_run, beta_target = beta
+
+    if mode == "evoked":
+        score = beta_sound + 0.5 * beta_target
+    else:  # sustained
+        score = beta_run - 0.5 * beta_target
+
+    if np.abs(score) < 1e-6:
+        sign = 1.0
+    else:
+        sign = np.sign(score)
+
+    return sign * pc1, sign

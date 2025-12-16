@@ -62,6 +62,7 @@ include: "rules/analysis/segments.smk"
 include: "rules/analysis/vectors.smk"
 include: "rules/analysis/CCR.smk"
 include: "rules/decoders.smk"
+include: "rules/episodic_map/low_D_embeddings.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
@@ -161,7 +162,14 @@ target_names_dict = {
         'analysis/vectors/progression.h5',
         'analysis/vectors/averages.h5'
     ],
-    'decoders': ['decoders/behav_states.h5']
+    'state_decoder_ev_su': [
+        'decoders/behav_states.h5',
+        'decoders/tgt_non-tgt_ev_su.h5'
+    ],
+    'state_decoder_unit_mx': ['decoders/behav_states_unit_mx.h5'],
+    'low_D_embeddings': [
+        'episodic_map/low_D_embeddings.h5'
+    ]
 }
 
 def collect_target_names():

@@ -65,6 +65,8 @@ features = {
     'X_lfp_su':       lfp_su[:, None],
     'X_pop_ev':       pop_ev[:, None],
     'X_pop_su':       pop_su[:, None],
+    'X_ev_comb':      np.column_stack([lfp_ev, pop_ev]),
+    'X_su_comb':      np.column_stack([lfp_su, pop_su]),
     'X_lfp_comb':     np.column_stack([lfp_ev, lfp_su]),
     'X_pop_comb':     np.column_stack([pop_ev, pop_su]),
     'X_lfp_pop_comb': np.column_stack([lfp_ev, lfp_su, pop_ev, pop_su])
