@@ -28,7 +28,16 @@ with h5py.File(meta_file, 'r') as f:
 # indices in event space
 x_pos_ev = tl[sound_events[:, 2].astype(np.int32)][:, 1]
 y_pos_ev = tl[sound_events[:, 2].astype(np.int32)][:, 2]
-speed_ev = tl[sound_events[:, 2].astype(np.int32)][:, 3]
+# speed of an event is the maximum speed during that sound event
+# from start idx sound_events[:, 2].astype(np.int32) to the start of the next event (or end of timeline)
+speed_ev = np.zeros(len(sound_events))
+for i in range(len(sound_events)):
+    idx_start = int(sound_events[i][2])
+    if i < len(sound_events) - 1:
+        idx_end = int(sound_events[i+1][2])
+    else:
+        idx_end = len(tl)
+    speed_ev[i] = tl[idx_start:idx_end][:, 3].max()
 
 speed_max = 0.04
 idxs_sta_ev = np.where(speed_ev < speed_max)[0]
