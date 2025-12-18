@@ -68,21 +68,21 @@ for i, tgt_rec in enumerate(tgt_mx_succ):
     tgt_sta_succ_mx[i] = [tgt_rec[0], tgt_rec[1], x_pos.mean(), y_pos.mean()]
 
 # stationary states, including TGT (alternative to success stays above)
-tgt_sta_mx, idxs_tgt_sta = get_state_as_periods(s_path, 'TGT', None,  None, smk_cfg['tgt_sta_min_pulses'], strip_r=0)
-bgr_sta_mx, idxs_bgr_sta = get_state_as_periods(s_path, 'BGR', 'STA', None, smk_cfg['bgr_sta_min_pulses'], strip_l=1)
-sil_sta_mx, idxs_sil_sta = get_state_as_periods(s_path, 'SIL', 'STA', None, smk_cfg['sil_sta_min_pulses'], strip_l=1)
+tgt_sta_mx, idxs_tgt_sta = get_state_as_periods(s_path, 'TGT', None,  None, smk_cfg['tgt_sta_min_pulses'], strip_l=smk_cfg['strip_l']['tgt'], strip_r=smk_cfg['strip_r']['tgt'])
+bgr_sta_mx, idxs_bgr_sta = get_state_as_periods(s_path, 'BGR', 'STA', None, smk_cfg['bgr_sta_min_pulses'], strip_l=smk_cfg['strip_l']['bgr'], strip_r=smk_cfg['strip_r']['bgr'])
+sil_sta_mx, idxs_sil_sta = get_state_as_periods(s_path, 'SIL', 'STA', None, smk_cfg['sil_sta_min_pulses'], strip_l=smk_cfg['strip_l']['sil'], strip_r=smk_cfg['strip_r']['sil'])
 
 # running states
-bgr_run_mx, idxs_bgr_run = get_state_as_periods(s_path, 'BGR', 'RUN', None, smk_cfg['bgr_run_min_pulses'], strip_l=1)
-sil_run_mx, idxs_sil_run = get_state_as_periods(s_path, 'SIL', 'RUN', None, smk_cfg['sil_run_min_pulses'], strip_l=1)
+bgr_run_mx, idxs_bgr_run = get_state_as_periods(s_path, 'BGR', 'RUN', None, smk_cfg['bgr_run_min_pulses'], strip_l=smk_cfg['strip_l']['bgr'], strip_r=smk_cfg['strip_r']['bgr'])
+sil_run_mx, idxs_sil_run = get_state_as_periods(s_path, 'SIL', 'RUN', None, smk_cfg['sil_run_min_pulses'], strip_l=smk_cfg['strip_l']['sil'], strip_r=smk_cfg['strip_r']['sil'])
 
 # distractors
 di1_sta_mx, di2_sta_mx = None, None
 distr_count = int(cfg['experiment']['distractor_islands'])
 if cfg['sound']['sounds']['distractor1']['enabled'] and distr_count > 0:
-    di1_sta_mx, idxs_di1_sta = get_state_as_periods(s_path, 'DI1', 'STA', None, smk_cfg['dis_sta_min_pulses'], strip_l=1)
+    di1_sta_mx, idxs_di1_sta = get_state_as_periods(s_path, 'DI1', 'STA', None, smk_cfg['dis_sta_min_pulses'], strip_l=smk_cfg['strip_l']['dis'], strip_r=smk_cfg['strip_r']['dis'])
 if cfg['sound']['sounds']['distractor2']['enabled'] and distr_count > 1:
-    di2_sta_mx, idxs_di2_sta = get_state_as_periods(s_path, 'DI2', 'STA', None, smk_cfg['dis_sta_min_pulses'], strip_l=1)
+    di2_sta_mx, idxs_di2_sta = get_state_as_periods(s_path, 'DI2', 'STA', None, smk_cfg['dis_sta_min_pulses'], strip_l=smk_cfg['strip_l']['dis'], strip_r=smk_cfg['strip_r']['dis'])
 
 # target visits (no matter run or stationary, important is where)
 r_max = smk_cfg['visits']['radius']  # in meters

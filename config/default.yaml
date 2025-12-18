@@ -155,3 +155,25 @@ state_decoder:
   aep_type: 'avg_across_channels'
   kernel_size: '8'
   unit_mx_electrodes: []
+
+segments:
+  ensembles: False
+  tgt_sta_min_pulses: 13
+  bgr_sta_min_pulses: 12
+  sil_sta_min_pulses: 12
+  bgr_run_min_pulses: 2
+  sil_run_min_pulses: 4
+  dis_sta_min_pulses: 4
+  strip_l:
+    tgt: 2
+    bgr: 1
+    sil: 1
+    dis: 1
+  strip_r:
+    tgt: 0
+    bgr: 1
+    sil: 1
+    dis: 1
+  visits:
+    min_pulses: 8
+    radius: 0.05
