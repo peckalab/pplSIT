@@ -22,6 +22,8 @@ animal  = session.split('_')[0]
 with h5py.File(meta_file, 'r') as f:
     tl = np.array(f['processed']['timeline'])
     tgt_mx = np.array(f['processed']['target_matrix'])
+    if 'distractor_matrix' in f['processed']:
+        dis_mx = np.array(f['processed']['distractor_matrix'])
     sound_events = np.array(f['processed']['sound_events'])
     cfg = json.loads(f['processed'].attrs['parameters'])
 
@@ -66,6 +68,24 @@ for i, tgt_rec in enumerate(tgt_mx_succ):
     y_pos = tl[np.arange(tgt_rec[2], tgt_rec[3])][:, 2]
     
     tgt_sta_succ_mx[i] = [tgt_rec[0], tgt_rec[1], x_pos.mean(), y_pos.mean()]
+
+# distractor fails
+if cfg['experiment']['distractor_fail']:
+    dis_mx_fail = dis_mx[dis_mx[:, 4] == 1]
+    idxs_dis_first_ev = dis_mx_fail[:, 0]
+    dis_first_t = sound_events[idxs_dis_first_ev][:, 0]
+    idxs_dis_fail = []
+    for dis_rec in dis_mx_fail:
+        idxs_dis_fail += list(np.arange(dis_rec[0], dis_rec[1] + 1))
+    idxs_dis_fail = np.array(idxs_dis_fail)
+    dis_fail_mx = np.zeros([len(dis_mx_fail), 4])
+    for i, dis_rec in enumerate(dis_mx_fail):
+        x_pos = tl[np.arange(dis_rec[2], dis_rec[3])][:, 1]
+        y_pos = tl[np.arange(dis_rec[2], dis_rec[3])][:, 2]
+        
+        dis_fail_mx[i] = [dis_rec[0], dis_rec[1], x_pos.mean(), y_pos.mean()]
+    
+
 
 # stationary states, including TGT (alternative to success stays above)
 tgt_sta_mx, idxs_tgt_sta = get_state_as_periods(s_path, 'TGT', None,  None, smk_cfg['tgt_sta_min_pulses'], strip_l=smk_cfg['strip_l']['tgt'], strip_r=smk_cfg['strip_r']['tgt'])
@@ -143,6 +163,9 @@ if di1_sta_mx is not None:
 if di2_sta_mx is not None:
     results['di2_sta_mx'] = di2_sta_mx
     results['idxs_di2_sta'] = idxs_di2_sta
+if cfg['experiment']['distractor_fail']:
+    results['dis_fail_mx'] = dis_fail_mx
+    results['idxs_dis_fail'] = idxs_dis_fail
 
 # AL / PH states
 if smk_cfg['ensembles']:
