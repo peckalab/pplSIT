@@ -62,7 +62,12 @@ include: "rules/analysis/segments.smk"
 include: "rules/analysis/vectors.smk"
 include: "rules/analysis/CCR.smk"
 include: "rules/decoders.smk"
+
 include: "rules/episodic_map/low_D_embeddings.smk"
+include: "rules/episodic_map/trajectories.smk"
+include: "rules/episodic_map/decoder_state.smk"
+include: "rules/episodic_map/behavior_features.smk"
+include: "rules/episodic_map/funneling.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
@@ -167,8 +172,12 @@ target_names_dict = {
         'decoders/tgt_non-tgt_ev_su.h5'
     ],
     'state_decoder_unit_mx': ['decoders/behav_states_unit_mx.h5'],
-    'low_D_embeddings': [
-        'episodic_map/low_D_embeddings.h5'
+    'episodic_map': [
+        'episodic_map/low_D_embeddings.h5',
+        'episodic_map/trajectories.h5',
+        'episodic_map/decoder_state.h5',
+        'episodic_map/behavior_features.h5',
+        'episodic_map/funneling.h5',
     ]
 }
 

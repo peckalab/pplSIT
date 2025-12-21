@@ -10,16 +10,16 @@
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   performance: True   # performance metrics
-  DLC: False        # Deep lab cut
+  DLC: True        # Deep lab cut
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: True          # extract LFP
+  LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: True
+  PSTH_bar: False
   PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
@@ -29,14 +29,14 @@ blocks:  # blocks of pipeline to run
   manifold_states: False
   metronome: False
   video: False
-  sound_phase_lock: True
+  sound_phase_lock: False
   segments: True
   activity_matrices: True
   ensembles: False
   covariance: False
   vectors: False
   state_decoder_unit_mx: False
-  low_D_embeddings: True
+  episodic_map: True
 
 
 session_IDs:  
@@ -50,7 +50,7 @@ session_IDs:
   # - "013608_ppcSIT_2025-01-15_14-56-18"
   # - "013608_ppcSIT_2025-01-16_09-49-21"
   # - "013608_ppcSIT_2025-01-17_10-07-00"
-  - "013608_ppcSIT_2025-01-20_09-38-20"
+  # - "013608_ppcSIT_2025-01-20_09-38-20"
   # - "013608_ppcSIT_2025-01-21_08-50-02"
   # - "013608_ppcSIT_2025-01-22_12-59-00"
   # - "013608_ppcSIT_2025-01-23_08-46-51"
@@ -66,7 +66,7 @@ session_IDs:
   # - "013608_ppcSIT_2025-03-05_10-33-41"
 
   # - "014393_ppcSIT_2025-04-16_11-20-15"
-  # - "014393_ppcSIT_2025-04-16_21-25-03"
+  # # - "014393_ppcSIT_2025-04-16_21-25-03"  # TODO: fix tSNE error
   # - "014393_ppcSIT_2025-04-23_09-23-02"
   # - "014393_ppcSIT_2025-04-23_20-27-09"
   # - "014393_ppcSIT_2025-04-24_08-57-16"
@@ -85,14 +85,14 @@ session_IDs:
   # - "016672_devSITactive_2025-10-28_21-02-10"
   # - "016672_devSITactive_2025-10-29_13-36-00"
   # - "016672_devSITactive_2025-10-30_11-23-50"
-  # - "016672_devSITactive_2025-10-31_14-50-34"  # good restored session (26 mins)
+  # # - "016672_devSITactive_2025-10-31_14-50-34"  # good restored session (26 mins)
   # - "016672_devSITactive_2025-10-31_15-23-44"
   # - "016672_devSITactive_2025-11-03_10-39-56"
-  # - "016672_devSITactive_2025-11-04_10-11-10"
-  # - "016672_devSITactive_2025-11-05_10-45-16"  # last session with box controls
-  # - "016672_devSITactive_2025-11-06_21-16-33"
-  # - "016672_devSITactive_2025-11-07_13-18-09"
-  # - "016672_devSITactive_2025-11-10_16-03-29"
+  - "016672_devSITactive_2025-11-04_10-11-10"
+  - "016672_devSITactive_2025-11-05_10-45-16"  # last session with box controls
+  - "016672_devSITactive_2025-11-06_21-16-33"
+  - "016672_devSITactive_2025-11-07_13-18-09"
+  - "016672_devSITactive_2025-11-10_16-03-29"
   # - "016672_devSITactive_2025-11-11_17-41-18"  # R - channels flipped, but should be still fine
   # - "016672_devSITactive_2025-11-12_14-58-44"  # R
   # - "016672_devSITactive_2025-11-13_20-25-42"  # R - BGR 1195
@@ -122,6 +122,10 @@ low_D_embeddings:
   k_list: [15, 30, 50]
   n_perm: 1000
 
+trajectories:
+  episode_win_s: 6.0
+  pca_n_components: 20
+  transform: 'sqrt'
 
 # ----------- common configurations -------------------
 
@@ -233,7 +237,7 @@ sound_phase_lock:
   ipi_for_shuffle: 0.25
 
 segments:
-  ensembles: True
+  ensembles: False
   tgt_sta_min_pulses: 20
   bgr_sta_min_pulses: 12
   sil_sta_min_pulses: 12
@@ -258,20 +262,6 @@ vectors:
     '013608_ppcSIT_2025-01-23_08-46-51': ['2-171', '2-279', '3-252', '4-234']
     '013608_ppcSIT_2025-03-04_09-17-16': ['2-314', '2-380']
     '013608_ppcSIT_2025-03-05_10-33-41': ['2-307', '2-392']
-
-ensembles:
-    '013608_ppcSIT_2025-01-14_10-20-14': 
-      'AL': ['2-142', '2-234', '3-217', '4-198']
-    '013608_ppcSIT_2025-01-15_14-56-18': 
-      'AL': ['2-166', '2-288', '3-258', '4-231']
-    '013608_ppcSIT_2025-01-20_09-38-20': 
-      'AL': ['2-160', '2-241', '3-221', '4-201']
-    '013608_ppcSIT_2025-01-23_08-46-51': 
-      'AL': ['2-171', '2-279', '3-252', '4-234']
-    '013608_ppcSIT_2025-03-04_09-17-16':
-      'AL': ['2-314', '2-380']
-    '013608_ppcSIT_2025-03-05_10-33-41':
-      'AL': ['2-307', '2-392']
 
 
 
