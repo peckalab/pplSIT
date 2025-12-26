@@ -83,6 +83,7 @@ def compute_dlc_behavior_features(
     p_thr=0.8,
     body_points=("neck", "lower_spine", "tail_base"),
     use_ears_for_hd=True,
+    arena_radius_m=None,
 ):
     """
     Robust DLC feature extraction with global alignment.
@@ -226,6 +227,40 @@ def compute_dlc_behavior_features(
     neck_y_s = neck_y_s[:L]
     pos_valid = pos_valid[:L]
 
+    # ---- Derived geometry covariates (center-referenced) ----
+    # Distance to arena center (0,0)
+    Lc = min(len(neck_x_s), len(neck_y_s), len(t))
+    neck_x_s = neck_x_s[:Lc]
+    neck_y_s = neck_y_s[:Lc]
+    t = t[:Lc]
+    pos_valid = pos_valid[:Lc]
+
+    dist_to_center_s = np.sqrt(neck_x_s**2 + neck_y_s**2)
+
+    # Angle from animal position pointing TO the center
+    angle_to_center_s = np.arctan2(-neck_y_s, -neck_x_s)
+
+    # HD relative to the center direction (egocentric bearing to center)
+    # hd_rel_center = 0 means facing the center
+    Lh = min(len(hd_angle_s), len(angle_to_center_s), len(hd_valid), len(pos_valid))
+    hd_angle_s = hd_angle_s[:Lh]
+    angle_to_center_s = angle_to_center_s[:Lh]
+    hd_valid = hd_valid[:Lh]
+    pos_valid = pos_valid[:Lh]
+    dist_to_center_s = dist_to_center_s[:Lh]
+    neck_x_s = neck_x_s[:Lh]
+    neck_y_s = neck_y_s[:Lh]
+    t = t[:Lh]
+
+    hd_rel_center_s = wrap_to_pi(hd_angle_s - angle_to_center_s)
+
+    # Optional: distance to boundary if arena radius known (circular arena)
+    dist_to_boundary_s = None
+    if arena_radius_m is not None:
+        dist_to_boundary_s = float(arena_radius_m) - dist_to_center_s
+        # negative values can happen if tracking drifts outside; clip if you want
+        # dist_to_boundary_s = np.clip(dist_to_boundary_s, 0.0, None)
+
     # ---- Episode features ----
     N_ep = targets_periods_times.shape[0]
     hd_mean = np.full(N_ep, np.nan)
@@ -233,6 +268,14 @@ def compute_dlc_behavior_features(
     stillness = np.full(N_ep, np.nan)
     head_turn_rate = np.full(N_ep, np.nan)
     valid_frac = np.full(N_ep, np.nan)
+    dist_center_ep = np.full(N_ep, np.nan)              # NEW
+    hd_rel_center_mean = np.full(N_ep, np.nan)          # NEW
+    hd_rel_center_var = np.full(N_ep, np.nan)           # NEW
+    hd_rel_center_valid_frac = np.full(N_ep, np.nan)    # NEW
+
+    dist_boundary_ep = None
+    if arena_radius_m is not None:
+        dist_boundary_ep = np.full(N_ep, np.nan)
 
     for i, (t0, t1) in enumerate(targets_periods_times):
         mask = (t >= t0) & (t <= t1)
@@ -250,6 +293,25 @@ def compute_dlc_behavior_features(
         stillness[i] = float(np.nanmedian(body_speed_rms_s[mask]))
         head_turn_rate[i] = float(np.nanmedian(head_ang_vel_s[mask]))
 
+        # ---- Center distance (position-only) ----
+        pos_ok = np.isfinite(dist_to_center_s) & pos_valid
+        if np.any(mask & pos_ok):
+            # median is robust to occasional jumps
+            dist_center_ep[i] = float(np.nanmedian(dist_to_center_s[mask & pos_ok]))
+            if arena_radius_m is not None and dist_to_boundary_s is not None:
+                dist_boundary_ep[i] = float(np.nanmedian(dist_to_boundary_s[mask & pos_ok]))
+
+        # ---- HD relative to center (requires both HD and position) ----
+        rel_ok = np.isfinite(hd_rel_center_s) & hd_valid & pos_valid
+        n_mask = int(np.sum(mask))
+        if n_mask > 0:
+            hd_rel_center_valid_frac[i] = float(np.sum(mask & rel_ok) / n_mask)
+
+        if np.sum(mask & rel_ok) >= 5:
+            th = hd_rel_center_s[mask & rel_ok]
+            hd_rel_center_mean[i] = float(circular_mean(th))
+            hd_rel_center_var[i]  = float(circular_variance(th))
+
     session_ts = dict(
         time_s=t,
         hd_angle_rad=hd_angle_s,
@@ -259,7 +321,12 @@ def compute_dlc_behavior_features(
         pos_x_m=neck_x_s,
         pos_y_m=neck_y_s,
         pos_valid_mask=pos_valid.astype(np.uint8),
+        dist_to_center_m=dist_to_center_s,
+        angle_to_center_rad=angle_to_center_s,
+        hd_rel_center_rad=hd_rel_center_s,
     )
+    if dist_to_boundary_s is not None:
+        session_ts["dist_to_boundary_m"] = dist_to_boundary_s
 
     episode_feats = dict(
         hd_mean_rad=hd_mean,
@@ -267,347 +334,16 @@ def compute_dlc_behavior_features(
         stillness_mps=stillness,
         head_turn_rate_rads=head_turn_rate,
         hd_valid_frac=valid_frac,
+        targets_periods_times=targets_periods_times,
+        dist_to_center_m=dist_center_ep,
+        hd_rel_center_mean_rad=hd_rel_center_mean,
+        hd_rel_center_var=hd_rel_center_var,
+        hd_rel_center_valid_frac=hd_rel_center_valid_frac,
     )
+    if dist_boundary_ep is not None:
+        episode_feats["dist_to_boundary_m"] = dist_boundary_ep
 
     return session_ts, episode_feats
-
-# import numpy as np
-# import h5py
-# import json
-
-
-# # --------------------------
-# # Circular helpers
-# # --------------------------
-# def wrap_to_pi(theta):
-#     """Wrap angle to [-pi, pi)."""
-#     return (theta + np.pi) % (2 * np.pi) - np.pi
-
-
-# def circular_mean(theta, w=None):
-#     """Circular mean of angles theta (radians)."""
-#     theta = np.asarray(theta)
-#     if w is None:
-#         w = np.ones_like(theta, dtype=float)
-#     else:
-#         w = np.asarray(w, dtype=float)
-
-#     mask = np.isfinite(theta) & np.isfinite(w) & (w > 0)
-#     if mask.sum() == 0:
-#         return np.nan
-#     s = np.sum(w[mask] * np.sin(theta[mask]))
-#     c = np.sum(w[mask] * np.cos(theta[mask]))
-#     return np.arctan2(s, c)
-
-
-# def circular_variance(theta, w=None):
-#     """
-#     Circular variance in [0,1], where 0 is tightly clustered.
-#     V = 1 - R, where R is mean resultant length.
-#     """
-#     theta = np.asarray(theta)
-#     if w is None:
-#         w = np.ones_like(theta, dtype=float)
-#     else:
-#         w = np.asarray(w, dtype=float)
-
-#     mask = np.isfinite(theta) & np.isfinite(w) & (w > 0)
-#     if mask.sum() == 0:
-#         return np.nan
-
-#     s = np.sum(w[mask] * np.sin(theta[mask]))
-#     c = np.sum(w[mask] * np.cos(theta[mask]))
-#     R = np.sqrt(s**2 + c**2) / np.sum(w[mask])
-#     return 1.0 - R
-
-
-# # --------------------------
-# # Smoothing helpers
-# # --------------------------
-# def moving_average(x, win):
-#     """
-#     Moving average with edge-padding. Works for 1D arrays.
-#     If win<=1 returns x unchanged.
-#     """
-#     x = np.asarray(x, dtype=float)
-#     if win is None or win <= 1:
-#         return x.copy()
-#     win = int(win)
-#     pad = win // 2
-#     xp = np.pad(x, (pad, pad), mode="edge")
-#     k = np.ones(win, dtype=float) / win
-#     return np.convolve(xp, k, mode="valid")
-
-
-# def moving_average_nan(x, win):
-#     """
-#     Moving average that ignores NaNs by normalizing with valid counts.
-#     """
-#     x = np.asarray(x, dtype=float)
-#     if win is None or win <= 1:
-#         return x.copy()
-#     win = int(win)
-#     pad = win // 2
-
-#     valid = np.isfinite(x).astype(float)
-#     x0 = np.where(np.isfinite(x), x, 0.0)
-
-#     xp = np.pad(x0, (pad, pad), mode="edge")
-#     vp = np.pad(valid, (pad, pad), mode="edge")
-
-#     k = np.ones(win, dtype=float)
-#     num = np.convolve(xp, k, mode="valid")
-#     den = np.convolve(vp, k, mode="valid")
-#     out = num / np.maximum(den, 1e-9)
-#     out[den < 1e-6] = np.nan
-#     return out
-
-
-# # --------------------------
-# # DLC column parsing
-# # --------------------------
-# def _find_col(cols, name):
-#     try:
-#         return cols.index(name)
-#     except ValueError:
-#         return None
-
-
-# def extract_keypoint_xy_lik(dlc, cols, base_name):
-#     """
-#     Returns x,y,lik arrays for a keypoint, or (None,None,None) if missing.
-#     """
-#     ix = _find_col(cols, f"{base_name}_x")
-#     iy = _find_col(cols, f"{base_name}_y")
-#     il = _find_col(cols, f"{base_name}_likelihood")
-#     if ix is None or iy is None or il is None:
-#         return None, None, None
-#     return dlc[:, ix].astype(float), dlc[:, iy].astype(float), dlc[:, il].astype(float)
-
-
-# def midpoint(a, b):
-#     return 0.5 * (a + b)
-
-
-# # --------------------------
-# # Main computation
-# # --------------------------
-# def compute_dlc_behavior_features(
-#     dlc_mat,
-#     dlc_columns,
-#     targets_periods_times,
-#     smooth_size=20,
-#     p_thr=0.8,
-#     dt_expected=0.01,
-#     body_points=("neck", "lower_spine", "tail_base"),
-#     use_ears_for_hd=True,
-# ):
-#     """
-#     Parameters
-#     ----------
-#     dlc_mat : (T, n_cols) array
-#         First column must be absolute time in seconds (100Hz).
-#     dlc_columns : list[str]
-#         Column names matching dlc_mat.
-#     targets_periods_times : (N_ep, 2) array
-#         Start/end absolute times (sec) for each target episode.
-#     smooth_size : int
-#         Moving average window in samples (default 20 -> 200ms at 100Hz).
-#     p_thr : float
-#         Likelihood threshold for head direction validity.
-#     dt_expected : float
-#         Expected timestep in seconds; used for sanity/derivatives.
-#     body_points : tuple[str]
-#         Keypoints used for RMS body speed.
-#     use_ears_for_hd : bool
-#         If True use ear midpoint as head base, else use eye midpoint.
-
-#     Returns
-#     -------
-#     session_ts : dict of arrays length T
-#     episode_feats : dict of arrays length N_ep
-#     """
-
-#     dlc = np.asarray(dlc_mat, dtype=float)
-#     cols = list(dlc_columns)
-
-#     # time
-#     if cols[0] != "time":
-#         # allow first col to be time even if named differently
-#         # but user said first column is time
-#         pass
-#     t = dlc[:, 0].astype(float)
-#     T = len(t)
-
-#     # estimate dt for derivatives
-#     dt = np.nanmedian(np.diff(t))
-#     if not np.isfinite(dt) or dt <= 0:
-#         dt = dt_expected
-
-#     # --- head direction: nose - head_base
-#     nose_x, nose_y, nose_l = extract_keypoint_xy_lik(dlc, cols, "nose")
-#     if nose_x is None:
-#         raise KeyError("Missing nose_x/y/likelihood in DLC columns")
-
-#     if use_ears_for_hd:
-#         le_x, le_y, le_l = extract_keypoint_xy_lik(dlc, cols, "left_ear")
-#         re_x, re_y, re_l = extract_keypoint_xy_lik(dlc, cols, "right_ear")
-#         if le_x is None or re_x is None:
-#             raise KeyError("Missing ear keypoints for head direction (left_ear/right_ear).")
-#         base_x = midpoint(le_x, re_x)
-#         base_y = midpoint(le_y, re_y)
-#         base_l = np.minimum(le_l, re_l)
-#     else:
-#         le_x, le_y, le_l = extract_keypoint_xy_lik(dlc, cols, "left_eye")
-#         re_x, re_y, re_l = extract_keypoint_xy_lik(dlc, cols, "right_eye")
-#         if le_x is None or re_x is None:
-#             raise KeyError("Missing eye keypoints for head direction (left_eye/right_eye).")
-#         base_x = midpoint(le_x, re_x)
-#         base_y = midpoint(le_y, re_y)
-#         base_l = np.minimum(le_l, re_l)
-
-#     # validity mask for head direction
-#     hd_valid = (nose_l >= p_thr) & (base_l >= p_thr) & np.isfinite(nose_x) & np.isfinite(nose_y) & np.isfinite(base_x) & np.isfinite(base_y)
-
-#     vx = nose_x - base_x
-#     vy = nose_y - base_y
-#     hd_angle = np.full(T, np.nan, dtype=float)
-#     hd_angle[hd_valid] = np.arctan2(vy[hd_valid], vx[hd_valid])
-#     hd_angle = wrap_to_pi(hd_angle)
-
-#     # smooth head direction in sin/cos space
-#     hd_cos = np.cos(hd_angle)
-#     hd_sin = np.sin(hd_angle)
-
-#     # masked smoothing (ignore NaNs from invalid frames)
-#     hd_cos_s = moving_average_nan(hd_cos, smooth_size)
-#     hd_sin_s = moving_average_nan(hd_sin, smooth_size)
-
-#     # renormalize unit vector
-#     norm = np.sqrt(hd_cos_s**2 + hd_sin_s**2)
-#     hd_cos_s = hd_cos_s / np.maximum(norm, 1e-9)
-#     hd_sin_s = hd_sin_s / np.maximum(norm, 1e-9)
-#     hd_angle_s = np.arctan2(hd_sin_s, hd_cos_s)
-
-#     # angular velocity |dtheta/dt| computed from sin/cos derivatives to avoid wrap artifacts
-#     dcos = np.gradient(hd_cos_s, dt)
-#     dsin = np.gradient(hd_sin_s, dt)
-#     # angular speed ≈ |dθ/dt| where dθ = (cos*dsin - sin*dcos)
-#     head_ang_vel = np.abs(hd_cos_s * dsin - hd_sin_s * dcos)
-
-#     # smooth angular velocity a bit (optional; keep same window)
-#     head_ang_vel_s = moving_average_nan(head_ang_vel, smooth_size)
-
-#     # --- body speed RMS across selected core points
-#     speeds = []
-#     valid_counts = []
-
-#     for bp in body_points:
-#         x, y, l = extract_keypoint_xy_lik(dlc, cols, bp)
-#         if x is None:
-#             continue
-
-#         # smooth positions
-#         x_s = moving_average_nan(x, smooth_size)
-#         y_s = moving_average_nan(y, smooth_size)
-
-#         # velocity
-#         vx_bp = np.gradient(x_s, dt)
-#         vy_bp = np.gradient(y_s, dt)
-#         sp = np.sqrt(vx_bp**2 + vy_bp**2)
-
-#         # --- ALIGN LENGTHS (critical fix) ---
-#         L = min(len(sp), len(l))
-#         sp_ = sp[:L]
-#         l_  = l[:L]
-
-#         # likelihood gating
-#         good = np.isfinite(sp_) & (l_ >= p_thr)
-#         sp_g = np.where(good, sp_, np.nan)
-
-#         speeds.append(sp_g)
-
-#     if len(speeds) == 0:
-#         raise KeyError(f"None of the body_points {body_points} were found in DLC columns.")
-
-#     speeds = np.stack(speeds, axis=1)  # (T, n_pts)
-#     body_speed_rms = np.sqrt(np.nanmean(speeds**2, axis=1))
-#     body_speed_rms_s = moving_average_nan(body_speed_rms, smooth_size)
-
-#     # also (optional) nose speed (often helpful)
-#     nose_x_s = moving_average_nan(nose_x, smooth_size)
-#     nose_y_s = moving_average_nan(nose_y, smooth_size)
-#     nose_vx = np.gradient(nose_x_s, dt)
-#     nose_vy = np.gradient(nose_y_s, dt)
-#     nose_speed = np.sqrt(nose_vx**2 + nose_vy**2)
-#     nose_speed_s = moving_average_nan(nose_speed, smooth_size)
-
-#     # --- Episode-level features
-#     t_ep = np.asarray(targets_periods_times, dtype=float)
-#     if t_ep.ndim != 2 or t_ep.shape[1] != 2:
-#         raise ValueError("targets_periods_times must be (N_ep, 2) start/end times in seconds")
-
-#     N_ep = t_ep.shape[0]
-#     hd_mean = np.full(N_ep, np.nan, float)
-#     hd_var = np.full(N_ep, np.nan, float)
-#     stillness = np.full(N_ep, np.nan, float)
-#     head_turn_rate = np.full(N_ep, np.nan, float)
-#     valid_frac = np.full(N_ep, np.nan, float)
-
-#     for i in range(N_ep):
-#         t0, t1 = t_ep[i]
-#         if not (np.isfinite(t0) and np.isfinite(t1) and t1 > t0):
-#             continue
-
-#         mask = (t >= t0) & (t <= t1)
-#         if mask.sum() < 5:
-#             continue
-
-#         # validity for HD within episode
-#         # use the original hd_valid plus non-nan after smoothing
-#         # --- ALIGN LENGTHS ---
-#         L = min(len(hd_angle_s), len(hd_valid), len(mask))
-#         hd_angle_s_ = hd_angle_s[:L]
-#         hd_valid_   = hd_valid[:L]
-#         mask_       = mask[:L]
-
-#         hd_ok = np.isfinite(hd_angle_s_) & hd_valid_
-
-#         vf = float(np.mean(hd_ok[mask_])) if mask_.sum() > 0 else np.nan
-#         valid_frac[i] = vf
-
-#         theta_seg = hd_angle_s_[mask_]
-#         w = hd_ok[mask_].astype(float)
-
-#         hd_mean[i] = circular_mean(theta_seg, w=w)
-#         hd_var[i] = circular_variance(theta_seg, w=w)
-
-#         # stillness: use median of smoothed RMS speed
-#         stillness[i] = float(np.nanmedian(body_speed_rms_s[mask]))
-
-#         # head turn rate: median smoothed angular velocity
-#         head_turn_rate[i] = float(np.nanmedian(head_ang_vel_s[mask]))
-
-#     session_ts = {
-#         "time_s": t,
-#         "hd_angle_rad": hd_angle_s,          # smoothed
-#         "hd_cos": hd_cos_s,
-#         "hd_sin": hd_sin_s,
-#         "head_ang_vel_rads": head_ang_vel_s, # smoothed |dθ/dt|
-#         "body_speed_rms_mps": body_speed_rms_s,
-#         "nose_speed_mps": nose_speed_s,
-#         "hd_valid_mask": hd_valid.astype(np.uint8),
-#     }
-
-#     episode_feats = {
-#         "hd_mean_rad": hd_mean,
-#         "hd_var": hd_var,
-#         "stillness_mps": stillness,
-#         "head_turn_rate_rads": head_turn_rate,
-#         "hd_valid_frac": valid_frac,
-#     }
-
-#     return session_ts, episode_feats
 
 
 def save_dlc_features_to_h5(

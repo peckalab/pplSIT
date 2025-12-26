@@ -68,6 +68,7 @@ include: "rules/episodic_map/trajectories.smk"
 include: "rules/episodic_map/decoder_state.smk"
 include: "rules/episodic_map/behavior_features.smk"
 include: "rules/episodic_map/funneling.smk"
+include: "rules/episodic_map/episode_similarity.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
@@ -178,6 +179,9 @@ target_names_dict = {
         'episodic_map/decoder_state.h5',
         'episodic_map/behavior_features.h5',
         'episodic_map/funneling.h5',
+        'episodic_map/episode_similarity.h5',
+        'episodic_map/regression_latent.h5',
+        'episodic_map/regression_pv.h5',
     ]
 }
 

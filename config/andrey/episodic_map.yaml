@@ -86,8 +86,8 @@ session_IDs:
   # - "016672_devSITactive_2025-10-29_13-36-00"
   # - "016672_devSITactive_2025-10-30_11-23-50"
   # # - "016672_devSITactive_2025-10-31_14-50-34"  # good restored session (26 mins)
-  # - "016672_devSITactive_2025-10-31_15-23-44"
-  # - "016672_devSITactive_2025-11-03_10-39-56"
+  - "016672_devSITactive_2025-10-31_15-23-44"
+  - "016672_devSITactive_2025-11-03_10-39-56"
   - "016672_devSITactive_2025-11-04_10-11-10"
   - "016672_devSITactive_2025-11-05_10-45-16"  # last session with box controls
   - "016672_devSITactive_2025-11-06_21-16-33"
