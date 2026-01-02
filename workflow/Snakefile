@@ -182,6 +182,8 @@ target_names_dict = {
         'episodic_map/episode_similarity.h5',
         'episodic_map/regression_latent.h5',
         'episodic_map/regression_pv.h5',
+        'episodic_map/decoder_ID_comb.h5',
+        'episodic_map/decoder_ID_mean.h5',
     ]
 }
 

@@ -509,6 +509,9 @@ def compute_episode_similarity_and_drivers_to_h5(
 
     cov["dt_s"] = pairwise_time_sep_from_windows(target_bin_windows, bin_size_s=bin_size_s)
 
+    # NEW: quadratic time separation term (captures nonlinear drift effects)
+    cov["dt_s2"] = cov["dt_s"].astype(np.float32) ** 2
+
     if hd_mean is not None:
         cov["dhd_rad"] = circ_dist(hd_mean.astype(float), hd_mean.astype(float))
     if still is not None:

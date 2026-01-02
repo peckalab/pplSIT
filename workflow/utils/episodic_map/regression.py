@@ -51,6 +51,12 @@ def partial_r2_from_full_and_reduced(y: np.ndarray, yhat_full: np.ndarray, yhat_
         return np.nan
     return float((sse_red - sse_full) / sse_red)
 
+def _slice_square(M: np.ndarray, n: int) -> np.ndarray:
+    M = np.asarray(M)
+    if M.ndim != 2 or M.shape[0] != M.shape[1]:
+        raise ValueError(f"Expected square matrix, got {M.shape}")
+    return M[:n, :n]
+
 
 @dataclass
 class RegressionSpec:
@@ -182,18 +188,33 @@ def run_session_regression(
         raise KeyError(f"Missing y_key {spec.y_key} in episode_similarity/similarity. Found: {list(sim.keys())}")
 
     # Load y matrix and predictors
-    Y = sim[spec.y_key]
-    n_ep = Y.shape[0]
-    if Y.shape[0] != Y.shape[1]:
-        raise ValueError("Similarity matrix must be square")
+    Y = np.asarray(sim[spec.y_key])
+    if Y.ndim != 2 or Y.shape[0] != Y.shape[1]:
+        raise ValueError(f"Similarity matrix must be square. Got {Y.shape}")
 
     X_mats = {}
     for k in spec.x_keys:
         if k not in cov:
             raise KeyError(f"Missing covariate {k} in episode_similarity/covariates. Found: {list(cov.keys())}")
-        X_mats[k] = cov[k]
-        if X_mats[k].shape != Y.shape:
-            raise ValueError(f"Covariate {k} shape {X_mats[k].shape} != Y shape {Y.shape}")
+        M = np.asarray(cov[k])
+        if M.ndim != 2 or M.shape[0] != M.shape[1]:
+            raise ValueError(f"Covariate {k} must be square. Got {M.shape}")
+        X_mats[k] = M
+
+    # --- NEW: reconcile episode counts across Y and covariates ---
+    sizes = [Y.shape[0]] + [X_mats[k].shape[0] for k in spec.x_keys]
+    n_ep = int(np.min(sizes))
+
+    if any(s != n_ep for s in sizes):
+        print(
+            f"[run_session_regression] WARNING size mismatch in {h5_path}. "
+            f"Using n_ep={n_ep}. Y:{Y.shape} " +
+            " ".join([f"{k}:{X_mats[k].shape}" for k in spec.x_keys])
+        )
+
+    Y = _slice_square(Y, n_ep)
+    for k in list(X_mats.keys()):
+        X_mats[k] = _slice_square(X_mats[k], n_ep)
 
     # Vectorize pairs
     y_vec = upper_tri_vec(Y)

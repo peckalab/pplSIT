@@ -168,7 +168,7 @@ def _require_del_group(h5: h5py.File, path: str, overwrite: bool) -> h5py.Group:
     return h5.require_group(path)
 
 
-def load_episode_tensor_from_core_h5(h5_path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict]:
+def load_episode_tensor_from_core_h5(h5_path: str, use_resid: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict]:
     """
     Returns:
       X_ep: (n_ep, win_bins, D)
@@ -180,9 +180,17 @@ def load_episode_tensor_from_core_h5(h5_path: str) -> Tuple[np.ndarray, np.ndarr
         meta = json.loads(f.attrs["meta_json"])
         win_bins = int(meta["episode_win_bins"])
 
-        Z_all = f["latent/Z_all"][...].astype(np.float32)  # (t_bins, D)
+        z_key = "latent/Z_all_resid" if use_resid else "latent/Z_all"
+        ts_key = "episodes/traj_stack_resid" if use_resid else "episodes/traj_stack"
+
+        if z_key not in f:
+            raise KeyError(f"Missing dataset '{z_key}' in {h5_path}. Did you build residualized trajectories?")
+        if ts_key not in f:
+            raise KeyError(f"Missing dataset '{ts_key}' in {h5_path}. Did you build residualized trajectories?")
+
+        Z_all = f[z_key][...].astype(np.float32)  # (t_bins, D)
         windows = f["episodes/target_bin_windows"][...].astype(np.int64)  # (n_ep,2)
-        traj_stack = f["episodes/traj_stack"][...].astype(np.float32)  # (n_ep*win_bins, D)
+        traj_stack = f[ts_key][...].astype(np.float32)  # (n_ep*win_bins, D)
 
         n_ep = windows.shape[0]
         D = traj_stack.shape[1]
@@ -250,6 +258,7 @@ def compute_and_save_funneling_from_core_h5(
     core_h5_path: str,
     out_h5_path: Optional[str] = None,
     group: str = "funneling",
+    use_resid: bool = False,
     # early/late windows in seconds (converted using bin_size_s from meta)
     early_window_s: Tuple[float, float] = (0.0, 1.0),
     late_window_s: Tuple[float, float]  = (4.0, 6.0),
@@ -260,17 +269,23 @@ def compute_and_save_funneling_from_core_h5(
     seed: int = 0,
     overwrite_group: bool = True,
 ):
+    
     """
     Computes funneling metrics + nulls from a core trajectories H5 produced by build_core_trajectories_h5.
     Saves results to out_h5_path (default: append into core_h5_path).
     """
     if out_h5_path is None:
         out_h5_path = core_h5_path
+    
+    # Put raw and resid results into separate groups unless user specified otherwise
+    if group == "funneling":
+        group = "funneling/resid" if use_resid else "funneling/raw"
 
     rng = np.random.default_rng(int(seed))
 
     # load core objects
-    X_ep, Z_all, tgt_win_bin, meta_in = load_episode_tensor_from_core_h5(core_h5_path)
+    X_ep, Z_all, tgt_win_bin, meta_in = load_episode_tensor_from_core_h5(core_h5_path, use_resid=use_resid)
+
     n_ep, win_bins, D = X_ep.shape
     t_bins = Z_all.shape[0]
 
@@ -365,6 +380,7 @@ def compute_and_save_funneling_from_core_h5(
         "n_random_windows_pool": int(n_random_windows_pool),
         "n_random_bootstrap": int(n_random_bootstrap),
         "seed": int(seed),
+        "use_resid": bool(use_resid),
         "note": "Real computed on target episodes; random windows sampled from latent/Z_all excluding episodes/target_bin_windows.",
     }
 

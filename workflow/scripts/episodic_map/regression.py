@@ -19,7 +19,7 @@ epsi_file = snakemake.input[0]
 for i, s_type in enumerate(["S_latent", "S_pv"]):
     spec = RegressionSpec(
         y_key="S_latent",
-        x_keys=("dt_s", "dspace_m", "dcenter_m", "dhd_rad", "dhd_rel_center_rad", "dturn", "dstill"),
+        x_keys=("dt_s", "dt_s2", "dspace_m", "dcenter_m", "dhd_rad", "dhd_rel_center_rad", "dturn", "dstill"),
         model="ridge",
         ridge_alpha=1.0,
         n_perm_episode_shuffle=200,
