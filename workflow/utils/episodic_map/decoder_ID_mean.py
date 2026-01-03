@@ -29,15 +29,36 @@ def _load_core_episode_tensor(core_h5: str, representation: str = "raw") -> Tupl
 
         traj_ptr = _safe_get_dataset(f, ["episodes/traj_ptr"]).astype(np.int64)
 
-        if representation == "raw":
-            traj_stack = _safe_get_dataset(f, ["episodes/traj_stack"]).astype(np.float32)
-        elif representation == "resid":
-            # your integrated residualization stores these (per your earlier work)
-            traj_stack = _safe_get_dataset(
-                f, ["episodes/traj_stack_resid", "episodes/traj_stack_residual", "episodes/traj_stack_res"]
-            ).astype(np.float32)
-        else:
-            raise ValueError("representation must be 'raw' or 'resid'")
+        # Backward/alias support
+        rep_alias = {
+            "resid_ctx": "resid",
+        }
+        representation = rep_alias.get(representation, representation)
+
+        rep_to_candidates = {
+            "raw": ["episodes/traj_stack"],
+            "resid": ["episodes/traj_stack_resid", "episodes/traj_stack_residual", "episodes/traj_stack_res"],
+            "resid_stim": ["episodes/traj_stack_resid_stim"],
+            "resid_ctx_stim": ["episodes/traj_stack_resid_ctx_stim"],
+        }
+
+        if representation not in rep_to_candidates:
+            raise ValueError(
+                "representation must be one of "
+                f"{tuple(rep_to_candidates.keys())}, got {representation!r}"
+            )
+
+        traj_stack = _safe_get_dataset(f, rep_to_candidates[representation]).astype(np.float32)
+
+        # if representation == "raw":
+        #     traj_stack = _safe_get_dataset(f, ["episodes/traj_stack"]).astype(np.float32)
+        # elif representation == "resid":
+        #     # your integrated residualization stores these (per your earlier work)
+        #     traj_stack = _safe_get_dataset(
+        #         f, ["episodes/traj_stack_resid", "episodes/traj_stack_residual", "episodes/traj_stack_res"]
+        #     ).astype(np.float32)
+        # else:
+        #     raise ValueError("representation must be 'raw' or 'resid'")
 
     n_ep = traj_ptr.shape[0]
     D = traj_stack.shape[1]
@@ -137,7 +158,7 @@ def _nn_identification_accuracy(trainX: np.ndarray, testX: np.ndarray) -> float:
 # -----------------------------
 @dataclass
 class MeanOnlyDecodeSpec:
-    representation: str              # "raw" or "resid"
+    representation: str              # "raw" | "resid" | "resid_stim" | "resid_ctx_stim"
     mean_window: str                # "whole" | "early" | "late"
     strip_first_s: float = 0.0
     early_s: float = 2.0
@@ -170,7 +191,7 @@ def run_episode_mean_only_decoding_single_session(
     """
     if specs is None:
         specs = []
-        for rep in ["raw", "resid"]:
+        for rep in ["raw", "resid", "resid_stim", "resid_ctx_stim"]:
             for mw in ["whole", "early", "late"]:
                 for z in [False, True]:
                     specs.append(MeanOnlyDecodeSpec(representation=rep, mean_window=mw, zscore_across_episodes=z))
@@ -244,7 +265,7 @@ def run_episode_mean_only_decoding_single_session(
         g.create_dataset("n_ep", data=np.array([r["n_ep"] for r in all_rows], dtype=np.int32))
         g.create_dataset("D_use", data=np.array([r["D_use"] for r in all_rows], dtype=np.int16))
 
-        g.create_dataset("representation", data=_as_fixed_str([r["representation"] for r in all_rows], L=8))
+        g.create_dataset("representation", data=_as_fixed_str([r["representation"] for r in all_rows], L=20))
         g.create_dataset("mean_window", data=_as_fixed_str([r["mean_window"] for r in all_rows], L=8))
         g.create_dataset("zscore", data=np.array([int(r["zscore"]) for r in all_rows], dtype=np.uint8))
 
@@ -274,7 +295,7 @@ def run_episode_mean_only_decoding_default(
       zscore ∈ {False,True}
     """
     specs = []
-    for rep in ["raw", "resid"]:
+    for rep in ["raw", "resid", "resid_stim", "resid_ctx_stim"]:
         for mw in ["whole", "early", "late"]:
             for z in [False, True]:
                 specs.append(MeanOnlyDecodeSpec(

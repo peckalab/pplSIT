@@ -23,32 +23,44 @@ def load_target_episode_tensor_from_core(
     h5_path: str,
     *,
     D: int = 10,
-    representation: str = "raw",   # "raw" | "resid"
+    representation: str = "raw",   # "raw" | "resid" | "resid_stim" | "resid_ctx_stim"
 ):
     """
     Returns:
       X_ep: (n_ep, T, D) float32
       meta: dict from meta_json
     """
-    if representation not in ("raw", "resid"):
-        raise ValueError("representation must be 'raw' or 'resid'")
+    # Backward/alias support
+    rep_alias = {
+        "resid_ctx": "resid",  # alias
+    }
+    representation = rep_alias.get(representation, representation)
+
+    rep_to_ds = {
+        "raw": "episodes/traj_stack",
+        "resid": "episodes/traj_stack_resid",                 # ctx residual (backward compat)
+        "resid_stim": "episodes/traj_stack_resid_stim",       # stim-phase residual only
+        "resid_ctx_stim": "episodes/traj_stack_resid_ctx_stim" # ctx + stim residual
+    }
+
+    if representation not in rep_to_ds:
+        raise ValueError(f"representation must be one of {tuple(rep_to_ds.keys())}, got {representation!r}")
+
+    ds_name = rep_to_ds[representation]
 
     with h5py.File(h5_path, "r") as f:
         meta = json.loads(f.attrs.get("meta_json", "{}"))
+        bin_size_s = float(meta.get("bin_size_s", 0.05))
         T = int(meta.get("episode_win_bins", 0))
         if T <= 0:
             raise ValueError(f"{h5_path}: meta_json missing episode_win_bins")
 
         traj_ptr = np.asarray(f["episodes/traj_ptr"][...], dtype=np.int64)
 
-        if representation == "raw":
-            if "episodes/traj_stack" not in f:
-                raise KeyError(f"{h5_path}: missing episodes/traj_stack")
-            traj_stack = np.asarray(f["episodes/traj_stack"][...], dtype=np.float32)
-        else:
-            if "episodes/traj_stack_resid" not in f:
-                raise KeyError(f"{h5_path}: missing episodes/traj_stack_resid")
-            traj_stack = np.asarray(f["episodes/traj_stack_resid"][...], dtype=np.float32)
+        if ds_name not in f:
+            raise KeyError(f"{h5_path}: missing {ds_name}. Available episodes keys: {list(f['episodes'].keys())}")
+
+        traj_stack = np.asarray(f[ds_name][...], dtype=np.float32)
 
     n_ep = traj_ptr.shape[0]
     if n_ep == 0:
@@ -192,7 +204,7 @@ def run_window_generalization_for_session(
     *,
     D: int = 10,
     L_s_list=(0.25, 0.5, 1.0, 2.0, 3.0),
-    representations=("raw", "resid"),
+    representations=("raw", "resid", "resid_stim", "resid_ctx_stim"),
     mean_subtract_modes=("none", "episode_global", "train_window"),
     C: float = 1.0,
 ):

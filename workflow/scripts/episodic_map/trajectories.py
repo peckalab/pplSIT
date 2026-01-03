@@ -53,18 +53,40 @@ out = build_core_trajectories_h5(
     episode_win_s=cfg['episode_win_s'],
     pca_n_components=cfg['pca_n_components'],
     transform=cfg['transform'],
-    do_residualize=True,
-    behavior_h5=behf_file,
+    behavior_h5_path=behf_file,
 )
 
+# def build_core_trajectories_h5(
+#     out_h5_path: str,
+#     X_counts_50ms: np.ndarray,
+#     state_periods_pulse: dict,
+#     t_edges_50ms: np.ndarray | None = None,
+#     *,
+#     X_is_neurons_by_time: bool = True,
+#     bins_per_pulse: int = 5,           # 250ms / 50ms = 5
+#     pulse_end_inclusive: bool = True,
+
+#     # which states to use
+#     key_target: str  = "tgt_sta_succ_mx",
+#     key_bgr_sta: str = "bgr_sta_mx",
+#     key_sil_sta: str = "sil_sta_mx",
+
+#     # PCA fit choices
+#     transform: str = "sqrt",
+#     pca_n_components: int = 20,
+
+#     # episode windowing
+#     episode_win_s: float = 6.0,       # 6 s target episodes
+#     bin_size_s: float = 0.05,         # 50 ms
+#     align: str = "start",
+
+#     # residualization inputs
+#     behavior_h5_path: Optional[str] = None,
+#     do_context_residual: bool = True,
+#     do_stim_phase_residual: bool = True,
+#     context_cov_spec: ContextCovariateSpec = ContextCovariateSpec(),
+#     ridge_alpha_resid: float = 1.0,
+# )
 
 
 
-# -----------------------------
-# Helper to read back a single episode trajectory
-# -----------------------------
-# def load_episode_traj(h5_path: str, ep_idx: int):
-#     with h5py.File(h5_path, "r") as f:
-#         ptr = f["episodes/traj_ptr"][ep_idx]
-#         Z = f["episodes/traj_stack"][ptr[0]:ptr[1]+1]
-#     return Z

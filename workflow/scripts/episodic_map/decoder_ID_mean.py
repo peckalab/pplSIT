@@ -9,6 +9,7 @@ sys.path.append(parent_dir)
 
 from utils.episodic_map.decoder_ID_mean import *
 
+
 run_episode_mean_only_decoding_default(
     core_h5_path=snakemake.input[0],
     out_h5_path=snakemake.output[0],
