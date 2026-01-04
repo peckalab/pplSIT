@@ -38,7 +38,6 @@ with h5py.File(actm_file, 'r') as f:
     X_counts_50ms = np.array(f['mx_50ms']['mx'])
     t_edges_50ms  = np.array(f['mx_50ms']['bins'])
     
-#X_counts_50ms = gaussian_filter1d(X_counts_50ms, sigma=5, axis=0, mode="nearest")
 with h5py.File(segm_file, 'r') as f:
     state_periods_pulse = {}
     for idxs_name in STATE_KEYS:

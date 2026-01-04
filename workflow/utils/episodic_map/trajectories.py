@@ -391,6 +391,43 @@ def extract_episode_stack_from_Z(
     return traj_stack, ep_ptr
 
 
+def episode_mean_residualize_stack(
+    traj_stack: np.ndarray,
+    traj_ptr: np.ndarray,
+):
+    """
+    Given a concatenated traj_stack (T_concat, D) and traj_ptr (n_ep, 2) inclusive indices into traj_stack,
+    compute:
+      - mu_ep: (n_ep, D) mean vector per episode (mean across time bins)
+      - traj_stack_epmean: (T_concat, D) with episode mean subtracted within each episode
+
+    Notes:
+      - Does NOT change traj_ptr or episode membership.
+      - Leaves NaNs in place, but uses nanmean so partial NaNs don't nuke everything.
+    """
+    if traj_stack.ndim != 2:
+        raise ValueError(f"traj_stack must be 2D (T,D), got {traj_stack.shape}")
+    if traj_ptr.ndim != 2 or traj_ptr.shape[1] != 2:
+        raise ValueError(f"traj_ptr must be (n_ep,2), got {traj_ptr.shape}")
+
+    n_ep = traj_ptr.shape[0]
+    D = traj_stack.shape[1]
+
+    mu_ep = np.full((n_ep, D), np.nan, dtype=np.float32)
+    out = traj_stack.astype(np.float32, copy=True)
+
+    for i in range(n_ep):
+        s, e = int(traj_ptr[i, 0]), int(traj_ptr[i, 1])
+        if s < 0 or e < s or e >= out.shape[0]:
+            raise ValueError(f"Bad traj_ptr[{i}] = ({s},{e}) for stack len {out.shape[0]}")
+        seg = out[s : e + 1, :]  # inclusive
+        mu = np.nanmean(seg, axis=0)
+        mu_ep[i] = mu
+        out[s : e + 1, :] = seg - mu[None, :]
+
+    return out, mu_ep
+
+
 # ----------------------------
 # Main builder
 # ----------------------------
@@ -555,6 +592,19 @@ def build_core_trajectories_h5(
             "coef_shape": list(info_both["coef"].shape),
         }
 
+    # ---------------- Episode-mean residualization (within-episode mean subtraction) ----------------
+    # Raw
+    traj_stack_epmean, traj_mu = episode_mean_residualize_stack(traj_stack, ep_ptr)
+
+    # Context residualized (back-compat name: traj_stack_resid)
+    traj_stack_resid_epmean, traj_mu_resid = episode_mean_residualize_stack(traj_stack_resid, ep_ptr)
+
+    # Stim-only residualized
+    traj_stack_resid_stim_epmean, traj_mu_resid_stim = episode_mean_residualize_stack(traj_stack_resid_stim, ep_ptr)
+
+    # Context+stim residualized
+    traj_stack_resid_ctx_stim_epmean, traj_mu_resid_ctx_stim = episode_mean_residualize_stack(traj_stack_resid_ctx_stim, ep_ptr)
+
     # Meta
     meta = dict(
         bin_size_s=float(bin_size_s),
@@ -576,6 +626,17 @@ def build_core_trajectories_h5(
             ridge_alpha=float(ridge_alpha_resid),
         ),
     )
+    meta["episode_mean_residualization"] = True
+    meta["episode_mean_residualization_outputs"] = {
+        "traj_stack_epmean": "episodes/traj_stack_epmean",
+        "traj_mu": "episodes/traj_mu",
+        "traj_stack_resid_epmean": "episodes/traj_stack_resid_epmean",
+        "traj_mu_resid": "episodes/traj_mu_resid",
+        "traj_stack_resid_stim_epmean": "episodes/traj_stack_resid_stim_epmean",
+        "traj_mu_resid_stim": "episodes/traj_mu_resid_stim",
+        "traj_stack_resid_ctx_stim_epmean": "episodes/traj_stack_resid_ctx_stim_epmean",
+        "traj_mu_resid_ctx_stim": "episodes/traj_mu_resid_ctx_stim",
+    }
 
     # Write HDF5
     with h5py.File(out_h5_path, "w") as f:
@@ -629,6 +690,25 @@ def build_core_trajectories_h5(
             g_ep.create_dataset("traj_stack_resid_stim", data=traj_stack_resid_stim, compression="gzip")
         if traj_stack_resid_ctx_stim is not None:
             g_ep.create_dataset("traj_stack_resid_ctx_stim", data=traj_stack_resid_ctx_stim, compression="gzip")
+
+        mu_dict = {
+            "traj_stack_epmean": traj_stack_epmean,
+            "traj_mu": traj_mu,
+
+            "traj_stack_resid_epmean": traj_stack_resid_epmean,
+            "traj_mu_resid": traj_mu_resid,
+
+            "traj_stack_resid_stim_epmean": traj_stack_resid_stim_epmean,
+            "traj_mu_resid_stim": traj_mu_resid_stim,
+
+            "traj_stack_resid_ctx_stim_epmean": traj_stack_resid_ctx_stim_epmean,
+            "traj_mu_resid_ctx_stim": traj_mu_resid_ctx_stim,
+
+        }
+        for k, v in mu_dict.items():
+            # if k in g_ep:
+            #     del g_ep[k]
+            g_ep.create_dataset(k, data=v, compression="gzip")
 
         # residualization metadata
         g_r = f.create_group("residualization")
