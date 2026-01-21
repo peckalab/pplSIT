@@ -19,6 +19,8 @@ blocks:  # blocks of pipeline to run
   metronome: False
   video: False
   CCR: False
+  raw_waveforms: False # extract raw waveforms for unit matching (session level)
+  unit_match: False # run unit matching across all sessions of an animal
 
 src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
@@ -177,3 +179,12 @@ segments:
   visits:
     min_pulses: 8
     radius: 0.05
+
+unit_match:
+  sample_amount: 1000 # for both CV, at least 500 per CV
+  spike_width: 61 # assuming 30khz sampling, 82 and 61 are common choices (KS1-3, KS4), covers the AP and space around needed for processing
+  n_channels: 384 #neuropixels default, the number of channels EXCLUDING sync channels
+  extract_good_units_only: False # bool, set to true if you want to only extract units marked as good 
+  KS4_data: True #bool, set to true if using Kilosort, as KS4 spike times refer to start of waveform not peak
+  samples_before: 20
+  match_good_units_only: True # bool, set to true if you want to only match units marked as good
