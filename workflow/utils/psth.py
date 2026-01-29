@@ -2,6 +2,8 @@ import numpy as np
 import h5py
 from scipy import stats
 
+from numba import njit # use numba for optimization
+
 
 def get_shuffled(spiketrain):
     # shuffle spike times preserving inter-spike intervals
@@ -9,20 +11,58 @@ def get_shuffled(spiketrain):
     np.random.shuffle(ISIs)
     return np.concatenate([[spiketrain[0]], spiketrain[0] + np.cumsum(ISIs)])
 
+# keep legacy function commented out
+# def get_spike_counts(spk_times, pulse_times, hw=0.25, bin_count=51):
+#     collected = []
+#     for t_pulse in pulse_times:
+#         selected = spk_times[(spk_times > t_pulse - hw) & (spk_times < t_pulse + hw)]
+#         collected += [x for x in selected - t_pulse]
+#     collected = np.array(collected)
+
+#     bins = np.linspace(-hw, hw, bin_count)
+#     counts, _ = np.histogram(collected, bins=bins)
+#     counts = counts / len(pulse_times) # * 1/((2. * hw)/float(bin_count - 1))
+#     counts = counts / (bins[1] - bins[0])  # divide by bin size to get firing rate
+    
+#     return bins, counts
+
+# use numba for optimization
+@njit(cache=True)
+def _psth_numba(spk_times, pulse_times, hw, bin_count):
+    # bins are [-hw, ..., hw] with bin_count points => bin_count-1 bins
+    bin_width = (2.0 * hw) / (bin_count - 1)
+    counts = np.zeros(bin_count - 1, dtype=np.int64)
+
+    for i in range(pulse_times.shape[0]):
+        t = pulse_times[i]
+
+        # window slice indices using binary search (Numba supports np.searchsorted)
+        left = np.searchsorted(spk_times, t - hw, side="right")
+        right = np.searchsorted(spk_times, t + hw, side="left")
+
+        for s in range(left, right):
+            rel = spk_times[s] - t
+            b = int((rel + hw) / bin_width)
+            if 0 <= b < (bin_count - 1):
+                counts[b] += 1
+
+    return counts, bin_width
 
 def get_spike_counts(spk_times, pulse_times, hw=0.25, bin_count=51):
-    collected = []
-    for t_pulse in pulse_times:
-        selected = spk_times[(spk_times > t_pulse - hw) & (spk_times < t_pulse + hw)]
-        collected += [x for x in selected - t_pulse]
-    collected = np.array(collected)
+    spk_times = np.asarray(spk_times)
+    pulse_times = np.asarray(pulse_times)
+
+    # IMPORTANT: spk_times must be sorted (sort once at load time)
+    # spk_times = np.sort(spk_times)
 
     bins = np.linspace(-hw, hw, bin_count)
-    counts, _ = np.histogram(collected, bins=bins)
-    counts = counts / len(pulse_times) # * 1/((2. * hw)/float(bin_count - 1))
-    counts = counts / (bins[1] - bins[0])  # divide by bin size to get firing rate
-    
-    return bins, counts
+    counts, bin_width = _psth_numba(spk_times, pulse_times, hw, bin_count)
+
+    # normalize to firing rate
+    counts = counts / len(pulse_times)
+    counts = counts / bin_width
+
+    return bins, counts.astype(np.float64)  # keep same dtype behavior as before if you want
 
 
 def compute_shuffled_metrics(strain, event_times, offset, bin_count, iter_count=1000):
@@ -34,25 +74,25 @@ def compute_shuffled_metrics(strain, event_times, offset, bin_count, iter_count=
         psth_shuffled[i] = psth
         
     # percentiles
-    confidence_5_0_low  = np.zeros(psth_shuffled.shape[1])
-    #confidence_2_5_low  = np.zeros(psth_shuffled.shape[1])
-    confidence_95_0_high = np.zeros(psth_shuffled.shape[1])
-    #confidence_97_5_high = np.zeros(psth_shuffled.shape[1])
+    # confidence_5_0_low  = np.zeros(psth_shuffled.shape[1])
+    confidence_2_5_low  = np.zeros(psth_shuffled.shape[1])
+    # confidence_95_0_high = np.zeros(psth_shuffled.shape[1])
+    confidence_97_5_high = np.zeros(psth_shuffled.shape[1])
     for i, col in enumerate(psth_shuffled.T):
-        confidence_5_0_low[i]  = np.percentile(col, 5)
-        confidence_95_0_high[i] = np.percentile(col, 95)
-        #confidence_2_5_low[i]  = np.percentile(col, 2.5)
-        #confidence_97_5_high[i] = np.percentile(col, 97.5)
+        # confidence_5_0_low[i]  = np.percentile(col, 5)
+        # confidence_95_0_high[i] = np.percentile(col, 95)
+        confidence_2_5_low[i]  = np.percentile(col, 2.5)
+        confidence_97_5_high[i] = np.percentile(col, 97.5)
         
     # bins, shuffled mean, shuffled std, 0.05, 0.95 percentiles (p=0.05, p=0.0)
     return np.vstack([
         bins[:-1],  
         psth_shuffled.mean(axis=0),
         psth_shuffled.std(axis=0),
-        #confidence_2_5_low, 
-        #confidence_97_5_high,
-        confidence_5_0_low, 
-        confidence_95_0_high,
+        confidence_2_5_low, 
+        confidence_97_5_high,
+        # confidence_5_0_low, 
+        # confidence_95_0_high,
     ])
 
 
