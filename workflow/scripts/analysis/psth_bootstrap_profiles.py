@@ -85,7 +85,7 @@ if cfg['sound']['sounds']['distractor2']['enabled'] and distr_count > 0:
     event_idxs_pool['DI2'] = np.where(sound_events[:, 1] == 4)[0]
 
 # complex states
-state_names  = ['idxs_tgt_sta_succ', 'idxs_bgr_sta', 'idxs_bgr_run', 'idxs_sil_sta', 'idxs_sil_run']
+state_names  = ['idxs_tgt_sta', 'idxs_tgt_sta_succ', 'idxs_bgr_sta', 'idxs_bgr_run', 'idxs_sil_sta', 'idxs_sil_run']
 # distractor complex states
 if cfg['sound']['sounds']['distractor1']['enabled'] and distr_count > 0:
     state_names.append('idxs_di1_sta')
@@ -101,8 +101,6 @@ with h5py.File(snakemake.input[2], 'r') as f:
 
 # now do bootstrapping, using parallel processing
 n_jobs = int(getattr(snakemake, "threads", 1))
-
-
 
 J = len(event_idxs_pool)
 U = len(unit_names)
