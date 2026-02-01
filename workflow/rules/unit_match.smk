@@ -54,7 +54,7 @@ rule unit_match_across_sessions:
     input:
         npy_files=get_rawwaveforms_npy_files
     output:
-        match_table=os.path.join(config['dst_path'], '{animal}', 'unit_match', 'MatchTable.csv')
+        match_table=os.path.join(config['prj_path'], 'unit_match', '{animal}', 'MatchTable.csv')
     conda:
         "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/unit_match"
     script:
