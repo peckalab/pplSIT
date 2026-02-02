@@ -39,8 +39,8 @@ def calculate_performance(tl, trial_idxs, cfg, islands=None):
     t_sit = cfg['experiment']['target_duration']
     timepoints = cfg['experiment']['timepoints']
     s_duration = cfg['experiment']['session_duration']
-    distractor_fail = cfg['experiment']['distractor_fail']
-    distractor_islands = cfg['experiment']['distractor_islands']
+    distractor_fail = cfg['experiment']['distractor_fail'] if 'distractor_fail' in cfg['experiment'] else False
+    distractor_islands = cfg['experiment']['distractor_islands'] if 'distractor_islands' in cfg['experiment'] else 0
 
     trial_time = tl[trial_idxs[:, 1].astype(np.int32)][:, 0] - tl[trial_idxs[:, 0].astype(np.int32)][:, 0]
     correct_trial = (trial_idxs[:, 5] == 1)
@@ -277,7 +277,7 @@ def plot_performance(cfg, perf, fig_path):
     fig = plt.figure(figsize=(4, 4))
 
     # check distractor fail
-    distractor_fail = cfg['experiment']['distractor_fail']
+    distractor_fail = cfg['experiment']['distractor_fail'] if 'distractor_fail' in cfg['experiment'] else False
     x = perf[:, 0] # time points
 
     ax = fig.add_subplot(111)

@@ -2,7 +2,7 @@ import os
 
 def conditional_input_isl(wildcards):
     f = os.path.join(config['src_path'], wildcards.animal, wildcards.session, 'islands.csv')
-    return f if os.path.exists(f) else None
+    return f if os.path.exists(f) else []
 
 # this function checks if continuous.dat exists at all, 
 # if so the final path of dat in the raw folder is used as input,

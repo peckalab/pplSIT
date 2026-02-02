@@ -1,5 +1,5 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey/episodic_map.yaml --use-conda --cores=20
+# snakemake -n --configfile=../config/andrey/cognitiveS.yaml --use-conda --cores=20
 #
 # mount nevermind via SSHFS
 # sshfs sobolev@10.153.172.1:/nevermind.neuro/share/ag-grothe nevermind
@@ -14,12 +14,12 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
-  neurosuite: False  # sorting with neurosuite / klustakwik
-  kilosort: True  # sorting with kilosort
+  LFP: True          # extract LFP
+  neurosuite: True  # sorting with neurosuite / klustakwik
+  kilosort: False  # sorting with kilosort
   units: True      # extract spike trains from sorted data
-  AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: False
+  AEPs: True         # extract Auditory Evoked Responses
+  PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
@@ -36,77 +36,16 @@ blocks:  # blocks of pipeline to run
   covariance: True
   vectors: False
   state_decoder_unit_mx: False
-  episodic_map: True
+  episodic_map: False
+  cognitiveS: True
 
 
 session_IDs: 
-  # ---------- 013608 ----------
-  # - "013608_ppcSIT_2025-01-06_13-20-52"
-  # - "013608_ppcSIT_2025-01-07_08-47-27"
-  # - "013608_ppcSIT_2025-01-07_15-38-23"
-  # - "013608_ppcSIT_2025-01-09_09-09-55"
-  # - "013608_ppcSIT_2025-01-10_09-25-04"
-  # - "013608_ppcSIT_2025-01-13_14-01-40"
-  - "013608_ppcSIT_2025-01-14_10-20-14"
-  - "013608_ppcSIT_2025-01-15_14-56-18"
-  # - "013608_ppcSIT_2025-01-16_09-49-21"
-  # - "013608_ppcSIT_2025-01-17_10-07-00"
-  - "013608_ppcSIT_2025-01-20_09-38-20"
-  # - "013608_ppcSIT_2025-01-21_08-50-02"
-  # - "013608_ppcSIT_2025-01-22_12-59-00"
-  - "013608_ppcSIT_2025-01-23_08-46-51"
-  # - "013608_ppcSIT_2025-01-24_08-19-45"
-  # - "013608_ppcSIT_2025-01-27_09-00-20"
-  # - "013608_ppcSIT_2025-01-29_12-34-08"
-  - "013608_ppcSIT_2025-02-18_14-15-52"
-  # - "013608_ppcSIT_2025-02-19_13-50-59"
-  # - "013608_ppcSIT_2025-02-27_08-56-52"
-  # - "013608_ppcSIT_2025-02-28_16-23-29"
-  # - "013608_ppcSIT_2025-03-03_08-55-30"
-  # - "013608_ppcSIT_2025-03-04_09-17-16"
-  # - "013608_ppcSIT_2025-03-05_10-33-41"
-
-  # ---------- 014393 ----------
-  # - "014393_ppcSIT_2025-04-16_11-20-15"
-  # # - "014393_ppcSIT_2025-04-16_21-25-03"  # TODO: fix tSNE error
-  # - "014393_ppcSIT_2025-04-23_09-23-02"
-  # - "014393_ppcSIT_2025-04-23_20-27-09"
-  # - "014393_ppcSIT_2025-04-24_08-57-16"
-  # - "014393_ppcSIT_2025-04-24_20-53-08"
-  # - "014393_ppcSIT_2025-04-25_08-42-15"
-  # - "014393_ppcSIT_2025-04-25_15-42-45"
-  # - "014393_ppcSIT_2025-04-28_09-57-10"
-  # - "014393_ppcSIT_2025-04-29_09-05-50"
-  # - "014393_ppcSIT_2025-04-29_22-10-49"
-
-  # ---------- 016672 ----------
-  # - "016672_devSITactive_2025-10-20_15-13-28"  # naive
-  # - "016672_devSITactive_2025-10-21_21-25-15"  # learning
-  # - "016672_devSITactive_2025-10-23_15-05-37"  # learning
-  # - "016672_devSITactive_2025-10-24_17-18-47"
-  # - "016672_devSITactive_2025-10-27_12-36-37"
-  # - "016672_devSITactive_2025-10-28_21-02-10"
-  # - "016672_devSITactive_2025-10-29_13-36-00"
-  # - "016672_devSITactive_2025-10-30_11-23-50"
-  # # - "016672_devSITactive_2025-10-31_14-50-34"  # good restored session (26 mins)
-  - "016672_devSITactive_2025-10-31_15-23-44"
-  - "016672_devSITactive_2025-11-03_10-39-56"
-  - "016672_devSITactive_2025-11-04_10-11-10"
-  - "016672_devSITactive_2025-11-05_10-45-16"  # last session with box controls
-  - "016672_devSITactive_2025-11-06_21-16-33"
-  - "016672_devSITactive_2025-11-07_13-18-09"
-  - "016672_devSITactive_2025-11-10_16-03-29"
-  # - "016672_devSITactive_2025-11-11_17-41-18"  # R - channels flipped, but should be still fine
-  # - "016672_devSITactive_2025-11-12_14-58-44"  # R
-  # - "016672_devSITactive_2025-11-13_20-25-42"  # R - BGR 1195
-  # - "016672_devSITactive_2025-11-14_13-57-22"  # R - BGR 660
-  # - "016672_devSITactive_2025-11-17_13-56-04"  # L - distractors
-  # - "016672_devSITactive_2025-11-18_14-22-05"  # R - distractors
-  # - "016672_devSITactive_2025-11-19_14-42-36"  # L - distractors (so much noise..)
-
   # ---------- 008229 ----------
-  # - "008229_hippoSIT_2022-05-16_20-36-44"
-  # - "008229_hippoSIT_2022-05-16_20-36-44"
+  - "008229_hippoSIT_2022-05-16_20-36-44"
+  - "008229_hippoSIT_2022-05-17_21-44-43"
+  - "008229_hippoSIT_2022-05-18_14-36-18"
+  - "008229_hippoSIT_2022-05-20_15-54-39"
 
 
 # source of raw data

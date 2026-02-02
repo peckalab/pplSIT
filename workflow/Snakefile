@@ -70,6 +70,8 @@ include: "rules/episodic_map/behavior_features.smk"
 include: "rules/episodic_map/funneling.smk"
 include: "rules/episodic_map/episode_similarity.smk"
 
+include: "rules/cognitiveS/HMM.smk"
+
 target_names_dict = {
     'meta':    ['meta.h5'],
     'performance':    ['performance/performance.h5'],
@@ -184,6 +186,14 @@ target_names_dict = {
         'episodic_map/regression_pv.h5',
         'episodic_map/decoder_ID_comb.h5',
         'episodic_map/decoder_ID_mean.h5',
+        'episodic_map/drift_PCA.h5',
+        'episodic_map/per_cell_GLM.h5',
+        'episodic_map/ensembles.yaml',
+        'episodic_map/trajectories_filtered.h5',
+        'episodic_map/masks.h5',
+    ],
+    'cognitiveS': [
+        'cognitiveS/HMM.h5',
     ]
 }
 

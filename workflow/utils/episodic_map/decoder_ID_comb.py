@@ -12,10 +12,25 @@ from sklearn.metrics import accuracy_score
 # ----------------------------
 # HDF5 loading utilities
 # ----------------------------
+# --- episode set routing ---
+ep_map = {
+    "target": None,  # handled by existing "episodes/..." logic
+    "all_sta": "episodes_sta/all",
+    "bgr_sta": "episodes_sta/bgr",
+    "sil_sta": "episodes_sta/sil",
+}
 
-def load_core_meta(h5_path: str) -> dict:
+def load_core_meta(h5_path: str, episode_set: str = 'target', rep: str = 'raw') -> dict:
     with h5py.File(h5_path, "r") as f:
         meta = json.loads(f.attrs.get("meta_json", "{}"))
+        # If loading STA episodes, merge group-level meta_json (it contains win_bins, thresholds, etc.)
+        if episode_set != "target":
+            base = ep_map[episode_set]
+            grp = f"{base}/{rep}"
+            if grp in f and "meta_json" in f[grp].attrs:
+                meta_sta = json.loads(f[grp].attrs.get("meta_json", "{}"))
+                # group meta should override global keys if overlapping
+                meta = {**meta, **meta_sta}
     return meta
 
 
@@ -23,44 +38,87 @@ def load_target_episode_tensor_from_core(
     h5_path: str,
     *,
     D: int = 10,
-    representation: str = "raw",   # "raw" | "resid" | "resid_stim" | "resid_ctx_stim"
+    representation: str = "raw",
+    mean_subtract: str = "none",
+    episode_set: str = "target",   # NEW: "target" | "all_sta" | "bgr_sta" | "sil_sta"
 ):
     """
     Returns:
       X_ep: (n_ep, T, D) float32
       meta: dict from meta_json
     """
-    # Backward/alias support
-    rep_alias = {
-        "resid_ctx": "resid",  # alias
-    }
-    representation = rep_alias.get(representation, representation)
+    # # Backward/alias support
+    # rep_alias = {
+    #     "resid_ctx": "resid",  # alias
+    # }
+    # representation = rep_alias.get(representation, representation)
 
-    rep_to_ds = {
-        "raw": "episodes/traj_stack",
-        "resid": "episodes/traj_stack_resid",                 # ctx residual (backward compat)
-        "resid_stim": "episodes/traj_stack_resid_stim",       # stim-phase residual only
-        "resid_ctx_stim": "episodes/traj_stack_resid_ctx_stim" # ctx + stim residual
-    }
+    # rep_to_ds = {
+    #     "raw": "episodes/traj_stack",
+    #     "resid": "episodes/traj_stack_resid",                 # ctx residual (backward compat)
+    #     "resid_stim": "episodes/traj_stack_resid_stim",       # stim-phase residual only
+    #     "resid_ctx_stim": "episodes/traj_stack_resid_ctx_stim" # ctx + stim residual
+    # }
 
-    if representation not in rep_to_ds:
-        raise ValueError(f"representation must be one of {tuple(rep_to_ds.keys())}, got {representation!r}")
+    # if representation not in rep_to_ds:
+    #     raise ValueError(f"representation must be one of {tuple(rep_to_ds.keys())}, got {representation!r}")
 
-    ds_name = rep_to_ds[representation]
+    # ds_name = rep_to_ds[representation]
+
+    # Choose stack/ptr datasets
+    rep = representation
+    if episode_set == "target":
+        # --- original target episode datasets live under "episodes/..." ---
+        if rep == "raw":
+            stack_pth = "episodes/traj_stack"
+        elif rep == "resid":
+            stack_pth = "episodes/traj_stack_resid"
+        elif rep == "resid_stim":
+            stack_pth = "episodes/traj_stack_resid_stim"
+        elif rep == "resid_ctx_stim":
+            stack_pth = "episodes/traj_stack_resid_ctx_stim"
+        else:
+            raise ValueError(f"Unknown representation={representation!r} -> normalized {rep!r}")
+
+        # mean subtraction variants exist for targets (epmean stacks)
+        if mean_subtract == "episode_global":
+            stack_pth = stack_pth + "_epmean"
+        elif mean_subtract == "none":
+            pass
+        elif mean_subtract == "train_window":
+            # keep your existing downstream logic for train-window subtraction
+            # (NOTE: this loader just loads tensors; train_window subtraction happens later)
+            pass
+        else:
+            raise ValueError(f"Unknown mean_subtract={mean_subtract!r}")
+
+        ptr_pth = "episodes/traj_ptr"
+
+    else:
+        # --- stationary episodes live under episodes_sta/{all|bgr|sil}/{rep}/... ---
+        base = ep_map[episode_set]              # e.g. "episodes_sta/bgr"
+        grp = f"{base}/{rep}"                   # e.g. "episodes_sta/bgr/raw"
+        stack_pth = f"{grp}/traj_stack"
+        ptr_pth = f"{grp}/traj_ptr"
 
     with h5py.File(h5_path, "r") as f:
         meta = json.loads(f.attrs.get("meta_json", "{}"))
+        # If loading STA episodes, merge group-level meta_json (it contains win_bins, thresholds, etc.)
+        if episode_set != "target":
+            base = ep_map[episode_set]
+            grp = f"{base}/{rep}"
+            if grp in f and "meta_json" in f[grp].attrs:
+                meta_sta = json.loads(f[grp].attrs.get("meta_json", "{}"))
+                # group meta should override global keys if overlapping
+                meta = {**meta, **meta_sta}
+
         bin_size_s = float(meta.get("bin_size_s", 0.05))
         T = int(meta.get("episode_win_bins", 0))
         if T <= 0:
             raise ValueError(f"{h5_path}: meta_json missing episode_win_bins")
 
-        traj_ptr = np.asarray(f["episodes/traj_ptr"][...], dtype=np.int64)
-
-        if ds_name not in f:
-            raise KeyError(f"{h5_path}: missing {ds_name}. Available episodes keys: {list(f['episodes'].keys())}")
-
-        traj_stack = np.asarray(f[ds_name][...], dtype=np.float32)
+        traj_ptr = np.asarray(f[ptr_pth][...], dtype=np.int64)
+        traj_stack = np.asarray(f[stack_pth][...], dtype=np.float32)
 
     n_ep = traj_ptr.shape[0]
     if n_ep == 0:
@@ -207,6 +265,7 @@ def run_window_generalization_for_session(
     representations=("raw", "resid", "resid_stim", "resid_ctx_stim"),
     mean_subtract_modes=("none", "episode_global", "train_window"),
     C: float = 1.0,
+    episode_set: str = "target",   # NEW: "target" | "all_sta" | "bgr_sta" | "sil_sta"
 ):
     """
     Computes a grid of accuracies for each:
@@ -215,7 +274,7 @@ def run_window_generalization_for_session(
 
     Saves to out_h5_path.
     """
-    meta0 = load_core_meta(core_h5_path)
+    meta0 = load_core_meta(core_h5_path, episode_set=episode_set)
     bin_size_s = float(meta0.get("bin_size_s", 0.05))
     T = int(meta0.get("episode_win_bins", 0))
     if T <= 0:
@@ -234,10 +293,12 @@ def run_window_generalization_for_session(
         "clf": {"type": "LogisticRegression(multinomial)+StandardScaler", "C": float(C)},
     }
 
-    with h5py.File(out_h5_path, "w") as f_out:
-        f_out.attrs["meta_json"] = json.dumps(out_meta)
+    with h5py.File(out_h5_path, "a") as f_out:
+        if episode_set in f_out:
+            del f_out[episode_set]
 
-        g = f_out.create_group("window_generalization")
+        g = f_out.create_group(episode_set)
+        g.attrs["meta_json"] = json.dumps(out_meta)
 
         # store axis labels
         g.create_dataset("pos_names", data=np.array(POS_NAMES, dtype="S"))
@@ -246,7 +307,11 @@ def run_window_generalization_for_session(
 
         # compute
         for rep in representations:
-            X_ep, meta = load_target_episode_tensor_from_core(core_h5_path, D=D, representation=rep)
+            X_ep, meta = load_target_episode_tensor_from_core(
+                core_h5_path, D=D, representation=rep, episode_set=episode_set
+            )
+
+            T_use = int(X_ep.shape[1]) 
             n_ep = int(X_ep.shape[0])
             chance = float(1.0 / n_ep) if n_ep > 0 else np.nan
 
@@ -262,7 +327,7 @@ def run_window_generalization_for_session(
                     if L_bins < 1:
                         raise ValueError(f"L_s={L_s} gives L_bins={L_bins}")
 
-                    if L_bins > T:
+                    if L_bins > T_use:
                         # window too long: store NaNs
                         acc_mat = np.full((3, 3), np.nan, dtype=np.float32)
                         starts = np.full(3, -1, dtype=np.int64)
@@ -275,13 +340,13 @@ def run_window_generalization_for_session(
                         continue
 
                     # compute starts for early/mid/late
-                    starts = np.array([window_start_for_pos(T, L_bins, p) for p in POS_NAMES], dtype=np.int64)
+                    starts = np.array([window_start_for_pos(T_use, L_bins, p) for p in POS_NAMES], dtype=np.int64)
 
                     # 3x3 matrix train_pos x test_pos
                     acc_mat = np.zeros((3, 3), dtype=np.float32)
 
                     for i_tr, pos_tr in enumerate(POS_NAMES):
-                        tr_bins = bins_for_window(T, L_bins, pos_tr)
+                        tr_bins = bins_for_window(T_use, L_bins, pos_tr)
 
                         # apply mean subtraction *per train window* if needed
                         X_use = apply_mean_subtract(
@@ -291,7 +356,7 @@ def run_window_generalization_for_session(
                         )
 
                         for j_te, pos_te in enumerate(POS_NAMES):
-                            te_bins = bins_for_window(T, L_bins, pos_te)
+                            te_bins = bins_for_window(T_use, L_bins, pos_te)
                             acc = decode_trainpos_testpos(X_use, train_bins=tr_bins, test_bins=te_bins, C=C)
                             acc_mat[i_tr, j_te] = acc
 

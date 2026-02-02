@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import json
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
@@ -13,6 +14,36 @@ from sklearn.linear_model import Ridge
 # ----------------------------
 # Utilities
 # ----------------------------
+
+def select_window_starts_strided(
+    valid_starts: np.ndarray,
+    win_bins: int,
+    stride_bins: int | None = None,
+) -> np.ndarray:
+    """
+    Convert a dense list of all-valid sliding-window starts into a sparse list
+    of starts, enforcing a minimum separation to avoid massive overlap.
+
+    If stride_bins is None -> default stride = win_bins (non-overlapping).
+    """
+    if valid_starts.size == 0:
+        return valid_starts
+
+    if stride_bins is None:
+        stride_bins = int(win_bins)
+
+    valid_starts = np.asarray(valid_starts, dtype=np.int64)
+    valid_starts.sort()
+
+    chosen = []
+    next_allowed = -10**18
+    for s in valid_starts:
+        if s >= next_allowed:
+            chosen.append(int(s))
+            next_allowed = int(s) + int(stride_bins)
+
+    return np.asarray(chosen, dtype=np.int64)
+
 
 def clip_periods(periods_bin: np.ndarray, t_bins: int) -> np.ndarray:
     """Clip periods to [0, t_bins-1] and drop invalid (end < start)."""
@@ -355,7 +386,7 @@ def residualize_latent_time_series(
 
     Zres = Z - Zhat
     info = {"coef": coefs.astype(np.float32)}
-    return Zres.astype(np.float32), info
+    return Zres.astype(np.float32), Zhat.astype(np.float32), info
 
 
 def extract_episode_stack_from_Z(
@@ -437,6 +468,8 @@ def build_core_trajectories_h5(
     X_counts_50ms: np.ndarray,
     state_periods_pulse: dict,
     t_edges_50ms: np.ndarray | None = None,
+    subgroup: str = None,
+    mode: str = "w",
     *,
     X_is_neurons_by_time: bool = True,
     bins_per_pulse: int = 5,           # 250ms / 50ms = 5
@@ -551,6 +584,8 @@ def build_core_trajectories_h5(
     Xctx = None
     ctx_names = None
     if behavior_h5_path is not None and do_context_residual:
+        #context_cov_spec.use_session_time = False  # disable session time for residualization
+        #context_cov_spec.use_pos_xy = False
         Xctx, ctx_names = build_context_design_matrix_for_bins(
             behavior_h5_path,
             t_edges_50ms=t_edges_50ms,
@@ -561,8 +596,9 @@ def build_core_trajectories_h5(
 
     # (A) Context residual (backward compatible: *_resid)
     if Xctx is not None:
-        Z_all_resid, info_ctx = residualize_latent_time_series(Z_all, Xctx, ridge_alpha=ridge_alpha_resid)
+        Z_all_resid, Zhat_resid, info_ctx = residualize_latent_time_series(Z_all, Xctx, ridge_alpha=ridge_alpha_resid)
         traj_stack_resid, _ = extract_episode_stack_from_Z(Z_all_resid, ep_binwin, win_bins=win_bins)
+        traj_stack_hat_resid, _ = extract_episode_stack_from_Z(Zhat_resid, ep_binwin, win_bins=win_bins)
         resid_meta["context"] = {
             "ridge_alpha": float(ridge_alpha_resid),
             "covariates": list(ctx_names),
@@ -571,8 +607,9 @@ def build_core_trajectories_h5(
 
     # (B) Stim-phase residual
     if do_stim_phase_residual:
-        Z_all_resid_stim, info_stim = residualize_latent_time_series(Z_all, Xstim, ridge_alpha=ridge_alpha_resid)
+        Z_all_resid_stim, Zhat_resid_stim, info_stim = residualize_latent_time_series(Z_all, Xstim, ridge_alpha=ridge_alpha_resid)
         traj_stack_resid_stim, _ = extract_episode_stack_from_Z(Z_all_resid_stim, ep_binwin, win_bins=win_bins)
+        traj_stack_hat_resid_stim, _ = extract_episode_stack_from_Z(Zhat_resid_stim, ep_binwin, win_bins=win_bins)
         resid_meta["stim_phase"] = {
             "ridge_alpha": float(ridge_alpha_resid),
             "covariates": list(stim_names),
@@ -584,8 +621,9 @@ def build_core_trajectories_h5(
         # both have intercept in col0 -> remove one intercept to avoid duplication
         Xboth = np.column_stack([Xctx, Xstim[:, 1:]])  # keep ctx intercept, drop stim intercept
         both_names = list(ctx_names) + [n for n in stim_names if n != "intercept"]
-        Z_all_resid_ctx_stim, info_both = residualize_latent_time_series(Z_all, Xboth, ridge_alpha=ridge_alpha_resid)
+        Z_all_resid_ctx_stim, Zhat_resid_ctx_stim, info_both = residualize_latent_time_series(Z_all, Xboth, ridge_alpha=ridge_alpha_resid)
         traj_stack_resid_ctx_stim, _ = extract_episode_stack_from_Z(Z_all_resid_ctx_stim, ep_binwin, win_bins=win_bins)
+        traj_stack_hat_resid_ctx_stim, _ = extract_episode_stack_from_Z(Zhat_resid_ctx_stim, ep_binwin, win_bins=win_bins)
         resid_meta["context_plus_stim"] = {
             "ridge_alpha": float(ridge_alpha_resid),
             "covariates": list(both_names),
@@ -598,12 +636,15 @@ def build_core_trajectories_h5(
 
     # Context residualized (back-compat name: traj_stack_resid)
     traj_stack_resid_epmean, traj_mu_resid = episode_mean_residualize_stack(traj_stack_resid, ep_ptr)
+    traj_stack_hat_resid_epmean, traj_mu_hat_resid = episode_mean_residualize_stack(traj_stack_hat_resid, ep_ptr)
 
     # Stim-only residualized
     traj_stack_resid_stim_epmean, traj_mu_resid_stim = episode_mean_residualize_stack(traj_stack_resid_stim, ep_ptr)
+    traj_stack_hat_resid_stim_epmean, traj_mu_hat_resid_stim = episode_mean_residualize_stack(traj_stack_hat_resid_stim, ep_ptr)
 
     # Context+stim residualized
     traj_stack_resid_ctx_stim_epmean, traj_mu_resid_ctx_stim = episode_mean_residualize_stack(traj_stack_resid_ctx_stim, ep_ptr)
+    traj_stack_hat_resid_ctx_stim_epmean, traj_mu_hat_resid_ctx_stim = episode_mean_residualize_stack(traj_stack_hat_resid_ctx_stim, ep_ptr)
 
     # Meta
     meta = dict(
@@ -639,7 +680,12 @@ def build_core_trajectories_h5(
     }
 
     # Write HDF5
-    with h5py.File(out_h5_path, "w") as f:
+    with h5py.File(out_h5_path, mode) as hfile:
+        if subgroup is not None:
+            f = hfile.create_group(subgroup)
+        else:
+            f = hfile
+
         f.attrs["meta_json"] = json.dumps(meta)
 
         g_in = f.create_group("inputs")
@@ -673,10 +719,13 @@ def build_core_trajectories_h5(
 
         if Z_all_resid is not None:
             g_lat.create_dataset("Z_all_resid", data=Z_all_resid, compression="gzip")
+            g_lat.create_dataset("Zhat_resid", data=Zhat_resid, compression="gzip")
         if Z_all_resid_stim is not None:
             g_lat.create_dataset("Z_all_resid_stim", data=Z_all_resid_stim, compression="gzip")
+            g_lat.create_dataset("Zhat_resid_stim", data=Zhat_resid_stim, compression="gzip")
         if Z_all_resid_ctx_stim is not None:
             g_lat.create_dataset("Z_all_resid_ctx_stim", data=Z_all_resid_ctx_stim, compression="gzip")
+            g_lat.create_dataset("Zhat_resid_ctx_stim", data=Zhat_resid_ctx_stim, compression="gzip")
 
         # episodes
         g_ep = f.create_group("episodes")
@@ -686,10 +735,13 @@ def build_core_trajectories_h5(
 
         if traj_stack_resid is not None:
             g_ep.create_dataset("traj_stack_resid", data=traj_stack_resid, compression="gzip")
+            g_ep.create_dataset("traj_stack_hat_resid", data=traj_stack_hat_resid, compression="gzip")
         if traj_stack_resid_stim is not None:
             g_ep.create_dataset("traj_stack_resid_stim", data=traj_stack_resid_stim, compression="gzip")
+            g_ep.create_dataset("traj_stack_hat_resid_stim", data=traj_stack_hat_resid_stim, compression="gzip")
         if traj_stack_resid_ctx_stim is not None:
             g_ep.create_dataset("traj_stack_resid_ctx_stim", data=traj_stack_resid_ctx_stim, compression="gzip")
+            g_ep.create_dataset("traj_stack_hat_resid_ctx_stim", data=traj_stack_hat_resid_ctx_stim, compression="gzip")
 
         mu_dict = {
             "traj_stack_epmean": traj_stack_epmean,
@@ -697,12 +749,18 @@ def build_core_trajectories_h5(
 
             "traj_stack_resid_epmean": traj_stack_resid_epmean,
             "traj_mu_resid": traj_mu_resid,
+            "traj_stack_resid_epmean": traj_stack_hat_resid_epmean,
+            "traj_mu_resid": traj_mu_hat_resid,
 
             "traj_stack_resid_stim_epmean": traj_stack_resid_stim_epmean,
             "traj_mu_resid_stim": traj_mu_resid_stim,
+            "traj_stack_resid_stim_epmean": traj_stack_hat_resid_stim_epmean,
+            "traj_mu_resid_stim": traj_mu_hat_resid_stim,
 
             "traj_stack_resid_ctx_stim_epmean": traj_stack_resid_ctx_stim_epmean,
             "traj_mu_resid_ctx_stim": traj_mu_resid_ctx_stim,
+            "traj_stack_resid_ctx_stim_epmean": traj_stack_hat_resid_ctx_stim_epmean,
+            "traj_mu_resid_ctx_stim": traj_mu_hat_resid_ctx_stim,
 
         }
         for k, v in mu_dict.items():

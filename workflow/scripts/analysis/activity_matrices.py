@@ -79,6 +79,7 @@ for bin_size in [0.01, 0.05, 0.25]:
 with h5py.File(snakemake.output[0], 'w') as f:
     for key, mx_dict in unit_mx_database.items():
         grp = f.create_group(f"mx_{key}ms")
+        grp.attrs['unit_ids'] = str(unit_ids)
 
         for name, ds in mx_dict.items():
             grp.create_dataset(name, data=ds)

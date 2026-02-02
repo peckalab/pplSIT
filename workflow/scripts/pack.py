@@ -125,7 +125,7 @@ def pack(pos_file, ev_file, snd_file, isl_file, cfg_file, man_file, dst_file, dr
         ds_names = ['positions', 'events', 'sounds', 'islands']
         for i, f_path  in enumerate([pos_file, ev_file, snd_file, isl_file]):
             ds_name = ds_names[i]
-            if not os.path.exists(f_path):
+            if len(f_path) == 0 or not os.path.exists(f_path):
                 continue
                 
             with open(f_path) as ff:

@@ -3,6 +3,60 @@ import h5py, json
 from typing import Dict, Tuple, Optional
 
 
+# -------------------------
+# Episode-group / representation path resolver
+# -------------------------
+
+REP_ALIASES = {
+    "raw": "raw",
+    "resid": "resid",
+    "resid_ctx": "resid",  # allow legacy name
+    "resid_stim": "resid_stim",
+    "resid_ctx_stim": "resid_ctx_stim",
+}
+
+def _normalize_rep(rep: str) -> str:
+    rep = str(rep)
+    if rep not in REP_ALIASES:
+        raise ValueError(f"Unknown representation={rep}. Allowed={list(REP_ALIASES.keys())}")
+    return REP_ALIASES[rep]
+
+def _z_all_key_for_rep(rep: str) -> str:
+    rep = _normalize_rep(rep)
+    if rep == "raw":
+        return "latent/Z_all"
+    if rep == "resid":
+        return "latent/Z_all_resid"
+    if rep == "resid_stim":
+        return "latent/Z_all_resid_stim"
+    if rep == "resid_ctx_stim":
+        return "latent/Z_all_resid_ctx_stim"
+    raise ValueError(rep)
+
+def _target_stack_key_for_rep(rep: str) -> str:
+    rep = _normalize_rep(rep)
+    if rep == "raw":
+        return "episodes/traj_stack"
+    if rep == "resid":
+        return "episodes/traj_stack_resid"
+    if rep == "resid_stim":
+        return "episodes/traj_stack_resid_stim"
+    if rep == "resid_ctx_stim":
+        return "episodes/traj_stack_resid_ctx_stim"
+    raise ValueError(rep)
+
+def _sta_base_for(kind: str, rep: str) -> str:
+    """
+    kind: 'all' | 'bgr' | 'sil'
+    rep:  'raw' | 'resid' | 'resid_stim' | 'resid_ctx_stim'
+    """
+    kind = str(kind)
+    if kind not in ("all", "bgr", "sil"):
+        raise ValueError(f"Unknown stationary kind={kind}. Use 'all'|'bgr'|'sil'.")
+    rep = _normalize_rep(rep)
+    return f"episodes_sta/{kind}/{rep}"
+
+
 # -----------------------------
 # Core metrics
 # -----------------------------
@@ -168,39 +222,95 @@ def _require_del_group(h5: h5py.File, path: str, overwrite: bool) -> h5py.Group:
     return h5.require_group(path)
 
 
-def load_episode_tensor_from_core_h5(h5_path: str, use_resid: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict]:
+def load_episode_tensor_from_core_h5(
+    h5_path: str,
+    D: int = 10,
+    *,
+    episode_kind: str = "target",   # 'target' or 'sta'
+    sta_kind: str = "bgr",          # if episode_kind=='sta': 'all'|'bgr'|'sil'
+    representation: str = "raw",    # 'raw'|'resid'|'resid_stim'|'resid_ctx_stim'
+    slice_mode: str = "whole",      # 'whole'|'early'|'late'
+    slice_len_s: float = None,      # e.g. 3.0 (seconds); if None -> no slicing
+):
     """
-    Returns:
-      X_ep: (n_ep, win_bins, D)
-      Z_all: (t_bins, D)
-      target_bin_windows: (n_ep,2) inclusive [bs,be]
-      meta: dict
+    Load episode tensor X_ep (n_ep, T, D), plus full-session Z_all, plus windows and meta.
+
+    Supports:
+      - target episodes:
+          stack keys: episodes/traj_stack(_resid/_resid_stim/_resid_ctx_stim)
+          ptr:        episodes/traj_ptr
+          windows:    episodes/target_bin_windows  (fallback: derive from ptr)
+      - stationary episodes:
+          base:       episodes_sta/{all|bgr|sil}/{rep}/...
+          stack:      {base}/traj_stack
+          ptr:        {base}/traj_ptr
+          windows:    {base}/bin_windows           (fallback: derive from ptr)
+
+    slice_mode + slice_len_s:
+      - if slice_len_s is provided, returns only first/last slice_len_s seconds of each episode.
+      - uses meta['bin_size_s'] (fallback 0.05) to convert to bins.
     """
+    rep = _normalize_rep(representation)
+    episode_kind = str(episode_kind)
+
     with h5py.File(h5_path, "r") as f:
-        meta = json.loads(f.attrs["meta_json"])
-        win_bins = int(meta["episode_win_bins"])
+        meta = json.loads(f.attrs.get("meta_json", "{}"))
+        bin_size_s = float(meta.get("bin_size_s", 0.05))
 
-        z_key = "latent/Z_all_resid" if use_resid else "latent/Z_all"
-        ts_key = "episodes/traj_stack_resid" if use_resid else "episodes/traj_stack"
+        # --- resolve dataset keys
+        if episode_kind == "target":
+            stack_key = _target_stack_key_for_rep(rep)
+            ptr_key = "episodes/traj_ptr"
+            windows_key = "episodes/target_bin_windows"  # expected (but we can fallback)
+        elif episode_kind == "sta":
+            base = _sta_base_for(sta_kind, rep)
+            stack_key = f"{base}/traj_stack"
+            ptr_key = f"{base}/traj_ptr"
+            windows_key = f"{base}/bin_windows"
+        else:
+            raise ValueError("episode_kind must be 'target' or 'sta'")
 
+        z_key = _z_all_key_for_rep(rep)
+
+        # --- load full-session latent
         if z_key not in f:
-            raise KeyError(f"Missing dataset '{z_key}' in {h5_path}. Did you build residualized trajectories?")
-        if ts_key not in f:
-            raise KeyError(f"Missing dataset '{ts_key}' in {h5_path}. Did you build residualized trajectories?")
+            raise KeyError(f"Missing {z_key} in {h5_path}")
+        Z_all = f[z_key][...].astype(np.float32)[:, :D]
 
-        Z_all = f[z_key][...].astype(np.float32)  # (t_bins, D)
-        windows = f["episodes/target_bin_windows"][...].astype(np.int64)  # (n_ep,2)
-        traj_stack = f[ts_key][...].astype(np.float32)  # (n_ep*win_bins, D)
+        # --- load stack
+        if stack_key not in f:
+            raise KeyError(f"Missing {stack_key} in {h5_path}")
+        traj_stack = f[stack_key][...].astype(np.float32)
+        if traj_stack.ndim != 2:
+            raise ValueError(f"{stack_key} must be 2D (n_rows, n_pc)")
+        if traj_stack.shape[1] < D:
+            raise ValueError(f"{stack_key}: only {traj_stack.shape[1]} PCs stored, need D={D}")
+        traj_stack = traj_stack[:, :D]
 
-        n_ep = windows.shape[0]
-        D = traj_stack.shape[1]
+        # --- load windows if present
+        windows = None
+        if windows_key in f:
+            windows = f[windows_key][...].astype(np.int64)
+            if windows.ndim != 2 or windows.shape[1] != 2:
+                raise ValueError(f"{windows_key} must be (n_ep,2)")
 
-        # Reconstruct X_ep by reshaping; builder guaranteed fixed-length stacking
-        # traj_stack length should be n_ep*win_bins
-        if traj_stack.shape[0] != n_ep * win_bins:
-            # fall back to using traj_ptr if trimming happened weirdly
-            ptr = f["episodes/traj_ptr"][...].astype(np.int64)
+        # --- load ptr if present
+        ptr = None
+        if ptr_key in f:
+            ptr = f[ptr_key][...].astype(np.int64)
+            if ptr.ndim != 2 or ptr.shape[1] != 2:
+                raise ValueError(f"{ptr_key} must be (n_ep,2)")
+
+        # --- reconstruct episode tensor
+        # prefer ptr if available (more robust); otherwise reshape (legacy)
+        if ptr is not None:
             n_ep = ptr.shape[0]
+            # determine win_bins from ptr
+            lengths = (ptr[:, 1] - ptr[:, 0] + 1)
+            if not np.all(lengths == lengths[0]):
+                raise ValueError(f"{ptr_key}: episode lengths not constant (min={lengths.min()}, max={lengths.max()})")
+            win_bins = int(lengths[0])
+
             X_ep = np.empty((n_ep, win_bins, D), dtype=np.float32)
             for i in range(n_ep):
                 rs, re = ptr[i]
@@ -208,11 +318,42 @@ def load_episode_tensor_from_core_h5(h5_path: str, use_resid: bool = False) -> T
                 if seg.shape[0] != win_bins:
                     raise ValueError("Episode segment length mismatch while reconstructing X_ep from traj_ptr.")
                 X_ep[i] = seg
-            windows = windows[:n_ep]
+
+            # align windows length with ptr if windows exist
+            if windows is not None:
+                windows = windows[:n_ep]
+            else:
+                # fallback: derive "dummy" windows in episode index space (not used by funneling metrics usually)
+                windows = np.c_[np.zeros(n_ep, dtype=np.int64), np.full(n_ep, win_bins-1, dtype=np.int64)]
         else:
+            # legacy: stack is (n_ep*win_bins, D) and we have windows to infer n_ep and win_bins
+            if windows is None:
+                raise KeyError(f"Neither {ptr_key} nor {windows_key} found; cannot reconstruct episode tensor.")
+            n_ep = windows.shape[0]
+            # infer win_bins from meta or from stack length / n_ep
+            win_bins = int(meta.get("episode_win_bins", 0))
+            if win_bins <= 0:
+                if traj_stack.shape[0] % n_ep != 0:
+                    raise ValueError("Cannot infer win_bins from stack; provide episode_win_bins in meta.")
+                win_bins = traj_stack.shape[0] // n_ep
             X_ep = traj_stack.reshape(n_ep, win_bins, D)
 
+        # --- optional slicing
+        if slice_len_s is not None:
+            slice_bins = int(round(float(slice_len_s) / bin_size_s))
+            slice_bins = max(1, min(slice_bins, X_ep.shape[1]))
+            if slice_mode == "whole":
+                # if user asked slice_len_s with whole: keep first slice_bins (explicit behavior)
+                X_ep = X_ep[:, :slice_bins, :]
+            elif slice_mode == "early":
+                X_ep = X_ep[:, :slice_bins, :]
+            elif slice_mode == "late":
+                X_ep = X_ep[:, -slice_bins:, :]
+            else:
+                raise ValueError("slice_mode must be 'whole'|'early'|'late'")
+
     return X_ep, Z_all, windows, meta
+
 
 def _h5_write_any(g, name, data):
     arr = np.asarray(data)
@@ -268,6 +409,13 @@ def compute_and_save_funneling_from_core_h5(
     n_random_bootstrap: int = 50,       # how many bootstrap draws (matched to n_ep)
     seed: int = 0,
     overwrite_group: bool = True,
+    
+    D: int = 10,
+    representation: str = None,              # new: overrides use_resid if set
+    episode_kind: str = "target",            # 'target' or 'sta'
+    sta_kind: str = "bgr",                   # if episode_kind=='sta': 'all'|'bgr'|'sil'
+    slice_mode: str = "whole",               # 'whole'|'early'|'late'
+    slice_len_s: float = None, 
 ):
     
     """
@@ -277,14 +425,25 @@ def compute_and_save_funneling_from_core_h5(
     if out_h5_path is None:
         out_h5_path = core_h5_path
     
-    # Put raw and resid results into separate groups unless user specified otherwise
-    if group == "funneling":
-        group = "funneling/resid" if use_resid else "funneling/raw"
-
     rng = np.random.default_rng(int(seed))
 
     # load core objects
-    X_ep, Z_all, tgt_win_bin, meta_in = load_episode_tensor_from_core_h5(core_h5_path, use_resid=use_resid)
+    #X_ep, Z_all, tgt_win_bin, meta_in = load_episode_tensor_from_core_h5(core_h5_path, use_resid=use_resid)
+    # Choose representation
+    if representation is None:
+        rep = "resid" if bool(use_resid) else "raw"
+    else:
+        rep = _normalize_rep(representation)
+
+    X_ep, Z_all, tgt_win_bin, meta_in = load_episode_tensor_from_core_h5(
+        core_h5_path,
+        D=D,
+        episode_kind=episode_kind,
+        sta_kind=sta_kind,
+        representation=rep,
+        slice_mode=slice_mode,
+        slice_len_s=slice_len_s,
+    )
 
     n_ep, win_bins, D = X_ep.shape
     t_bins = Z_all.shape[0]
@@ -384,9 +543,17 @@ def compute_and_save_funneling_from_core_h5(
         "note": "Real computed on target episodes; random windows sampled from latent/Z_all excluding episodes/target_bin_windows.",
     }
 
+    # Decide where to store results
+    if episode_kind == "target":
+        group_path = f"{group}/{rep}"
+    elif episode_kind == "sta":
+        group_path = f"{group}_sta/{sta_kind}/{rep}"
+    else:
+        raise ValueError("episode_kind must be 'target' or 'sta'")
+
     save_funneling_results_to_h5(
         out_h5_path=out_h5_path,
-        group=group,
+        group=group_path,
         meta=meta,
         real=real,
         null_time_shuffle=null_time_shuffle,
@@ -395,3 +562,4 @@ def compute_and_save_funneling_from_core_h5(
     )
 
     return out_h5_path
+

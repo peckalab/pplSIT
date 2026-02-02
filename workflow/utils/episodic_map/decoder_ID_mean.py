@@ -15,13 +15,17 @@ def _safe_get_dataset(f: h5py.File, path_candidates: List[str]) -> np.ndarray:
     raise KeyError(f"None of these datasets found: {path_candidates}")
 
 
-def _load_core_episode_tensor(core_h5: str, representation: str = "raw") -> Tuple[np.ndarray, Dict]:
+def _load_core_episode_tensor(core_h5: str, subgroup: str = None, representation: str = "raw") -> Tuple[np.ndarray, Dict]:
     """
     Returns:
         X_ep: (n_ep, T, D) float32  -- episode tensor in PCA space
         meta: dict                 -- parsed meta_json
     """
-    with h5py.File(core_h5, "r") as f:
+    with h5py.File(core_h5, "r") as hfile:
+        if subgroup is not None:
+            f = hfile[subgroup]
+        else:
+            f = hfile
         meta = json.loads(f.attrs.get("meta_json", "{}"))
         win_bins = int(meta.get("episode_win_bins", 0))
         if win_bins <= 0:
@@ -172,6 +176,7 @@ def run_episode_mean_only_decoding_single_session(
     out_h5_path: str,
     *,
     D_use: int = 10,
+    subgroup: str = None,
     specs: Optional[List[MeanOnlyDecodeSpec]] = None,
 ) -> str:
     """
@@ -199,7 +204,7 @@ def run_episode_mean_only_decoding_single_session(
     all_rows = []
 
     for spec in specs:
-        X_ep, meta = _load_core_episode_tensor(core_h5_path, representation=spec.representation)
+        X_ep, meta = _load_core_episode_tensor(core_h5_path, subgroup=subgroup, representation=spec.representation)
         n_ep, T, D = X_ep.shape
         if D_use > D:
             raise ValueError(f"D_use={D_use} > stored PCs={D}")

@@ -10,7 +10,8 @@ parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
-from utils.episodic_map.trajectories import *
+from utils.episodic_map.trajectories_tgt import *
+from utils.episodic_map.trajectories_sta import *
 
 
 cfg = snakemake.config['trajectories']
@@ -21,9 +22,7 @@ STATE_KEYS = [
     "sil_sta_mx",
 ]
 
-# -----------------------------
-# Reading datasets
-# -----------------------------
+
 meta_file = snakemake.input[0]
 segm_file = snakemake.input[1]
 actm_file = snakemake.input[2]
@@ -43,7 +42,7 @@ with h5py.File(segm_file, 'r') as f:
     for idxs_name in STATE_KEYS:
         state_periods_pulse[idxs_name] = np.array(f[idxs_name])[:, :2].astype(np.int32)
 
-out = build_core_trajectories_h5(
+out1 = build_core_trajectories_h5(
     out_h5_path=snakemake.output[0],
     X_counts_50ms=X_counts_50ms,
     state_periods_pulse=state_periods_pulse,
@@ -55,37 +54,14 @@ out = build_core_trajectories_h5(
     behavior_h5_path=behf_file,
 )
 
-# def build_core_trajectories_h5(
-#     out_h5_path: str,
-#     X_counts_50ms: np.ndarray,
-#     state_periods_pulse: dict,
-#     t_edges_50ms: np.ndarray | None = None,
-#     *,
-#     X_is_neurons_by_time: bool = True,
-#     bins_per_pulse: int = 5,           # 250ms / 50ms = 5
-#     pulse_end_inclusive: bool = True,
-
-#     # which states to use
-#     key_target: str  = "tgt_sta_succ_mx",
-#     key_bgr_sta: str = "bgr_sta_mx",
-#     key_sil_sta: str = "sil_sta_mx",
-
-#     # PCA fit choices
-#     transform: str = "sqrt",
-#     pca_n_components: int = 20,
-
-#     # episode windowing
-#     episode_win_s: float = 6.0,       # 6 s target episodes
-#     bin_size_s: float = 0.05,         # 50 ms
-#     align: str = "start",
-
-#     # residualization inputs
-#     behavior_h5_path: Optional[str] = None,
-#     do_context_residual: bool = True,
-#     do_stim_phase_residual: bool = True,
-#     context_cov_spec: ContextCovariateSpec = ContextCovariateSpec(),
-#     ridge_alpha_resid: float = 1.0,
-# )
-
+for rep in ['raw', 'resid', 'resid_stim', 'resid_ctx_stim']:
+    out2 = build_stationary_episode_trajectories(
+        core_h5=snakemake.output[0],
+        beh_h5=behf_file,
+        representation=rep,  # raw | resid | resid_stim | resid_ctx_stim
+        speed_thresh_mps=0.04,
+        episode_len_s=3.0,
+        margin_s=0.5,
+    )
 
 
