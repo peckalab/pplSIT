@@ -22,13 +22,24 @@ animal  = session.split('_')[0]
 with h5py.File(meta_file, 'r') as f:
     tl = np.array(f['processed']['timeline'])
     tgt_mx = np.array(f['processed']['target_matrix'])
+    if 'distractor_matrix' in f['processed']:
+        dis_mx = np.array(f['processed']['distractor_matrix'])
     sound_events = np.array(f['processed']['sound_events'])
     cfg = json.loads(f['processed'].attrs['parameters'])
 
 # indices in event space
 x_pos_ev = tl[sound_events[:, 2].astype(np.int32)][:, 1]
 y_pos_ev = tl[sound_events[:, 2].astype(np.int32)][:, 2]
-speed_ev = tl[sound_events[:, 2].astype(np.int32)][:, 3]
+# speed of an event is the maximum speed during that sound event
+# from start idx sound_events[:, 2].astype(np.int32) to the start of the next event (or end of timeline)
+speed_ev = np.zeros(len(sound_events))
+for i in range(len(sound_events)):
+    idx_start = int(sound_events[i][2])
+    if i < len(sound_events) - 1:
+        idx_end = int(sound_events[i+1][2])
+    else:
+        idx_end = len(tl)
+    speed_ev[i] = tl[idx_start:idx_end][:, 3].max()
 
 speed_max = 0.04
 idxs_sta_ev = np.where(speed_ev < speed_max)[0]
@@ -58,22 +69,40 @@ for i, tgt_rec in enumerate(tgt_mx_succ):
     
     tgt_sta_succ_mx[i] = [tgt_rec[0], tgt_rec[1], x_pos.mean(), y_pos.mean()]
 
+# distractor fails
+if cfg['experiment']['distractor_fail']:
+    dis_mx_fail = dis_mx[dis_mx[:, 4] == 1]
+    idxs_dis_first_ev = dis_mx_fail[:, 0]
+    dis_first_t = sound_events[idxs_dis_first_ev][:, 0]
+    idxs_dis_fail = []
+    for dis_rec in dis_mx_fail:
+        idxs_dis_fail += list(np.arange(dis_rec[0], dis_rec[1] + 1))
+    idxs_dis_fail = np.array(idxs_dis_fail)
+    dis_fail_mx = np.zeros([len(dis_mx_fail), 4])
+    for i, dis_rec in enumerate(dis_mx_fail):
+        x_pos = tl[np.arange(dis_rec[2], dis_rec[3])][:, 1]
+        y_pos = tl[np.arange(dis_rec[2], dis_rec[3])][:, 2]
+        
+        dis_fail_mx[i] = [dis_rec[0], dis_rec[1], x_pos.mean(), y_pos.mean()]
+    
+
+
 # stationary states, including TGT (alternative to success stays above)
-tgt_sta_mx, idxs_tgt_sta = get_state_as_periods(s_path, 'TGT', None,  None, smk_cfg['tgt_sta_min_pulses'], strip_r=0)
-bgr_sta_mx, idxs_bgr_sta = get_state_as_periods(s_path, 'BGR', 'STA', None, smk_cfg['bgr_sta_min_pulses'], strip_l=1)
-sil_sta_mx, idxs_sil_sta = get_state_as_periods(s_path, 'SIL', 'STA', None, smk_cfg['sil_sta_min_pulses'], strip_l=1)
+tgt_sta_mx, idxs_tgt_sta = get_state_as_periods(s_path, 'TGT', None,  None, smk_cfg['tgt_sta_min_pulses'], strip_l=smk_cfg['strip_l']['tgt'], strip_r=smk_cfg['strip_r']['tgt'])
+bgr_sta_mx, idxs_bgr_sta = get_state_as_periods(s_path, 'BGR', 'STA', None, smk_cfg['bgr_sta_min_pulses'], strip_l=smk_cfg['strip_l']['bgr'], strip_r=smk_cfg['strip_r']['bgr'])
+sil_sta_mx, idxs_sil_sta = get_state_as_periods(s_path, 'SIL', 'STA', None, smk_cfg['sil_sta_min_pulses'], strip_l=smk_cfg['strip_l']['sil'], strip_r=smk_cfg['strip_r']['sil'])
 
 # running states
-bgr_run_mx, idxs_bgr_run = get_state_as_periods(s_path, 'BGR', 'RUN', None, smk_cfg['bgr_run_min_pulses'], strip_l=1)
-sil_run_mx, idxs_sil_run = get_state_as_periods(s_path, 'SIL', 'RUN', None, smk_cfg['sil_run_min_pulses'], strip_l=1)
+bgr_run_mx, idxs_bgr_run = get_state_as_periods(s_path, 'BGR', 'RUN', None, smk_cfg['bgr_run_min_pulses'], strip_l=smk_cfg['strip_l']['bgr'], strip_r=smk_cfg['strip_r']['bgr'])
+sil_run_mx, idxs_sil_run = get_state_as_periods(s_path, 'SIL', 'RUN', None, smk_cfg['sil_run_min_pulses'], strip_l=smk_cfg['strip_l']['sil'], strip_r=smk_cfg['strip_r']['sil'])
 
 # distractors
 di1_sta_mx, di2_sta_mx = None, None
 distr_count = int(cfg['experiment']['distractor_islands'])
 if cfg['sound']['sounds']['distractor1']['enabled'] and distr_count > 0:
-    di1_sta_mx, idxs_di1_sta = get_state_as_periods(s_path, 'DI1', 'STA', None, smk_cfg['dis_sta_min_pulses'], strip_l=1)
+    di1_sta_mx, idxs_di1_sta = get_state_as_periods(s_path, 'DI1', 'STA', None, smk_cfg['dis_sta_min_pulses'], strip_l=smk_cfg['strip_l']['dis'], strip_r=smk_cfg['strip_r']['dis'])
 if cfg['sound']['sounds']['distractor2']['enabled'] and distr_count > 1:
-    di2_sta_mx, idxs_di2_sta = get_state_as_periods(s_path, 'DI2', 'STA', None, smk_cfg['dis_sta_min_pulses'], strip_l=1)
+    di2_sta_mx, idxs_di2_sta = get_state_as_periods(s_path, 'DI2', 'STA', None, smk_cfg['dis_sta_min_pulses'], strip_l=smk_cfg['strip_l']['dis'], strip_r=smk_cfg['strip_r']['dis'])
 
 # target visits (no matter run or stationary, important is where)
 r_max = smk_cfg['visits']['radius']  # in meters
@@ -134,6 +163,9 @@ if di1_sta_mx is not None:
 if di2_sta_mx is not None:
     results['di2_sta_mx'] = di2_sta_mx
     results['idxs_di2_sta'] = idxs_di2_sta
+if cfg['experiment']['distractor_fail']:
+    results['dis_fail_mx'] = dis_fail_mx
+    results['idxs_dis_fail'] = idxs_dis_fail
 
 # AL / PH states
 if smk_cfg['ensembles']:

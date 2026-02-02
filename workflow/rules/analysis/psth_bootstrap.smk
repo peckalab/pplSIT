@@ -7,6 +7,7 @@ rule psth_bootstrap_profiles:
         segms=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'segments.h5')
     output:
         psths=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_micro.h5')
+    threads: 16
     script:
         "../../scripts/analysis/psth_bootstrap_profiles.py"
 

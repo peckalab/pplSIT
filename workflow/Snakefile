@@ -71,6 +71,7 @@ include: "rules/episodic_map/funneling.smk"
 include: "rules/episodic_map/episode_similarity.smk"
 
 include: "rules/cognitiveS/HMM.smk"
+include: "rules/unit_match.smk"
 
 target_names_dict = {
     'meta':    ['meta.h5'],
@@ -194,7 +195,24 @@ target_names_dict = {
     ],
     'cognitiveS': [
         'cognitiveS/HMM.h5',
+    'low_D_embeddings': [
+        'episodic_map/low_D_embeddings.h5'
+    ],
+    'raw_waveforms': [
+        'kilosort/RawWaveforms/RawWaveforms.ready'
     ]
+}
+
+animal_targets_dict = {
+    'unit_match': [
+        ('unit_match', 'MatchTable.csv')
+    ]
+}
+
+cross_animal_targets_dict = {
+    # 'some_block': [
+    #     'type_of_analysis/some_global_target_file.ext'
+    # ]
 }
 
 def collect_target_names():
@@ -210,19 +228,58 @@ def collect_target_names():
 
     return target_names
 
+def collect_animal_target_names():
+    animal_target_names = []
+
+    for block_name, enabled in config['blocks'].items():
+        if not enabled:
+            continue
+        if not block_name in animal_targets_dict:
+            continue
+        
+        animal_target_names += animal_targets_dict[block_name]
+
+    return animal_target_names
+
+def collect_cross_animal_target_names():
+    cross_animal_target_names = []
+
+    for block_name, enabled in config['blocks'].items():
+        if not enabled:
+            continue
+        if not block_name in cross_animal_targets_dict:
+            continue
+        
+        cross_animal_target_names += cross_animal_targets_dict[block_name]
+    
+    return cross_animal_target_names
+
 target_names = collect_target_names()
+animal_target_names = collect_animal_target_names()
+cross_animal_target_names = collect_cross_animal_target_names()
 
 
 def get_targets(wildcards):
     sessions = expand("{session}", session=config["session_IDs"])
     animals  = expand("{animal}", animal=[s.split('_')[0] for s in config["session_IDs"]])
 
-    # build target map
+    # build target map for session-level targets
     targets = []
     build_target = lambda animal, session, name: os.path.join(config['dst_path'], animal, session, name)
     for animal, session in zip(animals, sessions):
         for name in target_names:
             targets.append(build_target(animal, session, name))
+
+    # add animal-level targets
+    build_animal_target = lambda animal, name: os.path.join(config['prj_path'], name[0], animal, name[1])
+    for animal in animals:
+        for name in animal_target_names:
+            targets.append(build_animal_target(animal, name))
+
+    # add cross-animal targets
+    build_cross_animal_target = lambda name: os.path.join(config['prj_path'], name)
+    for name in cross_animal_target_names:
+        targets.append(build_cross_animal_target(name))
 
     return targets
 

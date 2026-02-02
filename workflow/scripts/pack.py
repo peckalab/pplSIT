@@ -83,6 +83,64 @@ def build_tgt_matrix(sound_events, trials):
         tgt_results
     ]).astype(np.int32)
 
+def build_dis_matrix(sound_events, trials, cfg):
+    # compute timeline / sound indices of entrances / exits to a distractor
+    # for now all distractors are lumped together
+    dis_start_idxs = []
+    dis_end_idxs = []
+    
+    # distractors have sound IDs > 2
+    for i, event in enumerate(sound_events[:-1]):
+        if sound_events[i][1] <= 2 and sound_events[i+1][1] > 2:
+            dis_start_idxs.append(i+1)
+        if sound_events[i][1] > 2 and sound_events[i+1][1] <= 2:
+            dis_end_idxs.append(i)
+    
+    # process boundary first/last target if not started / ended
+    if dis_start_idxs[-1] > dis_end_idxs[-1]:
+        dis_start_idxs = dis_start_idxs[:-1]
+    if dis_end_idxs[0] < dis_start_idxs[0]:
+        #tgt_end_idxs = tgt_end_idxs[1:]
+        dis_start_idxs = [0] + dis_start_idxs
+    dis_start_idxs = np.array(dis_start_idxs)
+    dis_end_idxs   = np.array(dis_end_idxs)
+
+    # distractor fail / correct rejection
+    dis_results = np.zeros(len(dis_start_idxs))
+    # a distractor fail is an incorrect trial whose last sound was a distractor
+    # sound_events[:, 1] > 2
+    
+    for idx_tl_fail_start, idx_tl_fail_end in zip(trials[(trials[:, 5] == 0)][:, 0], trials[(trials[:, 5] == 0)][:, 1]):
+        # find last sound event before trial end
+        dis_idxs_before_end = np.where(sound_events[:, 2] <= idx_tl_fail_end)[0]
+        
+        last_sound_idx = dis_idxs_before_end[-1]
+        if sound_events[last_sound_idx][1] > 2: # was a distractor
+            # dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = 1
+            if (idx_tl_fail_end-idx_tl_fail_start)<cfg['experiment']['trial_duration']*100: # only if trial was not full duration it is a true fail
+                print("Distractor fail registered at trial {}.".format(idx_tl_fail_start))
+                dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = 1
+            else:
+                print("Distractor fail ignored due to timeout at trial {}.".format(idx_tl_fail_start))
+                dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = -1 # indicate invalid fail due to timeout
+        # Now I'll write a poem in the code comments
+        # In lines of code, where logic flows,
+        # A tale of trials and sounds it shows.
+        # Distractors dance in silent night,
+        # Marked by fails in data's light.
+        # Each index tells a story true,
+        # Of choices made and paths askew.
+        # So here we log, in rows and cols,
+        # The echoes of those testing souls.
+    # tl_idx_start, tl_idx_end, aep_idx_start, aer_idx_end, success / miss
+    return np.column_stack([
+        dis_start_idxs,
+        dis_end_idxs,
+        sound_events[dis_start_idxs][:, 2],
+        sound_events[dis_end_idxs][:, 2],
+        dis_results
+    ]).astype(np.int32)
+
 
 def pack(pos_file, ev_file, snd_file, isl_file, cfg_file, man_file, dst_file, drift_coeff=0.000025):  
     """
@@ -302,6 +360,11 @@ def pack(pos_file, ev_file, snd_file, isl_file, cfg_file, man_file, dst_file, dr
         tgt_matrix = build_tgt_matrix(sound_events, trials)
         tgt_matrix_ds = proc.create_dataset('target_matrix', data=tgt_matrix)
         tgt_matrix_ds.attrs['headers'] = 'sound_idx_start, sound_idx_end, tl_idx_start, tl_idx_end, result'
+
+        if parameters['experiment']['distractor_fail']:
+            dis_matrix = build_dis_matrix(sound_events, trials, parameters)
+            dis_matrix_ds = proc.create_dataset('distractor_matrix', data=dis_matrix)
+            dis_matrix_ds.attrs['headers'] = 'sound_idx_start, sound_idx_end, tl_idx_start, tl_idx_end, result'
 
 
 # actual execution
