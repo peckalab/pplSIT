@@ -1,0 +1,274 @@
+# run snakemake from ../workflow folder:
+# snakemake -n --configfile=../config/andrey_gpuxxl_016700.yaml --use-conda --cores=20
+#
+# mount nevermind via SSHFS
+# sshfs sobolev@10.153.172.1:/nevermind.neuro/share/ag-grothe nevermind
+# sshfs andrey@10.153.170.1:/storage2 storage2
+# unmount
+# sudo diskutil umount force /Users/andrey/nevermind
+
+blocks:  # blocks of pipeline to run
+  meta: True         # pack main metadata into HDF5
+  performance: True   # performance metrics
+  DLC: False        # Deep lab cut
+  MoSeq: False        # MoSeq
+  descendants: False   # speed, HD etc. from MoSeq and others
+  Audio: False       # process audio data
+  LFP: False          # extract LFP
+  neurosuite: False  # sorting with neurosuite / klustakwik
+  kilosort: False #True  # sorting with kilosort
+  units: False      # extract spike trains from sorted data
+  AEPs: False         # extract Auditory Evoked Responses
+  PSTH_bar: True
+  PSTH_bootstrap: True
+  PSTH_shuffle: False
+  PSTH_bnMAPs: False
+  spatial: False
+  population: False
+  coherence: False
+  manifold_states: False
+  metronome: False
+  video: False
+  sound_phase_lock: False
+  segments: False
+  activity_matrices: True
+  ensembles: False
+  covariance: False
+  vectors: False
+  raw_waveforms: True
+  unit_match: True
+
+session_IDs:  
+  - "016700_SIT_2025-11-24_18-50-56"
+  # - "016700_SIT_2025-11-25_09-23-31"
+  # - "016700_SIT_2025-11-25_17-43-07"
+  # - "016700_SIT_2025-11-28_14-08-04"
+  # - "016700_SIT_2025-12-01_09-53-28"
+  # - "016700_SIT_2025-12-01_18-43-07"
+  # - "016700_SIT_2025-12-02_09-57-43"
+  # - "016700_SIT_2025-12-02_18-08-12"
+  # - "016700_SIT_2025-12-03_09-59-06"
+  # - "016700_SIT_2025-12-03_15-33-29"
+  # - "016700_SIT_2025-12-04_09-06-30"
+  # - "016700_SIT_2025-12-04_16-25-25"
+  # - "016700_SIT_2025-12-09_17-57-50"
+  - "016700_SIT_2025-12-10_11-30-51"
+  - "016700_SIT_2025-12-10_14-41-34"
+  - "016700_SIT_2025-12-11_09-24-06"
+  - "016700_SIT_2025-12-11_14-46-12"
+  - "016700_SIT_2025-12-12_09-35-06"
+  - "016700_SIT_2025-12-12_18-01-05"
+  - "016700_SIT_2025-12-12_13-32-23"
+  - "016700_SIT_2025-12-13_07-19-30"
+  - "016700_SIT_2025-12-13_09-19-10"
+  - "016700_SIT_2025-12-14_07-23-06"
+  - "016700_SIT_2025-12-14_09-27-22"
+  - "016700_SIT_2025-12-15_10-09-30"
+  - "016700_SIT_2025-12-15_13-57-33"
+  - "016700_SIT_2025-12-15_17-44-10"
+  - "016700_SIT_2025-12-16_09-00-06"
+  - "016700_SIT_2025-12-16_12-56-27"
+  - "016700_SIT_2025-12-16_17-44-13"
+  # - "016700_SIT_passive_2025-12-18_21-28-46"
+  # - "016700_SIT_passive_2025-12-19_13-24-16"
+
+
+
+# source of raw data
+#src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
+src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
+
+# destination for processed data
+#dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
+dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
+
+prj_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/projects/ICproject/"
+
+pack:
+  drift_coeff: 0.000016666
+
+# neurosuite / klustakwik config files
+template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/neurosuite.xml"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/manual.json"
+ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
+kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
+kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 500 -UseFeatures"
+
+kilosort:
+  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/kilosort.json"
+  probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/probe.json"
+  save_preprocessed: False
+  cuda_device: 1
+
+# single units config: which sorter to use
+units:
+  source: 'kilosort'
+
+# deep lab cut config files
+#dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
+dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT_newSetup-Miguel-2025-01-24/config.yaml"
+dlc_shuffle: 1
+dlc_trainingsetindex: 1
+
+# moseq config files
+moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
+cuda_device_to_use: 0
+
+# LFP configuration
+lfp:
+  n_channels: 384
+  source_rate: 30000 # original LFP sampling rate in Hz
+  target_rate: 1000  # target LFP sampling rate in Hz
+  chunk_size_sec: 10  # chunk size for conversion in seconds
+  aep_dur: 0.25  # Auditory evoked response duration in sec
+  aep_pre: 0.12
+  aep_sig: 0.125
+  artifacts:
+    z_thresh: 8.0
+    win_ms: 200
+    step_ms: 100
+    min_dur_ms: 500
+    merge_gap_ms: 2000
+  aep_ITPC:
+    area: 'A1'
+    metric: 'avg_across_channels'  # weighted_avg, zscored_avg, raw_AEPs (last is 2D)
+  baseline:
+    min_duration_ms: 500
+    stationary_thresh: 0.04  # m/s
+  EV_SU:
+    kernel_sizes: [0, 4, 8, 12, 16]
+
+# analysis configurations
+psth:
+  micro:
+    latency: 0.25
+    bin_count: 51
+    shuf_iter_count: 100
+    figsize: 4
+  macro:
+    latency: 7.25
+    bin_count: 31
+  bootstrap:
+    latency: 0.25
+    bin_count: 51
+    boot_iter_count: 1000
+    xlim: [0, 0.25]
+
+# neural manifolds
+nMAP_electrodes:
+    '009265': [1, 2]
+    '009266': [1, 2]
+    '57': [1]
+    '60': [1, 2]
+
+nMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.1
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# behavioral manifolds
+bMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.12
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# metronome
+metronome:
+  split_ratio: 0.5
+
+# Evoked / sustained manifold
+nMAP_EV_SU:
+  bin_size: 0.01
+  ev_su_lag: 0.12
+  k_width: 200  # sampled as activity matrix bins (10ms)
+  smooth_su_size: 4  #  rectangular kernel size to smooth sustained part
+  smooth_ev_size: 20  #  gaussian kernel size to smooth evoked part
+
+# unit matrix + video merging
+video:
+  duration: 300  # in seconds
+  overlap: 100  # in seconds
+  crop_width: 900
+  crop_height: 768
+  scale_height: 1242
+  overwrite: False
+
+# PCA and pairwise correlations for sustained activity
+coherence:
+  comp_count: 10
+  bin_size: 0.01
+  win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
+  sustained_start: 0.12
+
+PSTH_micro_bnMAPs:
+  units: []  # leave empty for all units
+
+sound_phase_lock:
+  n_shuffles: 100
+  ipi_for_shuffle: 0.25
+
+sound_phase_lock:
+  n_shuffles: 100
+  ipi_for_shuffle: 0.25
+
+segments:
+  ensembles: False
+  tgt_sta_min_pulses: 0
+  bgr_sta_min_pulses: 0
+  sil_sta_min_pulses: 0
+  bgr_run_min_pulses: 0
+  sil_run_min_pulses: 0
+  dis_sta_min_pulses: 0
+  strip_l:
+    tgt: 0
+    bgr: 1
+    sil: 1
+    dis: 0
+  strip_r:
+    tgt: 0
+    bgr: 1
+    sil: 1
+    dis: 0
+  visits:
+    min_pulses: 8
+    radius: 0.05
+
+
+vectors:
+  min_mfr: 0.005
+  unit_mx:
+    group: 'mx_50ms'
+    type: 'mx_sm20_z'
+    step: 5
+  units_to_exclude:
+    '014393_ppcSIT_2025-04-23_20-27-09': ['2-300', '3-350']
+    '014393_ppcSIT_2025-04-24_20-53-08': ['2-324', '3-281', '4-282']
+    '014393_ppcSIT_2025-04-25_15-42-45': ['1-349', '3-280', '4-284']
+    '014393_ppcSIT_2025-04-29_22-10-49': ['1-164', '3-371']
+
+ensembles:
+    '014393_ppcSIT_2025-04-23_20-27-09': 
+      'AL': ['2-300', '3-350']
+    '014393_ppcSIT_2025-04-24_20-53-08': 
+      'AL': ['2-324', '3-281', '4-282']
+    '014393_ppcSIT_2025-04-25_15-42-45': 
+      'AL': ['1-349', '3-280', '4-284']
+    '014393_ppcSIT_2025-04-29_22-10-49': 
+      'AL': ['1-164', '3-371']
+
+unit_match:
+  sample_amount: 1000 # for both CV, at least 500 per CV
+  spike_width: 61 # assuming 30khz sampling, 82 and 61 are common choices (KS1-3, KS4), covers the AP and space around needed for processing
+  n_channels: 384 #neuropixels default, the number of channels EXCLUDING sync channels
+  extract_good_units_only: False # bool, set to true if you want to only extract units marked as good 
+  KS4_data: True #bool, set to true if using Kilosort, as KS4 spike times refer to start of waveform not peak
+  samples_before: 20
+  match_good_units_only: True # bool, set to true if you want to only match units marked as good
