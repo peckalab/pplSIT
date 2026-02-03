@@ -70,7 +70,11 @@ for fig_id, stim_comb in enumerate(stim_combs):
             bin_size = c_stats[0][1] - c_stats[0][0]
             ax.plot(c_stats[0] + bin_size, c_stats[1], alpha=0.95, color=colors[stim_comb[j]], lw=2, label=ev_names[stim_comb[j]])
             ax.fill_between(c_stats[0] + bin_size, c_stats[3], c_stats[4], color=colors[stim_comb[j]], alpha=0.4)
-        ax.set_xlim(-latency, latency)
+        # if snakemake.config['psth']['bootstrap']['xlim'] exists, use it
+        if 'xlim' in snakemake.config['psth']['bootstrap']:
+            ax.set_xlim(snakemake.config['psth']['bootstrap']['xlim'][0], snakemake.config['psth']['bootstrap']['xlim'][1])
+        else:
+            ax.set_xlim(-latency, latency)
         ax.set_ylim(bottom=0)
         ax.axvline(0, color='black', ls='--')
         ax.set_title("%s" % unit_name, fontsize=14)
