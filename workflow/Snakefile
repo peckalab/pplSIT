@@ -1,5 +1,6 @@
 import os
 import yaml
+from  utils.snakefile import *
 
 # examples of Snakemake workflows:
 # https://snakemake.github.io/snakemake-workflow-catalog/
@@ -26,7 +27,7 @@ if config=={}:
     raise ValueError("No user config file provided. Please provide a config file with --configfile=<path>")
 
 # Merge configurations, giving priority to user_config
-config = {**default_config, **config}
+config = recursive_merge(default_config, config)
  
 # shortcut for neurosuite file paths (LFP, spikes, ephys files)
 n_path = lambda animal, session, fname: os.path.join(config['dst_path'], animal, session, 'neurosuite', fname)
