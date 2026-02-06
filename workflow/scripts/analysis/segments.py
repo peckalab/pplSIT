@@ -119,7 +119,7 @@ for i, tgt_xy in enumerate(tgt_sta_succ_mx):
         idxs_coll = list(visits_mxs[titles[j]])
         idxs_sil_as_per = get_idxs_as_periods(idxs_events)
         if len(idxs_sil_as_per.shape) == 1:
-            idxs_sil_as_per = np.array([idxs_sil_as_per], dtype=np.float64)
+            idxs_sil_as_per = np.array([idxs_sil_as_per], dtype=np.int64)
         idxs_sil_as_per = idxs_sil_as_per[np.where(np.diff(idxs_sil_as_per, axis=1) > smk_cfg['visits']['min_pulses'] - 2)[0]]
         for per in idxs_sil_as_per:
             idx_tl_s = int(sound_events[per[0]][2])
