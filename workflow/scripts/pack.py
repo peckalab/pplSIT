@@ -118,7 +118,7 @@ def build_dis_matrix(sound_events, trials, cfg):
         if sound_events[last_sound_idx][1] > 2: # was a distractor
             # dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = 1
             if (idx_tl_fail_end-idx_tl_fail_start)<cfg['experiment']['trial_duration']*100: # only if trial was not full duration it is a true fail
-                print("Distractor fail registered at trial {}.".format(idx_tl_fail_start))
+                # print("Distractor fail registered at trial {}.".format(idx_tl_fail_start))
                 dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = 1
             else:
                 print("Distractor fail ignored due to timeout at trial {}.".format(idx_tl_fail_start))

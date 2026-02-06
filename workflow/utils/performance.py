@@ -94,6 +94,12 @@ def calculate_performance(tl, trial_idxs, cfg, islands=None):
     fake_island_centers_x[:] = np.nan
     fake_island_centers_y[:] = np.nan
 
+    # Check if islands array has data when distractors are configured
+    if distractor_islands > 0 and len(islands) == 0:
+        print("Warning: distractor_islands configured but islands array is empty. Skipping fake island generation.")
+        # Return early or set distractor_islands to 0 to skip processing
+        distractor_islands = 0
+
     for i in range(amount_trials):
         X_target, Y_target = trial_idxs[i][2], trial_idxs[i][3]
         if distractor_islands>0:
