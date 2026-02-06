@@ -60,7 +60,7 @@ tgt_first_t = sound_events[idxs_tgt_first_ev][:, 0]
 idxs_tgt_sta_succ = []
 for tgt_rec in tgt_mx_succ:
     idxs_tgt_sta_succ += list(np.arange(tgt_rec[0], tgt_rec[1] + 1))
-idxs_tgt_sta_succ = np.array(idxs_tgt_sta_succ)
+idxs_tgt_sta_succ = np.array(idxs_tgt_sta_succ, dtype=np.int64)
 
 tgt_sta_succ_mx = np.zeros([len(tgt_mx_succ), 4])
 for i, tgt_rec in enumerate(tgt_mx_succ):
@@ -77,7 +77,7 @@ if cfg['experiment']['distractor_fail']:
     idxs_dis_fail = []
     for dis_rec in dis_mx_fail:
         idxs_dis_fail += list(np.arange(dis_rec[0], dis_rec[1] + 1))
-    idxs_dis_fail = np.array(idxs_dis_fail)
+    idxs_dis_fail = np.array(idxs_dis_fail, dtype=np.int64)
     dis_fail_mx = np.zeros([len(dis_mx_fail), 4])
     for i, dis_rec in enumerate(dis_mx_fail):
         x_pos = tl[np.arange(dis_rec[2], dis_rec[3])][:, 1]
@@ -119,7 +119,7 @@ for i, tgt_xy in enumerate(tgt_sta_succ_mx):
         idxs_coll = list(visits_mxs[titles[j]])
         idxs_sil_as_per = get_idxs_as_periods(idxs_events)
         if len(idxs_sil_as_per.shape) == 1:
-            idxs_sil_as_per = np.array([idxs_sil_as_per])
+            idxs_sil_as_per = np.array([idxs_sil_as_per], dtype=np.float64)
         idxs_sil_as_per = idxs_sil_as_per[np.where(np.diff(idxs_sil_as_per, axis=1) > smk_cfg['visits']['min_pulses'] - 2)[0]]
         for per in idxs_sil_as_per:
             idx_tl_s = int(sound_events[per[0]][2])
@@ -128,12 +128,12 @@ for i, tgt_xy in enumerate(tgt_sta_succ_mx):
             y_pos = tl[np.arange(idx_tl_s, idx_tl_e)][:, 2]
             idxs_coll.append([int(per[0]), int(per[1]), x_pos.mean(), y_pos.mean(), i])
 
-        visits_mxs[titles[j]] = np.array(idxs_coll)
+        visits_mxs[titles[j]] = np.array(idxs_coll, dtype=np.float64)
 
         idxs_flat = []
         for rec in idxs_coll:
-            idxs_flat += list(np.arange(rec[0], rec[1]))
-        visits_idxs[titles[j]] = np.array(idxs_flat)
+            idxs_flat += list(np.arange(int(rec[0]), int(rec[1])))
+        visits_idxs[titles[j]] = np.array(idxs_flat, dtype=np.int64)
 
 results = {
     'tgt_sta_succ_mx': tgt_sta_succ_mx,
@@ -186,4 +186,14 @@ if smk_cfg['ensembles']:
 # dump to H5
 with h5py.File(snakemake.output[0], 'w') as out_file:
     for name, segment_element in results.items():
+        # Explicitly save index arrays as int64 to prevent HDF5 dtype inference issues
+        if isinstance(segment_element, np.ndarray):
+            if segment_element.dtype == np.object_:
+                # Object arrays must be converted - use float64 for _mx arrays, int64 for idxs_
+                if name.startswith('idxs_'):
+                    segment_element = segment_element.astype(np.int64)
+                else:
+                    segment_element = segment_element.astype(np.float64)
+            elif name.startswith('idxs_'):
+                segment_element = segment_element.astype(np.int64)
         out_file.create_dataset(name, data=segment_element)

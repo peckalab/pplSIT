@@ -84,14 +84,14 @@ def get_state_as_periods(s_path, sound_state, loc_state, att_state, min_dur, spe
             periods_filt_ex.append(per_ex)
     periods_filt_ex = np.array(periods_filt_ex)
 
-    long_pers_xy = np.zeros([len(periods_filt_ex), 4])
+    long_pers_xy = np.zeros([len(periods_filt_ex), 4], dtype=object)
     for k, ls_rec in enumerate(periods_filt_ex):
         idx_tl_s = int(sound_events[ls_rec[0]][2])
         idx_tl_e = int(sound_events[ls_rec[1]][2])
         x_pos = tl[np.arange(idx_tl_s, idx_tl_e)][:, 1]
         y_pos = tl[np.arange(idx_tl_s, idx_tl_e)][:, 2]
 
-        long_pers_xy[k] = [ls_rec[0], ls_rec[1], x_pos.mean(), y_pos.mean()]
+        long_pers_xy[k] = [int(ls_rec[0]), int(ls_rec[1]), float(x_pos.mean()), float(y_pos.mean())]
 
     # back to indices
     idxs_long_pers_ev = []
