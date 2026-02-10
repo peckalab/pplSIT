@@ -1,0 +1,429 @@
+# run snakemake from ../workflow folder:
+# snakemake -n --configfile=../config/andrey_gpuxxl.yaml --use-conda --rerun-triggers mtime --cores=1
+
+# source of raw data
+#src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
+src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
+
+# destination for processed data
+#dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
+dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
+
+# neurosuite / klustakwik config files
+# template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/neurosuite.xml"
+template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/13724/settings.xml"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/manual.json"
+ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
+kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
+kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
+
+# deep lab cut config files
+dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT_newSetup-Miguel-2025-01-24/config.yaml" # implantedSIT-Miguel-2023-06-23/config.yaml"
+dlc_shuffle: 1 #3
+dlc_trainingsetindex: 1 #0
+
+# moseq config files
+moseq_model_path: '/mnt/nevermind.data-share/ag-grothe/Miguel/MoSeq/TrainedModels/hippoSIT2023_noTail_unfiltered/2023_07_13-15_08_10'
+cuda_device_to_use: 3
+
+# OLD### LFP configuration
+# lfp:
+#   s_rate: 1000  # sampling rate in Hz
+#   aep_dur: 0.25  # Auditory evoked response duration in sec
+
+AEPs:
+  speed_thresh: 0.04  # m/s
+
+# analysis configurations
+psth:
+  micro:
+    latency: 0.25
+    bin_count: 101
+  macro:
+    latency: 7.25
+    bin_count: 31
+  bootstrap:
+    latency: 0.25
+    bin_count: 101
+    boot_iter_count: 100
+    shuf_iter_count: 100
+
+# neural manifolds
+nMAP_electrodes:
+    '009265': [1, 2]
+    '009266': [1, 2]
+    '57': [1]
+    '60': [1, 2]
+
+nMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.1
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# behavioral manifolds
+bMAP_segmentation:
+  ft: 'tSNE'
+  fp: 70
+  speed_thresh: 0.04  # m/s
+  margin: 5
+  sigma: 0.12
+  bin_count: 100
+  shuffle_iter_count: 100
+
+# metronome
+metronome:
+  split_ratio: 0.5
+
+# Evoked / sustained manifold
+nMAP_EV_SU:
+  bin_size: 0.01
+  ev_su_lag: 0.12
+  k_width: 200  # sampled as activity matrix bins (10ms)
+  smooth_k: 20  #  gaussian kernel size to smooth evoked part
+
+# unit matrix + video merging
+video:
+  duration: 300  # in seconds
+  overlap: 100  # in seconds
+  crop_width: 900
+  crop_height: 768
+  scale_height: 1242
+  overwrite: False
+
+# PCA and pairwise correlations for sustained activity
+coherence:
+  comp_count: 10
+  bin_size: 0.01
+  win_sizes: [5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000]  # in number of bins of bin_size
+  sustained_start: 0.12
+
+
+# blocks:  # blocks of pipeline to run
+#   meta: True         # pack main metadata into HDF5
+#   DLC: False        # Deep lab cut
+#   MoSeq: False        # MoSeq
+#   descendants: False   # speed, HD etc. from MoSeq and others
+#   Audio: False       # process audio data
+#   LFP: False          # extract LFP
+#   units: True      # complete spike sorting with neurosuite / klustakwik
+#   AEPs: False         # extract Auditory Evoked Responses
+#   PSTH: False
+#   spatial: False
+#   shuffle: False
+#   population: False
+#   coherence: False
+#   manifold_states: False
+#   metronome: False
+#   video: False
+
+
+blocks:  # blocks of pipeline to run
+  meta: True         # pack main metadata into HDF5
+  performance: True   # performance metrics
+  DLC: False        # Deep lab cut
+  MoSeq: False        # MoSeq
+  descendants: False   # speed, HD etc. from MoSeq and others
+  Audio: False       # process audio data
+  LFP: False          # extract LFP
+  neurosuite: True  # sorting with neurosuite / klustakwik
+  kilosort: False  # sorting with kilosort
+  units: True      # extract spike trains from sorted data
+  AEPs: False         # extract Auditory Evoked Responses
+  PSTH_bar: True
+  PSTH_bootstrap: False
+  PSTH_shuffle: False
+  PSTH_bnMAPs: False
+  spatial: True
+  population: False
+  coherence: False
+  manifold_states: False
+  metronome: False
+  video: False
+  sound_phase_lock: False
+
+session_IDs:  
+  # - "013829_SIT_2024-12-13_15-31-34"
+  # - "013829_SIT_2024-12-13_16-13-18"
+  # - "013829_SIT_2024-12-16_15-24-55"
+  # - "013829_SIT_2024-11-30_16-17-36"
+  # - "013829_SIT_2024-11-27_19-37-31"
+  # - "12672_SIT_2025-01-09_15-05-19"
+  # - "013829_SIT_2024-12-04_12-15-29"
+  # - "013829_SIT_2024-12-04_15-49-01"
+  ### all sessions with hard-coded manual.json
+  - "013829_SIT_2024-12-18_17-38-37"
+  - "013829_SIT_2024-12-17_17-02-47"
+  - "013829_SIT_2024-12-17_16-21-46"
+  - "013829_SIT_2024-12-16_16-29-22"
+  - "013829_SIT_2024-12-16_15-24-55"
+  - "013829_SIT_2024-12-13_16-13-18"
+  - "013829_SIT_2024-12-13_15-31-34"
+  - "013829_SIT_2024-12-12_14-58-56"
+  - "013829_SIT_2024-12-11_17-29-03"
+  - "013829_SIT_2024-12-11_09-44-35"
+  - "013829_SIT_2024-12-10_13-37-54"
+  - "013829_SIT_2024-12-10_12-54-36"
+  - "013829_SIT_2024-12-09_17-00-26"
+  - "013829_SIT_2024-12-09_16-18-17"
+  - "013829_SIT_2024-12-05_15-31-59"
+  - "013829_SIT_2024-12-04_15-49-01"
+  - "013829_SIT_2024-12-04_12-15-29"
+  - "013829_SIT_2024-12-03_17-47-00"
+  - "013829_SIT_2024-12-03_12-20-01"
+  - "013829_SIT_2024-12-02_18-11-53"
+  - "013829_SIT_2024-12-02_17-30-21"
+  - "013829_SIT_2024-12-01_11-31-02"
+  - "013829_SIT_2024-11-30_16-17-36"
+  - "013829_SIT_2024-11-30_15-35-06"
+  - "013829_SIT_2024-11-29_18-07-41"
+  - "013829_SIT_2024-11-29_16-21-06"
+  - "013829_SIT_2024-11-29_10-52-37"
+  - "013829_SIT_2024-11-28_12-14-49"
+  - "013829_SIT_2024-11-27_19-37-31"
+  # ### all sessions with ephys-based manual.json
+  - "013829_SIT_2024-12-20_15-58-59"
+  - "013829_SIT_2024-12-20_16-31-29"
+  - "013829_SIT_2025-01-08_14-10-10"
+  - "013829_SIT_2025-01-08_14-42-30"
+  - "013829_SIT_2025-01-09_16-25-50"
+  - "013829_SIT_2025-01-09_17-09-05"
+  - "013829_SIT_2025-01-13_16-34-43"
+  - "013829_SIT_2025-01-13_17-17-24"
+  - "013829_SIT_2025-01-14_16-09-02"
+  #### animal 57
+  - "57_SIT_2023-12-18_14-07-34"
+  #### - "57_SIT_2023-12-18_21-17-56" # session is fucked
+  - "57_SIT_2023-12-19_14-15-26"
+  - "57_SIT_2023-12-21_15-05-52"
+  - "57_SIT_2023-12-22_14-08-07"
+  - "57_SIT_2023-12-22_14-43-58"
+  - "57_SIT_2023-12-22_17-37-18"
+  - "57_SIT_2023-12-23_14-21-01"
+  ### - "57_SIT_2023-12-23_14-56-24"  # only some plots are missing, persistent problem after manual curation
+  - "57_SIT_2023-12-28_16-43-28"
+  - "57_SIT_2023-12-29_11-06-26"
+  - "57_SIT_2023-12-29_11-40-14"
+  - "57_SIT_2023-12-29_12-11-46"
+  - "57_SIT_2024-01-02_14-43-18"
+  - "57_SIT_2024-01-02_15-16-35"
+  - "57_SIT_2024-01-02_16-38-05"
+  - "57_SIT_2024-01-02_17-10-09"
+  - "57_SIT_2024-01-03_19-22-18"
+  - "57_SIT_2024-01-03_19-54-59"
+  - "57_SIT_2024-01-04_14-16-22"
+  - "57_SIT_2024-01-04_14-52-59"
+  - "57_SIT_2024-01-05_14-35-49"
+  - "57_SIT_2024-01-05_15-08-34"
+  - "57_SIT_2024-01-06_16-52-40"
+  - "57_SIT_2024-01-06_17-25-35"
+  - "57_SIT_2024-01-07_19-23-28"
+  - "57_SIT_2024-01-07_19-59-26"
+  - "57_SIT_2024-01-08_15-51-26"
+  - "57_SIT_2024-01-12_13-23-02"
+  - "57_SIT_2024-01-15_13-45-22"
+  - "57_SIT_2024-01-15_14-34-48"
+  ##### - "57_SIT_2024-01-31_17-00-39" # somehow not working
+  - "57_SIT_2024-02-01_15-51-41"
+  - "57_SIT_2024-02-05_13-10-00"
+  - "57_SIT_2024-03-11_14-45-37"
+#### animal 13724
+### no ephys
+  # - "13724_SIT_2024-11-15_14-39-20"
+  # - "13724_SIT_2024-11-18_15-48-48"
+  # - "13724_SIT_2024-11-19_16-08-51"
+  # - "13724_SIT_2024-11-20_15-14-03"
+  # - "13724_SIT_2024-11-21_14-56-48"
+  # - "13724_SIT_2024-11-22_17-23-38"
+  # - "13724_SIT_2024-11-25_17-17-59"
+  # - "13724_SIT_2025-04-07_14-33-58"
+  # - "13724_SIT_2025-04-08_14-18-31"
+  # - "13724_SIT_2025-04-09_13-49-19"
+  # - "13724_SIT_2025-04-10_15-43-14"
+  # - "13724_SIT_2025-04-14_19-20-39"
+  # - "13724_SIT_2025-04-15_15-36-44"
+  # - "13724_SIT_2025-04-23_14-35-42"
+  # - "13724_SIT_2025-04-24_14-55-09"
+  # - "13724_SIT_2025-04-25_13-55-46"
+  # - "13724_SIT_2025-04-28_13-51-59"
+  # - "13724_SIT_2025-04-29_14-25-56"
+  # - "13724_SIT_2025-05-01_11-33-18"
+  # - "13724_SIT_2025-05-02_13-41-53"
+  # - "13724_SIT_2025-05-12_15-15-20"
+  # - "13724_SIT_2025-05-13_15-52-13"
+  # - "13724_SIT_2025-05-14_13-57-21"
+  # - "13724_SIT_2025-05-15_14-39-28"
+  # - "13724_SIT_2025-05-16_13-20-48"
+### ephys
+  - "13724_SIT_2025-07-10_16-20-07"
+  - "13724_SIT_2025-07-11_15-47-28"
+  - "13724_SIT_2025-07-15_14-38-19"
+  - "13724_SIT_2025-07-16_14-34-46"
+  - "13724_SIT_2025-07-17_14-34-31"
+  - "13724_SIT_2025-07-18_13-46-35"
+  - "13724_SIT_2025-07-21_16-58-51"
+  - "13724_SIT_2025-07-22_11-40-20"
+  - "13724_SIT_2025-07-22_17-19-37"
+  - "13724_SIT_2025-07-23_15-57-26"
+  - "13724_SIT_2025-07-24_15-28-47"
+  - "13724_SIT_2025-07-25_13-28-05"
+  - "13724_SIT_2025-07-28_16-43-28"
+  - "13724_SIT_2025-07-29_12-07-15"
+  - "13724_SIT_2025-07-29_16-38-38"
+  - "13724_SIT_2025-07-30_13-25-33"
+  - "13724_SIT_2025-07-31_11-25-45"
+  - "13724_SIT_2025-07-31_16-27-51"
+  - "13724_SIT_2025-08-01_16-01-50"
+  - "13724_SIT_2025-08-01_15-16-47"
+  - "13724_SIT_2025-08-04_13-05-05"
+  - "13724_SIT_2025-08-04_17-42-50"
+  - "13724_SIT_2025-08-05_15-12-38"
+  - "13724_SIT_2025-08-05_16-01-46"
+  - "13724_SIT_2025-08-27_13-55-00"
+  - "13724_SIT_2025-08-06_12-06-03"
+  - "13724_SIT_2025-08-06_17-34-52"
+  - "13724_SIT_2025-08-07_12-58-15"
+  - "13724_SIT_2025-08-07_16-08-25"
+  - "13724_SIT_2025-08-08_14-47-57"
+  - "13724_SIT_2025-08-08_14-02-29"
+  - "13724_SIT_2025-08-11_16-18-58"
+  - "13724_SIT_2025-08-11_19-45-55"
+  - "13724_SIT_2025-08-12_14-31-10"
+  - "13724_SIT_2025-08-12_16-57-33"
+  - "13724_SIT_2025-08-13_16-48-47"
+  - "13724_SIT_2025-08-13_15-21-38"
+  - "13724_SIT_2025-08-14_15-00-54"
+  - "13724_SIT_2025-08-14_17-46-48"
+  - "13724_SIT_2025-08-15_13-12-00"
+  - "13724_SIT_2025-08-15_15-26-45"
+  - "13724_SIT_2025-08-18_16-33-06"
+  - "13724_SIT_2025-08-18_15-48-05"
+  - "13724_SIT_2025-08-19_14-16-40"
+  - "13724_SIT_2025-08-19_13-31-24"
+  - "13724_SIT_2025-08-20_15-46-15"
+  - "13724_SIT_2025-08-20_14-58-17"
+  - "13724_SIT_2025-08-21_12-47-30"
+  - "13724_SIT_2025-08-21_12-04-08"
+  - "13724_SIT_2025-08-26_18-04-22"
+  - "13724_SIT_2025-08-26_17-22-13"
+  - "13724_SIT_2025-08-27_14-39-31"
+  - "13724_SIT_2025-08-28_14-17-51"
+  - "13724_SIT_2025-08-28_13-33-06"
+  - "13724_SIT_2025-08-28_17-30-34"
+  - "13724_SIT_2025-08-29_14-18-23"
+  - "13724_SIT_2025-08-29_13-36-13"
+  ##### - "13724_SIT_2025-09-03_17-35-53" # no units at all
+#### animal 12672 - no ephys
+  # - "12672_SIT_2024-08-02_14-41-21"
+  # - "12672_SIT_2024-08-06_13-55-46"
+  # - "12672_SIT_2024-08-07_14-01-40"
+  # - "12672_SIT_2024-08-08_16-12-42"
+  # - "12672_SIT_2024-08-09_16-02-01"
+  # - "12672_SIT_2024-08-12_16-05-10"
+  # - "12672_SIT_2024-08-13_16-30-51"
+  # - "12672_SIT_2024-08-14_16-37-19"
+  # - "12672_SIT_2024-08-28_13-16-58"
+  # - "12672_SIT_2024-08-29_16-39-08"
+  # - "12672_SIT_2024-10-22_14-47-46"
+  # - "12672_SIT_2024-10-22_14-56-21"
+  # - "12672_SIT_2024-11-20_16-24-42"
+  # - "12672_SIT_2024-11-25_16-41-25"
+  # - "12672_SIT_2024-11-26_13-44-18"
+  # - "12672_SIT_2024-11-27_13-14-23"
+  # - "12672_SIT_2024-11-27_15-04-17"
+  # - "12672_SIT_2024-11-27_18-03-56"
+#### animal 12672 - ephys
+  - "12672_SIT_2024-12-04_17-56-46"
+  - "12672_SIT_2024-12-05_16-24-55"
+  - "12672_SIT_2024-12-06_17-11-56"
+  - "12672_SIT_2024-12-06_17-57-19"
+  - "12672_SIT_2024-12-09_14-32-34"
+  - "12672_SIT_2024-12-09_19-00-14"
+  - "12672_SIT_2024-12-10_14-32-26"
+  - "12672_SIT_2024-12-10_15-17-07"
+  - "12672_SIT_2024-12-11_10-36-47"
+  - "12672_SIT_2024-12-12_15-56-37"
+  - "12672_SIT_2024-12-14_18-02-15"
+  - "12672_SIT_2024-12-14_18-44-34"
+  - "12672_SIT_2024-12-16_14-06-22"
+  - "12672_SIT_2024-12-17_15-02-46"
+  - "12672_SIT_2024-12-18_16-39-33"
+  ##- "12672_SIT_2024-12-19_15-05-15" # no sound pulses in ephys
+  #### - "12672_SIT_2024-12-20_15-02-58" # no A1 units
+  - "12672_SIT_2024-12-20_17-15-49"
+  #### - "12672_SIT_2024-12-23_15-54-52" # no A1 units
+  - "12672_SIT_2024-12-23_16-37-01"
+  - "12672_SIT_2024-12-24_15-30-07"
+  - "12672_SIT_2025-01-06_14-32-01"
+  ### - "12672_SIT_2025-01-07_14-14-28" # exclude for now, let's see what valentin says
+  - "12672_SIT_2025-01-08_10-11-05"
+  - "12672_SIT_2025-01-08_17-00-01"
+  - "12672_SIT_2025-01-09_15-05-19"
+  - "12672_SIT_2025-01-10_15-54-31"
+  - "12672_SIT_2025-01-13_15-28-14"
+  - "12672_SIT_2025-01-13_18-26-27"
+  - "12672_SIT_2025-01-14_14-12-24"
+  - "12672_SIT_2025-01-15_10-46-18"
+  ##- "12672_SIT_2025-01-17_16-15-53" # no sound pulses in ephys
+  ##- "12672_SIT_2025-01-17_17-00-15" # no sound pulses in ephys
+  - "12672_SIT_2025-01-20_17-06-11"
+  - "12672_SIT_2025-01-21_14-16-23"
+  - "12672_SIT_2025-01-21_21-04-12"
+  - "12672_SIT_2025-01-22_11-01-57"
+  - "12672_SIT_2025-01-22_16-54-16"
+  - "12672_SIT_2025-01-23_17-59-59"
+  - "12672_SIT_2025-01-24_11-50-38"
+  - "12672_SIT_2025-01-24_13-43-55"
+  - "12672_SIT_2025-01-26_16-50-48"
+  - "12672_SIT_2025-01-26_17-32-44"
+  - "12672_SIT_2025-01-27_14-28-46"
+  - "12672_SIT_2025-01-27_15-11-55"
+  - "12672_SIT_2025-01-28_14-50-15"
+  - "12672_SIT_2025-01-28_15-32-10"
+  - "12672_SIT_2025-01-29_15-30-04"
+  - "12672_SIT_2025-01-29_16-12-11"
+  - "12672_SIT_2025-01-30_14-48-43"
+  - "12672_SIT_2025-01-30_15-31-11"
+  - "12672_SIT_2025-01-31_11-34-48"
+  #### - "12672_SIT_2025-01-31_12-16-49" # exclude for now, let's see what valentin says
+  - "12672_SIT_2025-02-03_15-31-23"
+  - "12672_SIT_2025-02-03_16-11-42"
+  - "12672_SIT_2025-02-04_10-10-47"
+  - "12672_SIT_2025-02-05_13-49-57"
+  #### - "12672_SIT_2025-02-05_14-30-40" # exclude for now, let's see what valentin says
+  ###- "12672_SIT_2025-02-13_14-21-04" # no units at all, just noise
+  - "12672_SIT_2025-02-13_15-02-59"
+  - "12672_SIT_2025-02-18_13-09-54"
+  - "12672_SIT_2025-02-19_10-40-35"
+  - "12672_SIT_2025-02-19_11-22-59"
+  - "12672_SIT_2025-02-24_17-13-58"
+  - "12672_SIT_2025-02-24_18-00-00"
+
+
+segments:
+  ensembles: False
+  tgt_sta_min_pulses: 20
+  bgr_sta_min_pulses: 12
+  sil_sta_min_pulses: 12
+  bgr_run_min_pulses: 2
+  sil_run_min_pulses: 4
+  dis_sta_min_pulses: 4
+  visits:
+    min_pulses: 8
+    radius: 0.05
+
+# LFP configuration
+lfp:
+  n_channels: 72
+  source_rate: 30000 # original LFP sampling rate in Hz
+  target_rate: 1000  # target LFP sampling rate in Hz
+  chunk_size_sec: 10  # chunk size for conversion in seconds
+  aep_dur: 0.25  # Auditory evoked response duration in sec
+  aep_pre: 0.12
+  aep_sig: 0.125
+  baseline:
+    min_duration_ms: 500
+    stationary_thresh: 0.04  # m/s

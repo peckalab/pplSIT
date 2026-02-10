@@ -98,6 +98,7 @@ psth:
     latency: 0.25
     bin_count: 51
     boot_iter_count: 100
+    # xlim: [-0.25, 0.25] # if not specified , defaults to [-latency, latency]
 
 # neural manifolds
 nMAP_electrodes:

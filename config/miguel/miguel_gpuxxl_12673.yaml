@@ -10,8 +10,8 @@ src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 
 # neurosuite / klustakwik config files
-template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/neurosuite.xml"
-template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/manual.json"
+template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/12673/neurosuite.xml"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/12673/manual.json"
 ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
 kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
 kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 200 -UseFeatures"
@@ -30,9 +30,6 @@ lfp:
   s_rate: 1000  # sampling rate in Hz
   aep_dur: 0.25  # Auditory evoked response duration in sec
 
-AEPs:
-  speed_thresh: 0.04  # m/s
-
 # analysis configurations
 psth:
   micro:
@@ -43,6 +40,10 @@ psth:
   macro:
     latency: 7.25
     bin_count: 31
+  bootstrap:
+    latency: 0.25
+    bin_count: 51
+    boot_iter_count: 100
 
 # neural manifolds
 nMAP_electrodes:
@@ -104,11 +105,15 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
+  LFP: True          # extract LFP
+  neurosuite: True  # sorting with neurosuite / klustakwik
+  kilosort: False  # sorting with kilosort
   units: True      # complete spike sorting with neurosuite / klustakwik
-  AEPs: False         # extract Auditory Evoked Responses
-  PSTH: False
-  spatial: False
+  AEPs: True         # extract Auditory Evoked Responses
+  PSTH: True
+  PSTH_bar: True
+  PSTH_bootstrap: True
+  spatial: True
   shuffle: False
   population: False
   coherence: False
@@ -117,7 +122,4 @@ blocks:  # blocks of pipeline to run
   video: False
 
 session_IDs:  
-  # - "013829_SIT_2024-12-13_15-31-34"
-  # - "013829_SIT_2024-12-13_16-13-18"
-  # - "013829_SIT_2024-12-16_15-24-55"
-  - "013829_SIT_2024-11-30_16-17-36"
+  - "12673_SIT_2025-01-30_13-22-01"
