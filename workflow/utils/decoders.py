@@ -16,7 +16,7 @@ def decode_state_from_lfp(X_lfp, y, n_splits=5, random_state=0):
     clf = Pipeline([
         ("scaler", StandardScaler()),
         ("logreg", LogisticRegression(
-            multi_class="multinomial",
+            #multi_class="multinomial",
             solver="lbfgs",
             max_iter=1000,
             class_weight="balanced"

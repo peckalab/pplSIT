@@ -14,7 +14,7 @@ blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   performance: True   # performance metrics
   DLC: True        # Deep lab cut
-  MoSeq: True        # MoSeq
+  MoSeq: False        # MoSeq
   descendants: True   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: False          # extract LFP
@@ -36,7 +36,7 @@ blocks:  # blocks of pipeline to run
   segments: True
   activity_matrices: True
   ensembles: False
-  covariance: False
+  covariance: True
   vectors: True
   state_decoder_unit_mx: True
 
@@ -233,7 +233,16 @@ segments:
   visits:
     min_pulses: 8
     radius: 0.05
-
+  strip_l:
+    tgt: 2
+    bgr: 1
+    sil: 1
+    dis: 1
+  strip_r:
+    tgt: 0
+    bgr: 1
+    sil: 1
+    dis: 1
 
 vectors:
   min_mfr: 0.005

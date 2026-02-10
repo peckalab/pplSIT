@@ -34,7 +34,7 @@ def inst_rate(spiketrain, time_bins, k_width=700):
     spikes_count, _ = np.histogram(spiketrain, bins=time_bins)
 
     # convolve with gaussian kernel for smoothing
-    kernel = signal.gaussian(k_width, std=(k_width) / 7.2)
+    kernel = signal.windows.gaussian(k_width, std=(k_width) / 7.2)
     i_rate = np.convolve(spikes_count/(1.0/np.diff(time_bins).mean()), kernel, 'same') / kernel.sum()
 
     return np.concatenate([i_rate, [i_rate[-1]]])  # double last value to match timeline
