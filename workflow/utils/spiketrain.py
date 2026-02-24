@@ -18,7 +18,7 @@ def instantaneous_rate(spiketrain, time_bins, bin_size=10, k_width=70):
     spikes_count, _ = np.histogram(times, bins=int(len(time_bins)/bin_size))
 
     # convolve with gaussian kernel for smoothing
-    kernel = signal.gaussian(k_width, std=(k_width) / 7.2)
+    kernel = signal.windows.gaussian(k_width, std=(k_width) / 7.2)
     i_rate = np.convolve(spikes_count/(1.0/bin_size), kernel, 'same') / kernel.sum()
     
     # interpolate to match experimental timeline
