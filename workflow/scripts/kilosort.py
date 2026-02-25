@@ -1,50 +1,128 @@
-import os, json
+import os, sys, json
 import torch
 import numpy as np
 
 from kilosort import run_kilosort, DEFAULT_SETTINGS
 from kilosort.io import load_probe
 
+# import util functions from utils module
+parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+sys.path.append(os.getcwd())
+sys.path.append(parent_dir)
 
-settings = DEFAULT_SETTINGS
+from utils.kilosort import infer_n_chan_bin
+
+
+settings = DEFAULT_SETTINGS.copy()
+
+# --- inputs (named) ---
+settings_path = snakemake.input["settings"]
+probe_path    = snakemake.input["probe"]
+dat_path      = snakemake.input["dat"]
+
+# --- outputs ---
+# Put results next to spike_times.npy (stream folder)
+results_dir = os.path.dirname(snakemake.output["st"])
 
 # load settings
-with open(snakemake.input[0]) as json_file:  
-    settings_local = json.load(json_file)
+with open(settings_path) as f:
+    settings_local = json.load(f)
 
 settings.update(settings_local)
-settings['data_dir'] = os.path.dirname(snakemake.input[2])
 
-results_dir = os.path.dirname(snakemake.input[2])
+# Kilosort expects data_dir pointing to folder containing .dat
+settings["data_dir"] = os.path.dirname(dat_path)
+
+n_chan_bin = infer_n_chan_bin(dat_path, base_n_chan=384, dtype_bytes=2)
+settings["n_chan_bin"] = n_chan_bin
+
+# Optional: if your config has n_chan or similar, keep it consistent with the probe
+# (probe.json already implies 384 geometry channels)
+#settings["n_chan"] = 384  # only if your Kilosort version expects this
 
 # load probe configuration
-probe = load_probe(snakemake.input[1])
+probe = load_probe(probe_path)
 
-save_p = snakemake.config['kilosort']['save_preprocessed']
+save_p = snakemake.config["kilosort"].get("save_preprocessed", False)
 
+# select CUDA device with most free memory (fallback to configured device)
+best_dev_id = snakemake.config["kilosort"].get("cuda_device", 0)
 
-# select CUDA device with most of free memory
 try:
     dev_count = torch.cuda.device_count()
-    dev_mem_stats = np.zeros([dev_count, 2])
-    for dev_id in range(dev_count):
-        m_free, m_total = torch.cuda.mem_get_info(dev_id)  # FIXME this fails with CUDA error: out of memory. 
-        dev_mem_stats[dev_id] = np.array([m_free, m_total])
+    if dev_count > 0:
+        free_fracs = []
+        for dev_id in range(dev_count):
+            try:
+                m_free, m_total = torch.cuda.mem_get_info(dev_id)
+                free_fracs.append(m_free / max(m_total, 1))
+            except Exception:
+                free_fracs.append(-1.0)
+        cand = int(np.argmax(free_fracs))
+        if free_fracs[cand] >= 0:
+            best_dev_id = cand
+except Exception:
+    pass
 
-    best_dev_id = (dev_mem_stats[:, 0]/dev_mem_stats[:, 1]).argmax()
-    
-except RuntimeError:
-    best_dev_id = snakemake.config['kilosort']['cuda_device']
+print(f"USING CUDA DEVICE: {best_dev_id}")
 
-print('USING CUDA DEVICE: %s' % str(best_dev_id))
+assert probe["n_chan"] == 384 or getattr(probe, "n_chan", None) == 384
+if n_chan_bin == 385:
+    print("Detected 385 channels in binary; assuming last channel is sync and excluded by chanMap.")
 
 # run kilosort
-ops, st, clu, tF, Wall, similar_templates, is_ref, est_contam_rate, kept_spikes = \
-    run_kilosort(settings=settings, probe=probe, results_dir=results_dir, save_preprocessed_copy=save_p, device=torch.device(best_dev_id))
+ops, st, clu, tF, Wall, similar_templates, is_ref, est_contam_rate, kept_spikes = run_kilosort(
+    settings=settings,
+    probe=probe,
+    results_dir=results_dir,
+    save_preprocessed_copy=save_p,
+    device=torch.device(best_dev_id) if torch.cuda.is_available() else torch.device("cpu"),
+)
 
-# save configuration
-with open(os.path.join(results_dir, 'settings.json'), 'w') as f:
-    f.write(json.dumps(settings, indent=2))
+# save configuration actually used
+with open(os.path.join(results_dir, "settings_used.json"), "w") as f:
+    json.dump(settings, f, indent=2)
+
+
+# settings = DEFAULT_SETTINGS
+
+# # load settings
+# with open(snakemake.input[0]) as json_file:  
+#     settings_local = json.load(json_file)
+
+# settings.update(settings_local)
+# settings['data_dir'] = os.path.dirname(snakemake.input[2])
+
+# results_dir = os.path.dirname(snakemake.input[2])
+
+# # load probe configuration
+# probe = load_probe(snakemake.input[1])
+
+# save_p = snakemake.config['kilosort']['save_preprocessed']
+
+
+# # select CUDA device with most of free memory
+# try:
+#     dev_count = torch.cuda.device_count()
+#     dev_mem_stats = np.zeros([dev_count, 2])
+#     for dev_id in range(dev_count):
+#         m_free, m_total = torch.cuda.mem_get_info(dev_id)  # FIXME this fails with CUDA error: out of memory. 
+#         dev_mem_stats[dev_id] = np.array([m_free, m_total])
+
+#     best_dev_id = (dev_mem_stats[:, 0]/dev_mem_stats[:, 1]).argmax()
+    
+# except RuntimeError:
+#     best_dev_id = snakemake.config['kilosort']['cuda_device']
+
+# print('USING CUDA DEVICE: %s' % str(best_dev_id))
+
+# # run kilosort
+# ops, st, clu, tF, Wall, similar_templates, is_ref, est_contam_rate, kept_spikes = \
+#     run_kilosort(settings=settings, probe=probe, results_dir=results_dir, save_preprocessed_copy=save_p, device=torch.device(best_dev_id))
+
+# # save configuration
+# with open(os.path.join(results_dir, 'settings.json'), 'w') as f:
+#     f.write(json.dumps(settings, indent=2))
 
 
 """

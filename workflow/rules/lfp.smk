@@ -1,98 +1,47 @@
 import os
 import numpy as np
-import h5py
-import xml.etree.ElementTree as ET
 
 
-# extract LFP "manually"
-rule extract_lfp_raw:
+rule extract_lfp_raw_stream:
     input:
-        dat=k_path('{animal}', '{session}', '{session}.dat')
+        staged=ephys_staged_marker,
+        dat=ephys_stream_dat
     output:
-        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'lfp.h5')
+        os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5")
     script:
         "../scripts/lfp/lfp.py"
 
 
-rule extract_lfp_artifacts:
+rule extract_lfp_artifacts_stream:
     input:
-        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'lfp.h5')
+        os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5")
     output:
-        artifacts=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'artifacts.h5'),
-        artifacts_pdf=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'artifacts.pdf')
+        artifacts=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "artifacts.h5"),
+        artifacts_pdf=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "artifacts.pdf")
     script:
         "../scripts/lfp/artifacts.py"
 
 
-rule extract_lfp_baseline:
+rule extract_lfp_baseline_stream:
     input:
-        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
-        lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'lfp.h5'),
-        artifacts=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'artifacts.h5')
+        meta=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.h5"),
+        lfp_h5=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5"),
+        artifacts=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "artifacts.h5")
     output:
-        lfp_base=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'baseline.h5'),
-        lfp_base_plot=os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'baseline.pdf')
+        lfp_base=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "baseline.h5"),
+        lfp_base_plot=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "baseline.pdf")
     script:
         "../scripts/lfp/baseline.py"
 
 
-
-# # Replace the sampling rate value for ndm lfp
-# rule update_lfp_rate:
-#     input:
-#         xml=ancient(n_path('{animal}', '{session}', '{session}.xml'))
-#     output:
-#         xml=temp(n_path('{animal}', '{session}', '{session}.lfp.xml'))
-#     run:
-#         with open(input.xml, 'r') as f:
-#             filedata = f.read()
-
-#         ndm_idx = filedata.find('ndm_lfp')
-#         vl_idx = filedata[ndm_idx:].find('<value>')
-#         vr_idx = filedata[ndm_idx:].find('</value>')
-#         f_upd = filedata[:ndm_idx + vl_idx + 7] + str(config['lfp']['s_rate']) + filedata[ndm_idx + vr_idx:]
-
-#         # update existing and create a new temp file
-#         with open(input.xml, 'w') as f:
-#             f.write(f_upd)
-#         with open(output.xml, 'w') as f:
-#             f.write(f_upd)
-
-
-# # extract LFP using neurosuite
-# rule extract_lfp:
-#     input:
-#         xml=n_path('{animal}', '{session}', '{session}.lfp.xml'),
-#         dat=n_path('{animal}', '{session}', '{session}.dat')
-#     output:
-#         lfp=temp(n_path('{animal}', '{session}', '{session}.lfp'))
-#     params:
-#         session="{session}",
-#         animal="{animal}"
-#     shell:
-#         "cd %s; %s %s" % (
-#             n_path('{params.animal}', '{params.session}', ''),
-#             os.path.join(config['ndm_path'], "ndm_lfp"),
-#             '{params.session}.xml'
-#         )
-
-
-# # convert from binary to HDF5 format, shift by offset
-# rule lfp2hdf5:
-#     input:
-#         xml=ancient(n_path('{animal}', '{session}', '{session}.xml')),
-#         lfp=ancient(n_path('{animal}', '{session}', '{session}.lfp'))
-#     output:
-#         lfp_h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'lfp.h5')
-#     run:
-#         # determine channel numbers
-#         ch_num = int(ET.parse(input.xml).getroot().findall('acquisitionSystem')[0].findall('nChannels')[0].text)
-
-#         # read all LFP in one block
-#         block = np.fromfile(input.lfp, dtype=np.int16)
-
-#         # TODO shift by an offset!
-
-#         with h5py.File(output.lfp_h5, 'w') as f:
-#             lfp_ds = f.create_dataset('lfp', data=block.reshape(int(block.shape[0]/ch_num), ch_num))
-#             lfp_ds.attrs['headers'] = 'samples, channels'
+rule lfp_ready_session:
+    input:
+        staged=ephys_staged_marker,
+        baselines=lambda wc: expand(
+            os.path.join(config["dst_path"], wc.animal, wc.session, "LFP", "{stream}", "baseline.h5"),
+            stream=streams_for_session_from_ephys(wc)
+        )
+    output:
+        os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "lfp.ready")
+    shell:
+        "touch {output}"

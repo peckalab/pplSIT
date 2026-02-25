@@ -9,13 +9,15 @@ def get_sound_events_from_ADC(adc_file, adc_ts_file, sounds_file, events_file, e
     channel_data = dh.get_single_channel(channel)
 
     # smoothing and thresholding
-    kernel_width = s_rate / 100  # need to test if good enough for high frequencies
+    kernel_width = int(s_rate / 100)  # need to test if good enough for high frequencies
     kernel = signal.windows.gaussian(kernel_width, std=(kernel_width) / 7.2)
 
     data_smooth = np.convolve(np.abs(channel_data - channel_data.mean()), kernel, 'same') / kernel.sum()
 
     # TODO: make threshold dependent on noise levels between events
     idxs_high = np.where(data_smooth > event_th)[0]  # indices where sound was ON
+    if len(idxs_high) == 0:
+        return np.zeros((0,2)), np.zeros((0, events_csv.shape[1]))
     
     # detect sound events
     periods = []
