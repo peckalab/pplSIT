@@ -100,6 +100,7 @@ color_combs = [
     ['grey', 'tab:red'],
 ]
 
+
 # TGT, BGR, SIL bar plot figures
 for fig_id, stim_comb in enumerate(stim_comb_idxs):
     #idx_ev_1 = stim_comb[0]
@@ -114,6 +115,7 @@ for fig_id, stim_comb in enumerate(stim_comb_idxs):
     # figure / file for each stimulus combination
     fig = plt.figure(figsize=(4*cols, 4*rows))
 
+
     for i, unit_name in enumerate(units_to_plot):
         bins, psth1 = get_spike_counts(spike_times[unit_name], sound_events[idxs_ev_1][:, 0], hw=hw, bin_count=bc)
         bins, psth2 = get_spike_counts(spike_times[unit_name], sound_events[idxs_ev_2][:, 0], hw=hw, bin_count=bc)
@@ -121,7 +123,7 @@ for fig_id, stim_comb in enumerate(stim_comb_idxs):
         # if sound phase locking exists - plot with the label
         label1 = label_combs[fig_id][0]
         label2 = label_combs[fig_id][1]
-        if sound_phase_lock_file:
+        if os.path.exists(sound_phase_lock_file):
             with h5py.File(sound_phase_lock_file, 'r') as snd_f:
                 if label_combs[fig_id][0] in snd_f:
                     MRL = np.array(snd_f[label_combs[fig_id][0]][unit_name]['MRL_real'])
@@ -141,6 +143,7 @@ for fig_id, stim_comb in enumerate(stim_comb_idxs):
         ax.set_title(unit_name, fontsize=14)
         ax.legend(loc='lower right', prop={'size': 10})
         ax.set_xlim(-hw, hw)
+        # ax.set_xlim(0, hw)
         if i % 3 == 0:
             ax.set_ylabel("Firing Rate, Hz", fontsize=14)
             
