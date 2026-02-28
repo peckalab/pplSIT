@@ -24,10 +24,20 @@ with h5py.File(snakemake.input[0], 'r') as f:
     tl = np.array(f['processed']['timeline'])
 
 spike_times = {}
+depth = {}
 with h5py.File(snakemake.input[1], 'r') as f:
     units_to_plot = get_unit_names_sorted([name for name in f])
     for unit_name in units_to_plot:
         spike_times[unit_name] = np.array(f[unit_name]['spike_times'])
+        if 'kilosort_info' in f[unit_name]:
+            # depth is in um
+            depth[unit_name] = f[unit_name]['kilosort_info'][4]
+        else:
+            # depth is in um
+            depth[unit_name] = np.array(f[unit_name]['anatomical_position'])[1]
+    # ordered by shank, then depth
+    units_to_plot = sorted(units_to_plot, key=lambda x: (int(x.split('-')[0]), depth[x]))
+    # units_to_plot = sorted(spike_times.keys(), key=lambda x: depth[x])
 
 # configuration
 event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters
