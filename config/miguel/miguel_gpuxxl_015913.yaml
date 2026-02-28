@@ -17,10 +17,10 @@ blocks:  # blocks of pipeline to run
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: False #True  # sorting with kilosort
-  units: True #True      # extract spike trains from sorted data
+  units: False #True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: False #True
-  PSTH_bootstrap: False
+  PSTH_bar: True #True
+  PSTH_bootstrap: True
   PSTH_shuffle: False
   PSTH_bnMAPs: False
   spatial: False #True
@@ -30,6 +30,10 @@ blocks:  # blocks of pipeline to run
   metronome: False
   video: False
   sound_phase_lock: False
+  raw_waveforms: True
+  unit_match: True
+  segments: True
+  activity_matrices: True
 
 session_IDs:  
   # - "015913_SIT_anesthetised_2025-05-19_14-28-33"
@@ -37,15 +41,19 @@ session_IDs:
   # - "015913_SIT_passive_2025-05-21_17-27-37"
   # - "015913_SIT_passive_2025-05-22_14-48-52"
   # - "015913_SIT_passive_2025-05-22_17-05-32"
+  # - "015913_SIT_2025-05-22_19-18-42"
+  # - "015913_SIT_2025-05-23_10-52-06"
+  # - "015913_SIT_2025-05-23_18-20-22"
   # - "015913_SIT_2025-05-25_10-16-49"
   # - "015913_SIT_2025-05-25_09-47-26"
   # - "015913_SIT_2025-05-28_17-54-22"
   # - "015913_SIT_2025-05-28_16-47-18"
   # - "015913_SIT_2025-05-29_16-33-44"
   # - "015913_SIT_2025-05-26_07-43-57"
+  # - "015913_SIT_2025-05-26_08-21-59"
   # - "015913_SIT_2025-05-29_19-26-16"
-  # - "015913_SIT_2025-05-30_10-25-40"
-  # - "015913_SIT_2025-05-30_17-05-12"
+  - "015913_SIT_2025-05-30_10-25-40"
+  - "015913_SIT_2025-05-30_17-05-12"
   # - "015913_SIT_2025-05-31_09-59-00"
   # - "015913_SIT_2025-06-01_09-10-26"
   # - "015913_SIT_2025-06-02_10-20-34"
@@ -64,41 +72,43 @@ session_IDs:
   # - "015913_SIT_2025-06-16_13-52-19"
   # - "015913_SIT_2025-06-17_12-39-00"
   # - "015913_SIT_2025-06-18_13-06-42"
-  - "015913_SIT_2025-06-20_12-51-53"
-  - "015913_SIT_2025-06-24_15-21-13"
-  - "015913_SIT_2025-06-26_16-10-06"
-  - "015913_SIT_2025-07-01_17-11-05"
-  - "015913_SIT_2025-07-02_17-08-49"
-  - "015913_SIT_2025-07-07_14-44-34"
-  - "015913_SIT_2025-07-07_18-16-48"
-  - "015913_SIT_2025-07-08_10-21-50"
-  - "015913_SIT_2025-07-08_18-37-40"
-  - "015913_SIT_2025-07-09_13-09-12"
-  - "015913_SIT_2025-07-09_18-23-21"
-  - "015913_SIT_2025-07-10_10-32-29"
-  - "015913_SIT_2025-07-10_13-15-08"
-  - "015913_SIT_2025-07-10_16-55-22"
-  - "015913_SIT_2025-07-11_10-12-19"
-  - "015913_SIT_2025-07-11_14-08-42"
-  - "015913_SIT_2025-07-11_18-15-13"
-  - "015913_SIT_2025-07-12_15-01-21"
-  - "015913_SIT_2025-07-12_17-06-42"
-  - "015913_SIT_2025-07-12_19-15-13"
-  - "015913_SIT_2025-07-14_13-37-00"
-  - "015913_SIT_2025-07-15_10-25-43"
-  - "015913_SIT_2025-07-15_18-03-25"
-  - "015913_SIT_2025-07-16_10-16-55"
-  - "015913_SIT_2025-07-16_16-36-25"
-  - "015913_SIT_2025-07-18_18-43-47"
-  - "015913_SIT_2025-07-19_15-54-41"
-  - "015913_SIT_2025-07-20_15-46-53"
-  - "015913_SIT_2025-07-20_17-56-09"
+  - "015913_SIT_2025-06-20_12-51-53" ####
+  # - "015913_SIT_2025-06-24_15-21-13"
+  # - "015913_SIT_2025-06-26_16-10-06"
+  # - "015913_SIT_2025-07-01_17-11-05"
+  # - "015913_SIT_2025-07-02_17-08-49"
+  # - "015913_SIT_2025-07-07_14-44-34"
+  # - "015913_SIT_2025-07-07_18-16-48"
+  # - "015913_SIT_2025-07-08_10-21-50"
+  # - "015913_SIT_2025-07-08_18-37-40"
+  # - "015913_SIT_2025-07-09_13-09-12"
+  # - "015913_SIT_2025-07-09_18-23-21"
+  # - "015913_SIT_2025-07-10_10-32-29"
+  # - "015913_SIT_2025-07-10_13-15-08"
+  # - "015913_SIT_2025-07-10_16-55-22"
+  # - "015913_SIT_2025-07-11_10-12-19"
+  # - "015913_SIT_2025-07-11_14-08-42"
+  # - "015913_SIT_2025-07-11_18-15-13"
+  # - "015913_SIT_2025-07-12_15-01-21"
+  # - "015913_SIT_2025-07-12_17-06-42"
+  # - "015913_SIT_2025-07-12_19-15-13"
+  # - "015913_SIT_2025-07-14_13-37-00" # not manually curated
+  # - "015913_SIT_2025-07-14_17-51-41" # missing in february # not manually curated
+  # - "015913_SIT_2025-07-15_10-25-43" # not manually curated
+  # - "015913_SIT_2025-07-15_13-15-45" # missing in february
+  # - "015913_SIT_2025-07-15_18-03-25" # not manually curated
+  # - "015913_SIT_2025-07-16_10-16-55" # not manually curated
+  # - "015913_SIT_2025-07-16_16-36-25" 
+  # - "015913_SIT_2025-07-18_18-43-47" # starts the light/dark stuff
+  # - "015913_SIT_2025-07-19_15-54-41"
+  # - "015913_SIT_2025-07-20_15-46-53"
+  # - "015913_SIT_2025-07-20_17-56-09" ###
   # - "015913_SIT_2025-07-21_10-37-48"
   # - "015913_SIT_2025-07-21_13-57-59"
   # - "015913_SIT_2025-08-06_16-17-47"
   # - "015913_SIT_2025-08-11_09-52-23"
   # - "015913_SIT_2025-08-11_14-43-15"
-  # # - "015913_SIT_2025-08-12_12-01-02"
+  # # # - "015913_SIT_2025-08-12_12-01-02" # no ephys
   # - "015913_SIT_2025-08-14_09-37-42"
   # - "015913_SIT_2025-08-16_17-33-10"
   # - "015913_SIT_2025-08-16_18-09-44"
@@ -117,8 +127,14 @@ src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 
+prj_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/projects/ICproject/"
+
 pack:
   drift_coeff: 0.000016666
+  adc_sync:
+    enabled: false
+    f_lo: 600.0
+    f_hi: 1400.0
 
 # neurosuite / klustakwik config files
 template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/015913/neurosuite.xml"
@@ -156,7 +172,7 @@ lfp:
 psth:
   micro:
     latency: 0.25
-    bin_count: 51
+    bin_count: 151
     shuf_iter_count: 100
     figsize: 4
   macro:
@@ -227,3 +243,49 @@ PSTH_micro_bnMAPs:
 sound_phase_lock:
   n_shuffles: 100
   ipi_for_shuffle: 0.25
+
+unit_match:
+  sample_amount: 1000 # for both CV, at least 500 per CV
+  spike_width: 61 # assuming 30khz sampling, 82 and 61 are common choices (KS1-3, KS4), covers the AP and space around needed for processing
+  n_channels: 384 #neuropixels default, the number of channels EXCLUDING sync channels
+  extract_good_units_only: False # bool, set to true if you want to only extract units marked as good 
+  KS4_data: True #bool, set to true if using Kilosort, as KS4 spike times refer to start of waveform not peak
+  samples_before: 20
+  match_good_units_only: True # bool, set to true if you want to only match units marked as good
+  quick_test: False # bool, set to true to only match units based on spike times, without waveform features (for faster processing)
+  log_memory: true
+  metrics_float32: True # bool, set to true to save metrics in float32 instead of float64 for reduced memory usage
+  metrics_quick_test: False
+  metrics_niter: 2   # optional, faster
+  drop_waveform_before_metrics: true
+  skip_gui: true
+  pre_metrics_quick_test: false
+  filter_good_units: true
+  min_firing_rate_hz: 0
+  filter_units_mode: good_or_fr   # or good_and_fr
+  sample_rate_hz: 30000
+  filter_units_debug: true
+  max_session_id: "015913_SIT_2025-07-16_16-36-25"
+  require_phy_folder: True
+
+segments:
+  ensembles: False
+  tgt_sta_min_pulses: 0
+  bgr_sta_min_pulses: 0
+  sil_sta_min_pulses: 0
+  bgr_run_min_pulses: 0
+  sil_run_min_pulses: 0
+  dis_sta_min_pulses: 0
+  strip_l:
+    tgt: 0
+    bgr: 1
+    sil: 1
+    dis: 0
+  strip_r:
+    tgt: 0
+    bgr: 1
+    sil: 1
+    dis: 0
+  visits:
+    min_pulses: 8
+    radius: 0.05

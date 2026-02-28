@@ -79,6 +79,10 @@ session_IDs:
   # - "016700_SIT_passive_2025-12-18_21-28-46"
   # - "016700_SIT_passive_2025-12-19_13-24-16"
   - "017276_ppcSIT_2027-02-13_16-12-25"
+  - "017276_ppcSIT_2027-02-10_20-48-38"
+  - "017276_ppcSIT_2027-02-19_09-44-31"
+  - "017276_ppcSIT_2027-02-19_21-34-16"
+  - "017276_ppcSIT_2027-02-20_15-22-50"
 
 
 
@@ -95,7 +99,7 @@ prj_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/projects/ICproject/
 pack:
   drift_coeff: 0.000016666
   adc_sync:
-    enabled: true
+    enabled: False
     f_lo: 600.0
     f_hi: 1400.0
 
@@ -154,7 +158,7 @@ lfp:
 psth:
   micro:
     latency: 0.25
-    bin_count: 151
+    bin_count: 51
     shuf_iter_count: 100
     figsize: 4
   macro:
@@ -162,9 +166,9 @@ psth:
     bin_count: 31
   bootstrap:
     latency: 0.25
-    bin_count: 127
-    boot_iter_count: 1000
-    xlim: [0, 0.25]
+    bin_count: 51
+    boot_iter_count: 100
+
 
 # neural manifolds
 nMAP_electrodes:

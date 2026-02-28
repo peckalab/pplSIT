@@ -28,6 +28,10 @@ prj_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/projects/default_project
 
 pack:
   drift_coeff: 0.000016666
+  adc_sync:
+    enabled: false
+    f_lo: 600.0
+    f_hi: 1400.0
 
 # neurosuite / klustakwik config files
 template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/60_SIT_2023-08-11_16-23-36.xml"
@@ -190,3 +194,4 @@ unit_match:
   KS4_data: True #bool, set to true if using Kilosort, as KS4 spike times refer to start of waveform not peak
   samples_before: 20
   match_good_units_only: True # bool, set to true if you want to only match units marked as good
+  require_phy_folder: False # bool, only include sessions with kilosort/.phy
