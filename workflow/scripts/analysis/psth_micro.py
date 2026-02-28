@@ -15,9 +15,7 @@ from utils.maths import pval2text
 
 s_path  = os.path.dirname(snakemake.input[0])
 session = os.path.basename(s_path)
-opt_files = snakemake.input.opt
-sound_phase_lock_file = opt_files[0] if opt_files else None
-# sound_phase_lock_file = os.path.join(s_path, 'analysis', 'sound_phase_lock.h5')
+sound_phase_lock_file = os.path.join(s_path, 'analysis', 'sound_phase_lock.h5')
 
 # reading some configs
 with h5py.File(snakemake.input[0], 'r') as f:
