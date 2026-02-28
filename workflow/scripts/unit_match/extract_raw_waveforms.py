@@ -14,6 +14,8 @@ max_width = np.floor(spike_width/2).astype(int) #Size of area at start and end o
 n_channels = snakemake.config['unit_match']['n_channels'] #384 #neuropixels default, the number of channels EXCLUDING sync channels
 extract_good_units_only = snakemake.config['unit_match']['extract_good_units_only'] #True # bool, set to true if you want to only extract units marked as good 
 
+n_jobs = -1
+
 KS4_data = snakemake.config['unit_match']['KS4_data'] #True #bool, set to true if using Kilosort, as KS4 spike times refer to start of waveform not peak
 if KS4_data:
     samples_before = snakemake.config['unit_match']['samples_before'] #20
@@ -52,10 +54,10 @@ if extract_good_units_only:
     sample_idx = erd.get_sample_idx(spike_times_tmp, spike_ids_tmp, sample_amount, units = good_units)
 
     if KS4_data:
-        avg_waveforms = Parallel(n_jobs = -1, verbose = 10, mmap_mode='r', max_nbytes=None )(delayed(erd.extract_a_unit_KS4)(sample_idx[uid], data, samples_before, samples_after, spike_width, n_channels, sample_amount)for uid in range(good_units.shape[0]))
+        avg_waveforms = Parallel(n_jobs = n_jobs, verbose = 10, mmap_mode='r', max_nbytes=None )(delayed(erd.extract_a_unit_KS4)(sample_idx[uid], data, samples_before, samples_after, spike_width, n_channels, sample_amount)for uid in range(good_units.shape[0]))
         avg_waveforms = np.asarray(avg_waveforms)           
     else:
-        avg_waveforms = Parallel(n_jobs = -1, verbose = 10, mmap_mode='r', max_nbytes=None )(delayed(erd.extract_a_unit)(sample_idx[uid], data, half_width, spike_width, n_channels, sample_amount)for uid in range(good_units.shape[0]))
+        avg_waveforms = Parallel(n_jobs = n_jobs, verbose = 10, mmap_mode='r', max_nbytes=None )(delayed(erd.extract_a_unit)(sample_idx[uid], data, half_width, spike_width, n_channels, sample_amount)for uid in range(good_units.shape[0]))
         avg_waveforms = np.asarray(avg_waveforms)
 
     #Save in file named 'RawWaveforms' in the KS Directory
@@ -82,10 +84,10 @@ else:
     sample_idx = erd.get_sample_idx(spike_times_tmp, spike_ids_tmp, sample_amount, units= np.unique(spike_ids))
     
     if KS4_data:
-        avg_waveforms = Parallel(n_jobs = -1, verbose = 10, mmap_mode='r', max_nbytes=None )(delayed(erd.extract_a_unit_KS4)(sample_idx[uid], data, samples_before, samples_after, spike_width, n_channels, sample_amount)for uid in range(n_units))
+        avg_waveforms = Parallel(n_jobs = n_jobs, verbose = 10, mmap_mode='r', max_nbytes=None )(delayed(erd.extract_a_unit_KS4)(sample_idx[uid], data, samples_before, samples_after, spike_width, n_channels, sample_amount)for uid in range(n_units))
         avg_waveforms = np.asarray(avg_waveforms)           
     else:
-        avg_waveforms = Parallel(n_jobs = -1, verbose = 10, mmap_mode='r', max_nbytes=None )(delayed(erd.extract_a_unit)(sample_idx[uid], data, half_width, spike_width, n_channels, sample_amount)for uid in range(n_units))
+        avg_waveforms = Parallel(n_jobs = n_jobs, verbose = 10, mmap_mode='r', max_nbytes=None )(delayed(erd.extract_a_unit)(sample_idx[uid], data, half_width, spike_width, n_channels, sample_amount)for uid in range(n_units))
         avg_waveforms = np.asarray(avg_waveforms)
 
     #Save in file named 'RawWaveforms' in the KS Directory
