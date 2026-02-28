@@ -320,7 +320,7 @@ def pack(pos_file, ev_file, snd_file, isl_file, cfg_file, man_file, dst_file, dr
 
         # building timeline
         width = 100  # 100 points ~= 1 sec with at 100Hz
-        kernel = signal.gaussian(width, std=(width) / 7.2)
+        kernel = windows.gaussian(width, std=(width) / 7.2)
 
         x_smooth = np.convolve(x_mf, kernel, 'same') / kernel.sum()
         y_smooth = np.convolve(y_mf, kernel, 'same') / kernel.sum()
