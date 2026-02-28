@@ -43,7 +43,19 @@ with h5py.File(snakemake.input[1], 'r') as f:
 event_types = [0, 1, 2, -1]  # SIL, BGR, TGT, NOI - order matters
 colors = {0: 'gray', 1: 'tab:blue', 2: 'tab:orange', -1: 'red'}
 ev_names = {0: 'SIL', 1: 'BGR', 2: 'TGT', -1: 'NOI'}
-bgr_dur    = cfg['sound']['sounds']['background']['duration']  # in seconds
+
+if 'background' in cfg['sound']['sounds']:
+    bgr_dur    = cfg['sound']['sounds']['background']['duration']  # in seconds
+    passive = False
+else: # if background is not present, it is a passive experiment
+    passive = True
+    idxs_ev_passive = {}
+    bgr_dur    = cfg['sound']['sounds']['F1']['duration']
+    sound_ev_types = [ev for ev in cfg['sound']['sounds'].keys() if ev != 'noise']
+    for i, ev in enumerate(sound_ev_types):
+        idxs_ev_passive[ev] = np.where(sound_events[:, 1] == i+1)[0]
+
+
 #stim_combs = [(1, 2), (0, 1)]  # stimulus combinations to plot
 cols = 3
 rows = int(np.ceil(len(units_to_plot)/cols))
@@ -187,4 +199,110 @@ else:
                 
         f_name = os.path.join(os.path.dirname(snakemake.output[0]), 'psth_distractors_%s.pdf' % str(k+1))
         fig.tight_layout()
+        fig.savefig(f_name)
+
+if passive:
+    #stim_combs = [(1, 2), (0, 1)]  # stimulus combinations to plot
+    cols = 3
+    rows = int(np.ceil(len(units_to_plot)/cols))
+
+    hw = snakemake.config['psth']['micro']['latency']
+    bc = snakemake.config['psth']['micro']['bin_count']
+
+    speed_max = 0.04
+    speed_ev = tl[sound_events[:, 2].astype(np.int32)][:, 3]
+    idxs_sta_ev = np.where(speed_ev < speed_max)[0]
+    idxs_run_ev = np.where(speed_ev > speed_max)[0]
+
+    fig_titles = [
+        "frequencies",
+        "durations"
+    ]
+
+    stim_comb_idxs = [
+        [idxs_ev for key, idxs_ev in idxs_ev_passive.items() if 'F' in key],  # frequencies plot
+        [idxs_ev for key, idxs_ev in idxs_ev_passive.items() if 'D' in key]  # durations plot
+        # ignore stationary / run for passive
+        # [np.intersect1d(idxs_bgr_ev, idxs_sta_ev), np.intersect1d(idxs_tgt_ev, idxs_sta_ev)],  # BGR stationary / TGT stationary
+        # [np.intersect1d(idxs_bgr_ev, idxs_sta_ev), np.intersect1d(idxs_bgr_ev, idxs_run_ev)],  # BGR stationary / BGR run
+        # [np.intersect1d(idxs_sil_ev, idxs_sta_ev), np.intersect1d(idxs_sil_ev, idxs_run_ev)],  # SIL stationary / SIL run
+    ]
+
+    label_combs = [
+        [f"{sound["freq"]}Hz" for key, sound in cfg['sound']['sounds'].items() if 'F' in key],
+        [f"{float(sound["duration"])*1000}ms" for key, sound in cfg['sound']['sounds'].items() if 'D' in key]
+        # ignore stationary / run for passive
+        # ['bgr_sta', 'tgt_sta'],
+        # ['bgr_sta', 'bgr_run'],
+        # ['sil_sta', 'sil_run'],
+    ]
+
+    # colors for the different frequencies should be shades of red
+    # colors for the different durations should be shades of blue
+    # color_combs = [
+    #     # colors for the different frequencies should be different shades of red, not the same color
+    #     [plt.cm.Reds(i / max(1, (len([key for key in cfg['sound']['sounds'] if 'F' in key]) - 1))) 
+    #         for i, key in enumerate([key for key in cfg['sound']['sounds'] if 'F' in key])],
+
+    #     [plt.cm.Blues(i / max(1, (len([key for key in cfg['sound']['sounds'] if 'D' in key]) - 1))) 
+    #         for i, key in enumerate([key for key in cfg['sound']['sounds'] if 'D' in key])]
+    #     # ignore stationary / run for passive
+    #     # ['tab:blue', 'tab:orange'],
+    #     # ['navy', 'tab:blue'],
+    #     # ['grey', 'tab:red'],
+    # ]
+    # different colors
+    color_combs = [
+        ['#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#034e7b'],
+        ['#addd8e','#78c679','#41ab5d','#238443','#005a32'],
+        # [f'C{i}' for i, key in enumerate([key for key in cfg['sound']['sounds'] if 'F' in key])],
+        # [f'C{i}' for i, key in enumerate([key for key in cfg['sound']['sounds'] if 'D' in key])]
+        # ignore stationary / run for passive
+        # ['tab:blue', 'tab:orange'],
+        # ['navy', 'tab:blue'],
+        # ['grey', 'tab:red'],
+    ]
+
+    # TGT, BGR, SIL bar plot figures
+    for fig_id, stim_comb in enumerate(stim_comb_idxs):
+
+        # figure / file for each stimulus combination
+        fig = plt.figure(figsize=(4*cols, 4*rows))
+
+        for i, unit_name in enumerate(units_to_plot):
+            ax = fig.add_subplot(rows, cols, i+1) # one subplot for each unit
+            for ev_id, idxs_ev in enumerate(stim_comb):
+                bins, psth = get_spike_counts(spike_times[unit_name], sound_events[idxs_ev][:, 0], hw=hw, bin_count=bc)
+
+                # if sound phase locking exists - plot with the label
+                label = label_combs[fig_id][ev_id]
+                # TODO: ignore this for the moment
+                # if os.path.exists(sound_phase_lock_file):
+                #     with h5py.File(sound_phase_lock_file, 'r') as snd_f:
+                #         if label_combs[fig_id][0] in snd_f:
+                #             MRL = np.array(snd_f[label_combs[fig_id][0]][unit_name]['MRL_real'])
+                #             pv  = np.array(snd_f[label_combs[fig_id][0]][unit_name]['p_value'])
+                #             label1 += f" ({MRL:.2f}; {pval2text(pv)})"
+                #         if label_combs[fig_id][1] in snd_f:
+                #             MRL = np.array(snd_f[label_combs[fig_id][1]][unit_name]['MRL_real'])
+                #             pv  = np.array(snd_f[label_combs[fig_id][1]][unit_name]['p_value'])
+                #             label2 += f" ({MRL:.2f}; {pval2text(pv)})"
+
+                print(ev_id, label, color_combs[fig_id][ev_id])
+                ax.hist(bins[:-1], bins=bins, weights=psth, color=color_combs[fig_id][ev_id], histtype='step', label=label, linewidth=3)
+
+
+            ax.axvline(0, color='black', ls='--')
+            ax.axvspan(0, bgr_dur, alpha=0.3, color='gray')
+            ax.axvspan(0 - hw, 0 - hw + bgr_dur, alpha=0.3, color='gray')
+            ax.set_title(f"{unit_name} ({depth[unit_name]}um)", fontsize=14)
+            ax.legend(loc='lower right', prop={'size': 10})
+            # ax.set_xlim(-hw, hw)
+            ax.set_xlim(0, hw)
+            if i % 3 == 0:
+                ax.set_ylabel("Firing Rate, Hz", fontsize=14)
+                
+        fig.tight_layout()
+        # TODO: this is done in an ugly way
+        f_name = os.path.join(os.path.dirname(snakemake.output[0]), f'{fig_titles[fig_id]}.pdf')
         fig.savefig(f_name)
