@@ -149,7 +149,7 @@ for fig_id, stim_comb in enumerate(stim_comb_idxs):
 
 
 # distractor figures
-if len(idxs_di1_ev) < 5 or len(idxs_di2_ev) < 5:
+if (len(idxs_di1_ev) < 5 or len(idxs_di2_ev) < 5) and ((not (len(idxs_di1_ev) == 0 or len(idxs_di2_ev) == 0)) or 0 < len(idxs_di1_ev) < 5 and 0 < len(idxs_di2_ev) < 5):
     # not enough samples, write empty file
     f_name = os.path.join(os.path.dirname(snakemake.output[0]), 'psth_distractors.pdf')
     fig = plt.figure(figsize=(4, 4))
