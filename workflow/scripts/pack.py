@@ -4,6 +4,7 @@ import time
 import os, json
 import numpy as np
 from scipy import signal
+from scipy.signal import windows
 from scipy.ndimage import median_filter
 
 
@@ -17,7 +18,7 @@ from utils.sync import get_sound_events_from_openephys, get_sound_events_from_AD
 
 def head_direction(tl, hd_update_speed=0.04):
     width = 200  # 100 points ~= 1 sec with at 100Hz
-    kernel = signal.gaussian(width, std=(width) / 7.2)
+    kernel = windows.gaussian(width, std=(width) / 7.2)
 
     x_smooth = np.convolve(tl[:, 1], kernel, 'same') / kernel.sum()
     y_smooth = np.convolve(tl[:, 2], kernel, 'same') / kernel.sum()
