@@ -29,6 +29,27 @@ def sync_ephys_path(wc):
 #         return sync_ephys_path(wc)
 #     return sync_none_path(wc)
 
+def has_raw_ephys_session(wc) -> bool:
+    session_path = os.path.join(config["src_path"], wc.animal, wc.session)
+
+    found_dat = False
+    found_settings = False
+
+    for dirpath, dirnames, filenames in os.walk(session_path):
+        if "ephys" in dirnames:
+            dirnames.remove("ephys")
+
+        if "settings.xml" in filenames:
+            found_settings = True
+        if any(f.endswith(".dat") for f in filenames):
+            found_dat = True
+
+        if found_dat and found_settings:
+            return True
+
+    return False
+
+
 def optional_file(path):
     return path if os.path.exists(path) else []
 
@@ -78,11 +99,12 @@ rule pack_merge:
         base=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.base.h5"),
         manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
         sync_none=os.path.join(config["dst_path"], "{animal}", "{session}", "sync", "sounds_sync.none.h5"),
-        # only require ephys sync file if ephys staging exists (no manual.json reading here)
-        sync_ephys=lambda wc: optional_file(
-            os.path.join(config["dst_path"], wc.animal, wc.session, "sync", "sounds_sync.ephys.h5")
+
+        # trigger ephys sync only for sessions that have raw ephys data
+        sync_ephys=lambda wc: (
+            [os.path.join(config["dst_path"], wc.animal, wc.session, "sync", "sounds_sync.ephys.h5")]
+            if has_raw_ephys_session(wc) else []
         ),
-        ephys_staged=lambda wc: optional_file(ephys_staged_marker(wc)),
     output:
         meta=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.h5")
     script:
