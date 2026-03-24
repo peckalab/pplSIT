@@ -35,11 +35,19 @@ def kilo_staged_marker(wc):
     return os.path.join(config["dst_path"], wc.animal, wc.session, "kilosort", ".STAGED")
 
 def streams_for_session_from_ephys(wc):
-    p = ephys_staged_marker(wc)
-    if not os.path.exists(p):
+    raw_ephys_dir = os.path.dirname(ephys_staged_marker(wc))
+    if not os.path.exists(raw_ephys_dir):
         return []
-    with open(p) as f:
-        return [ln.strip() for ln in f if ln.strip()]
+        
+    streams = []
+    for name in os.listdir(raw_ephys_dir):
+        p = os.path.join(raw_ephys_dir, name)
+        if not os.path.isdir(p):
+            continue
+        # keep only real probe streams
+        if name.startswith("Probe"):
+            streams.append(name)
+    return sorted(streams)
 
 def streams_for_session_from_kilo(wc):
     staged = os.path.join(config["dst_path"], wc.animal, wc.session, "kilosort", ".STAGED")

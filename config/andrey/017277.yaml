@@ -1,5 +1,5 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey/017276.yaml --use-conda --cores=20
+# snakemake -n --configfile=../config/andrey/017277.yaml --use-conda --cores=20
 # 
 # find files / modified date
 # find . -name phy.log -printf "%p %TY-%Tm-%Td %TH:%TM:%TS %Tz\n"
@@ -17,7 +17,7 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
+  LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
@@ -42,9 +42,18 @@ blocks:  # blocks of pipeline to run
 
 session_IDs:  
   - "017277_ppcSIT_2026-02-18_15-34-33"
-  # - "017277_ppcSIT_2026-02-19_11-04-47"
-  # - "017277_ppcSIT_2026-02-20_14-33-54"
-
+  - "017277_ppcSIT_2026-02-19_11-04-47"
+  - "017277_ppcSIT_2026-02-20_14-33-54"
+  - "017277_ppcSIT_2026-02-25_13-43-35"
+  - "017277_ppcSIT_2026-02-26_14-34-20"
+  - "017277_ppcSIT_2026-02-27_09-08-56"
+  - "017277_ppcSIT_2026-03-03_21-13-39"
+  - "017277_ppcSIT_2026-03-04_15-45-42"
+  - "017277_ppcSIT_2026-03-05_13-06-33"
+  - "017277_ppcSIT_2026-03-17_10-33-14"
+  - "017277_ppcSIT_2026-03-18_10-03-43"
+  - "017277_ppcSIT_2026-03-19_11-16-03"
+  - "017277_ppcSIT_2026-03-20_10-16-11"
   
 
 # source of raw data

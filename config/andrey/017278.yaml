@@ -1,5 +1,5 @@
 # run snakemake from ../workflow folder:
-# snakemake -n --configfile=../config/andrey/016672.yaml --use-conda --cores=20
+# snakemake -n --configfile=../config/andrey/017278.yaml --use-conda --cores=20
 # 
 # find files / modified date
 # find . -name phy.log -printf "%p %TY-%Tm-%Td %TH:%TM:%TS %Tz\n"
@@ -13,9 +13,9 @@
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   performance: True   # performance metrics
-  DLC: True        # Deep lab cut
+  DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
-  descendants: True   # speed, HD etc. from MoSeq and others
+  descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
@@ -32,68 +32,28 @@ blocks:  # blocks of pipeline to run
   manifold_states: False
   metronome: False
   video: False
-  sound_phase_lock: True
-  segments: True
+  sound_phase_lock: False
+  segments: False
   activity_matrices: True
   ensembles: False
   covariance: True
-  vectors: True
-  state_decoder_unit_mx: True
+  vectors: False
+  state_decoder_unit_mx: False
 
 session_IDs:  
-  # controls
-  # - "016672_devSITnostim_2025-10-15_17-01-06"
-  # - "016672_devSITnostim_2025-10-16_10-47-04"
-  # - "016672_devSITnostim_2025-10-16_11-05-08"
-  # - "016672_devSITpassive_2025-10-17_10-41-44"
-  # - "016672_devSITpassive_2025-10-17_10-58-03"
-  # - "016672_devSITnostim_2025-10-20_14-50-47"
-  # - "016672_devSITpassive_2025-10-20_15-51-04"
-  # - "016672_devSITnostim_2025-10-20_16-04-14"  # ThalD session
-  # - "016672_devSITpassive_2025-10-21_21-10-10"
-  # - "016672_devSITnostim_2025-10-21_22-02-56"
-  # - "016672_devSITnostim_2025-10-23_14-46-06"
-  # - "016672_devSITnostim_2025-10-24_16-59-14"
-  # - "016672_devSITpassive_2025-10-27_12-19-32"
-  # - "016672_devSITnostim_2025-10-27_13-18-35"
-  # - "016672_devSITnostim_2025-10-28_20-47-37"
-  # - "016672_devSITpassive_2025-10-28_21-38-11"
-  # - "016672_devSITpassive_2025-10-29_13-17-35"
-  # - "016672_devSITnostim_2025-10-29_14-23-34"
-  # - "016672_devSITnostim_2025-10-30_11-07-44"
-  # - "016672_devSITpassive_2025-10-30_13-28-46"
-  # - "016672_devSITpassive_2025-10-31_14-37-30"
-  # - "016672_devSITnostim_2025-11-03_10-25-42"
-  # - "016672_devSITpassive_2025-11-03_13-32-57"
-  # - "016672_devSITpassive_2025-11-04_09-57-02"
-  # - "016672_devSITnostim_2025-11-04_10-56-55"
-  # - "016672_devSITnostim_2025-11-05_10-29-43"
-  # - "016672_devSITpassive_2025-11-05_11-35-46"
+  - "017278_ppcSIT_2026-03-17_23-16-50"
+  - "017278_ppcSIT_2026-03-18_09-04-03"
+  - "017278_ppcSIT_2026-03-18_15-33-20"
+  - "017278_ppcSIT_2026-03-18_15-33-20"
+  - "017278_ppcSIT_2026-03-19_09-15-50"
+  - "017278_ppcSIT_2026-03-19_20-09-56"
+  - "017278_ppcSIT_2026-03-20_09-24-47"
+  - "017278_ppcSIT_2026-03-21_14-28-25"
+  - "017278_ppcSIT_2026-03-21_19-01-13"
+  - "017278_ppcSIT_2026-03-22_17-32-30"
+  - "017278_ppcSIT_2026-03-23_10-39-02"
 
-  # active sessions
-  # - "016672_devSITactive_2025-10-20_15-13-28"  # naive
-  # - "016672_devSITactive_2025-10-21_21-25-15"  # learning
-  # - "016672_devSITactive_2025-10-23_15-05-37"  # learning
-  - "016672_devSITactive_2025-10-24_17-18-47"
-  - "016672_devSITactive_2025-10-27_12-36-37"
-  # - "016672_devSITactive_2025-10-28_21-02-10"
-  # - "016672_devSITactive_2025-10-29_13-36-00"
-  # - "016672_devSITactive_2025-10-30_11-23-50"
-  # - "016672_devSITactive_2025-10-31_14-50-34"  # good restored session (26 mins)
-  # - "016672_devSITactive_2025-10-31_15-23-44"
-  # - "016672_devSITactive_2025-11-03_10-39-56"
-  # - "016672_devSITactive_2025-11-04_10-11-10"
-  # - "016672_devSITactive_2025-11-05_10-45-16"  # last session with box controls
-  # - "016672_devSITactive_2025-11-06_21-16-33"
-  # - "016672_devSITactive_2025-11-07_13-18-09"
-  # - "016672_devSITactive_2025-11-10_16-03-29"
-  # - "016672_devSITactive_2025-11-11_17-41-18"  # R - channels flipped, but should be still fine
-  # - "016672_devSITactive_2025-11-12_14-58-44"  # R
-  # - "016672_devSITactive_2025-11-13_20-25-42"  # R - BGR 1195
-  # - "016672_devSITactive_2025-11-14_13-57-22"  # R - BGR 660
-  # - "016672_devSITactive_2025-11-17_13-56-04"  # L - distractors
-  # - "016672_devSITactive_2025-11-18_14-22-05"  # R - distractors
-  # - "016672_devSITactive_2025-11-19_14-42-36"  # L - distractors (so much noise..)
+
   
 
 # source of raw data
@@ -104,21 +64,16 @@ src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017276/manual.json"
+
 pack:
   drift_coeff: 0.000016666
 
-# neurosuite / klustakwik config files
-template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016672/neurosuite.xml"
-template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016672/manual.json"
-ndm_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/ndm/usr/bin/"
-kkwik_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/kkwik/"
-kwik_args: "-PenaltyMix 1.0 -MinClusters 85 -MaxClusters 85 -MaxPossibleClusters 500 -UseFeatures"
-
 kilosort:
-  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016672/kilosort.json"
-  probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016672/probe.json"
+  settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017276/kilosort.json"
+  #probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017276/probe.json"
   save_preprocessed: False
-  cuda_device: 1
+  cuda_device: 3
 
 # single units config: which sorter to use
 units:
@@ -126,7 +81,7 @@ units:
 
 # deep lab cut config files
 #dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
-dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT_newSetup-Miguel-2025-01-24/config.yaml"
+dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT_newSetup-Miguel-2025-01-24/config.yaml"
 dlc_shuffle: 1
 dlc_trainingsetindex: 1
 
@@ -252,14 +207,3 @@ vectors:
     step: 5
   units_to_exclude:
     '014393_ppcSIT_2025-04-23_20-27-09': ['2-300', '3-350']
-
-
-ensembles:
-    '014393_ppcSIT_2025-04-23_20-27-09': 
-      'AL': ['2-300', '3-350']
-    '014393_ppcSIT_2025-04-24_20-53-08': 
-      'AL': ['2-324', '3-281', '4-282']
-    '014393_ppcSIT_2025-04-25_15-42-45': 
-      'AL': ['1-349', '3-280', '4-284']
-    '014393_ppcSIT_2025-04-29_22-10-49': 
-      'AL': ['1-164', '3-371']

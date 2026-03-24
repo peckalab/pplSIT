@@ -22,7 +22,7 @@ assert fs % lfp_fs == 0, "fs must be divisible by lfp_fs"
 sos = signal.butter(4, 0.8 * (lfp_fs / 2) / (fs / 2), btype='low', output='sos')
 
 # Determine total number of samples
-n_samples_total = int(np.memmap(snakemake.input[0], dtype=dtype).size / n_channels)
+n_samples_total = int(np.memmap(snakemake.input[1], dtype=dtype).size / n_channels)
 n_samples_lfp = n_samples_total // ds_factor
 n_channels_out = len(channels_to_extract)
 print_perc = n_samples_total / 10
@@ -31,10 +31,10 @@ print_perc = n_samples_total / 10
 with h5py.File(snakemake.output[0], 'w') as h5f:
     dset = h5f.create_dataset('lfp', shape=(n_channels_out, n_samples_lfp), dtype='float32')
 
-    samples_per_chunk = chunk_size_sec * fs
+    samples_per_chunk = int(chunk_size_sec * fs)
     lfp_idx = 0
 
-    with open(snakemake.input[0], 'rb') as f:
+    with open(snakemake.input[1], 'rb') as f:
         for start in range(0, n_samples_total, samples_per_chunk):
             stop = min(start + samples_per_chunk, n_samples_total)
             n_samples = stop - start
