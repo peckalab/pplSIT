@@ -27,6 +27,41 @@ metric_names = (
 )
 
 
+def get_session_ephys_t0(ephys_root, probe_streams):
+    """
+    Return a common session reference time from staged ephys timestamps.
+
+    Parameters
+    ----------
+    ephys_root : str
+        Path like src/<animal>/<session>/ephys
+    probe_streams : list[str]
+        Stream names such as ["ProbeA", "ProbeB"]
+
+    Returns
+    -------
+    float
+        Earliest first timestamp across probe streams
+    """
+    t0s = []
+
+    for stream_name in probe_streams:
+        ts_path = os.path.join(ephys_root, stream_name, "timestamps.npy")
+        if not os.path.exists(ts_path):
+            raise FileNotFoundError(f"Missing timestamps.npy for stream {stream_name}: {ts_path}")
+
+        ts = np.load(ts_path, mmap_mode="r")
+        if len(ts) == 0:
+            raise ValueError(f"Empty timestamps.npy for stream {stream_name}: {ts_path}")
+
+        t0s.append(float(ts[0]))
+
+    if not t0s:
+        raise ValueError(f"No probe streams provided for ephys t0 reference in {ephys_root}")
+
+    return min(t0s)
+
+
 def _flatten_snakemake_inputs(inp):
     """
     Robustly flatten snakemake.input into a list of file paths (strings).
@@ -198,7 +233,17 @@ def _process_neurosuite(sorted_data_path, tl, out_h5_path):
             )
 
 
-def _process_kilosort_stream(stream_name, stream_folder, tl, out_h5_path, animal, session, config, electrode_offset=0):
+def _process_kilosort_stream(
+    stream_name,
+    stream_folder,
+    tl,
+    out_h5_path,
+    animal,
+    session,
+    config,
+    electrode_offset=0,
+    t0_ref=None,
+):
     # settings + probe
     kilosort_settings_file = os.path.join(stream_folder, "settings.json")
     clu_info_file = os.path.join(stream_folder, "cluster_info.tsv")
@@ -239,7 +284,10 @@ def _process_kilosort_stream(stream_name, stream_folder, tl, out_h5_path, animal
             unit_name = f"{global_electrode_idx}-{unit_idx}"
 
             # kilosort: spiketrain are indices into timestamps (per your loader)
-            s_times = timestamps[spiketrain] - timestamps[0]
+            if t0_ref is None:
+                raise ValueError(f"t0_ref must be provided for stream {stream_name}")
+
+            s_times = timestamps[spiketrain] - t0_ref
 
             _compute_and_store_unit_metrics(
                 out_h5=out_h5_path,
@@ -284,6 +332,9 @@ else:
     animal = snakemake.params["animal"]
     session = snakemake.params["session"]
 
+    ephys_root = os.path.join(snakemake.config["src_path"], animal, session, "ephys")
+    t0_ref = get_session_ephys_t0(ephys_root, streams)
+
     for stream_idx, stream in enumerate(streams):
         stream_folder = os.path.join(ks_root, stream)
 
@@ -300,6 +351,7 @@ else:
             session=session,
             config=snakemake.config,
             electrode_offset=_electrode_offset_for_stream(stream_idx, n_shanks_per_stream=4),
+            t0_ref=t0_ref,
         )
 
 
