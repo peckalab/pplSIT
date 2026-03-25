@@ -22,7 +22,7 @@ blocks:  # blocks of pipeline to run
   kilosort: True  # sorting with kilosort
   units: False      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: False
+  PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
@@ -48,7 +48,7 @@ session_IDs:
   # - "017276_ppcSIT_2026-02-20_15-22-50"
   # - "017276_SIT_2026-02-27_18-21-34"
   # - "017276_SIT_2026-03-01_16-03-30"
-  - "017276_SIT_passive_2026-03-02_18-47-19"
+  # - "017276_SIT_passive_2026-03-02_18-47-19"
   # - "017276_SIT_2026-03-02_19-17-21"
   # - "017276_SIT_passive_2026-03-01_20-06-02"
   - "017276_SIT_2026-03-03_10-53-45"
