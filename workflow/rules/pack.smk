@@ -83,7 +83,6 @@ rule sounds_sync_none:
 rule sounds_sync_ephys:
     input:
         staged=os.path.join(config["src_path"], "{animal}", "{session}", "ephys", ".STAGED"),
-        ephys_root=os.path.join(config["src_path"], "{animal}", "{session}", "ephys"),
         settings=os.path.join(config["src_path"], "{animal}", "{session}", "ephys", "settings.xml"),
         manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
         sounds=os.path.join(config["src_path"], "{animal}", "{session}", "sounds.csv"),

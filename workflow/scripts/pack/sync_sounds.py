@@ -97,7 +97,7 @@ manual_path   = snakemake.input["manual"]
 settings_xml  = snakemake.input["settings"]
 sounds_csv    = snakemake.input["sounds"]
 events_csv    = snakemake.input["events"]
-ephys_root    = snakemake.input["ephys_root"]
+ephys_root    = os.path.dirname(snakemake.input["staged"])
 out_sync_h5   = snakemake.output["sync"]
 
 with open(manual_path, "r") as f:
