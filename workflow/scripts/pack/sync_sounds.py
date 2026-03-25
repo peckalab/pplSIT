@@ -1,7 +1,12 @@
-import os, json, glob
+import os, json, glob, sys
 import numpy as np
 import h5py
 import xml.etree.ElementTree as ET
+
+# import util functions from utils module
+parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+sys.path.append(os.getcwd())
+sys.path.append(parent_dir)
 
 from utils.sync import get_sound_events_from_ADC, get_sound_events_from_openephys
 
@@ -92,7 +97,7 @@ manual_path   = snakemake.input["manual"]
 settings_xml  = snakemake.input["settings"]
 sounds_csv    = snakemake.input["sounds"]
 events_csv    = snakemake.input["events"]
-ephys_root    = snakemake.input["ephys_root"]
+ephys_root    = os.path.dirname(snakemake.input["staged"])
 out_sync_h5   = snakemake.output["sync"]
 
 with open(manual_path, "r") as f:
@@ -135,9 +140,9 @@ if sync_type == "OneBox_ADC":
         ephys_ts_file=ephys_ts,
         channel=adc_channel,
         event_th=event_th,
-        s_rate=adc_sr
+        s_rate=adc_sr,
+        ch_no=adc_cc,
     )
-
     write_sync_h5(
         out_path=out_sync_h5,
         mode="OneBox_ADC",

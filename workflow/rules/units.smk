@@ -25,7 +25,8 @@ def guess_sorter_inputs(wc):
 rule dump_units:
     input:
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
-        clu=guess_sorter_inputs
+        clu=guess_sorter_inputs,
+        ephys_staged=os.path.join(config["src_path"], "{animal}", "{session}", "ephys", ".STAGED")
     output:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
     params:
