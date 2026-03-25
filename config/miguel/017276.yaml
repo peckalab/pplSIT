@@ -11,8 +11,8 @@
 # sudo diskutil umount force /Users/andrey/nevermind
 
 blocks:  # blocks of pipeline to run
-  meta: True         # pack main metadata into HDF5
-  performance: True   # performance metrics
+  meta: False         # pack main metadata into HDF5
+  performance: False   # performance metrics
   DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
@@ -20,9 +20,9 @@ blocks:  # blocks of pipeline to run
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
-  units: True      # extract spike trains from sorted data
+  units: False      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: True
+  PSTH_bar: False
   PSTH_bootstrap: False
   PSTH_shuffle: False
   PSTH_bnMAPs: False
@@ -34,7 +34,7 @@ blocks:  # blocks of pipeline to run
   video: False
   sound_phase_lock: False
   segments: False
-  activity_matrices: True
+  activity_matrices: False
   ensembles: False
   covariance: False
   vectors: False
@@ -46,7 +46,44 @@ session_IDs:
   # - "017276_ppcSIT_2026-02-19_09-44-31"
   # - "017276_ppcSIT_2026-02-19_21-34-16"
   # - "017276_ppcSIT_2026-02-20_15-22-50"
-  - "017276_SIT_2026-02-27_18-21-34"
+  # - "017276_SIT_2026-02-27_18-21-34"
+  # - "017276_SIT_2026-03-01_16-03-30"
+  - "017276_SIT_passive_2026-03-02_18-47-19"
+  # - "017276_SIT_2026-03-02_19-17-21"
+  # - "017276_SIT_passive_2026-03-01_20-06-02"
+  - "017276_SIT_2026-03-03_10-53-45"
+  - "017276_SIT_2026-03-01_18-56-24"
+  - "017276_SIT_2026-03-03_14-59-35"
+  - "017276_SIT_2026-03-03_18-44-41"
+  - "017276_SIT_2026-03-04_10-21-06"
+  - "017276_SIT_2026-03-04_14-14-44"
+  - "017276_SIT_2026-03-04_17-47-45"
+  - "017276_SIT_2026-03-05_10-20-48"
+  - "017276_SIT_2026-03-05_14-21-01"
+  # - "017276_SIT_2026-03-05_17-44-08"
+  - "017276_SIT_2026-03-06_10-14-14"
+  - "017276_SIT_2026-03-06_14-30-26"
+  - "017276_SIT_2026-03-06_14-58-02"
+  - "017276_SIT_2026-03-06_19-19-27"
+  - "017276_SIT_2026-03-07_13-44-19"
+  - "017276_SIT_2026-03-07_16-32-51"
+  - "017276_SIT_2026-03-07_19-14-57"
+  - "017276_SIT_2026-03-08_13-24-10" # cable disconnected during recording ~40min
+  - "017276_SIT_2026-03-08_16-29-07"
+  - "017276_SIT_2026-03-08_19-34-55"
+  - "017276_SIT_2026-03-09_10-09-25"
+  - "017276_SIT_2026-03-09_14-35-02"
+  - "017276_SIT_2026-03-09_18-44-04"
+  - "017276_SIT_2026-03-10_10-28-17"
+  - "017276_SIT_2026-03-10_14-35-05"
+  - "017276_SIT_2026-03-10_19-02-23"
+  - "017276_SIT_2026-03-11_10-43-15"
+  - "017276_SIT_2026-03-11_14-45-58"
+  - "017276_SIT_2026-03-11_18-27-06"
+  - "017276_SIT_2026-03-12_10-41-43"
+  - "017276_SIT_2026-03-12_15-37-31"
+  - "017276_SIT_2026-03-12_18-58-54"
+  - "017276_SIT_2026-03-13_08-48-14"
 
   
 
