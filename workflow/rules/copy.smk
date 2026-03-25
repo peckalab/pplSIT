@@ -6,7 +6,7 @@ def session_dir(wc):
 
 def stream_name_from_dir(parent_dirname: str) -> str:
     """Derive stream name from the folder name containing the .dat."""
-    if "." in parent_dirname:
+    if "." in parent_dirname and 'probe' in parent_dirname.lower():
         return parent_dirname.split(".")[-1]
     return parent_dirname
 
@@ -85,9 +85,6 @@ rule stage_ephys_from_openephys_tree:
     Also stages the first settings.xml into:
       src/<animal>/<session>/ephys/settings.xml
     """
-    input:
-        # a stable input that exists per session; simplest is the session folder itself
-        session_dir=lambda wc: os.path.join(config["src_path"], wc.animal, wc.session)
     output:
         marker=os.path.join(config["src_path"], "{animal}", "{session}", "ephys", ".STAGED"),
         ephys_xml=os.path.join(config["src_path"], "{animal}", "{session}", "ephys", "settings.xml")
