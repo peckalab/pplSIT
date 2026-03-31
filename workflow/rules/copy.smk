@@ -6,7 +6,7 @@ def session_dir(wc):
 
 def stream_name_from_dir(parent_dirname: str) -> str:
     """Derive stream name from the folder name containing the .dat."""
-    if "." in parent_dirname and 'probe' in parent_dirname.lower():
+    if "." in parent_dirname and ('probe' in parent_dirname.lower() or 'adc' in parent_dirname.lower()):
         return parent_dirname.split(".")[-1]
     return parent_dirname
 
@@ -23,15 +23,16 @@ def safe_hardlink(src: str, dst: str, overwrite: bool = True) -> None:
 
     os.link(src, dst)
 
+
 def stage_ephys_streams(session_path: str) -> None:
     """
-    Crawl session_path and for each *.dat file found:
+    Crawl all subfolders under session_path (but not session_path itself) and for each *.dat file found:
       - derive stream_name from the folder containing the .dat
       - hardlink dat into session_path/ephys/<stream_name>/<original_dat_filename>
       - hardlink timestamps.npy (if present) into the same folder
 
     Additionally:
-      - find the first settings.xml anywhere under session_path and hardlink it to
+      - find the first settings.xml anywhere under session_path subfolders and hardlink it to
         session_path/ephys/settings.xml
     """
     found_any_dat = False
@@ -44,6 +45,10 @@ def stage_ephys_streams(session_path: str) -> None:
         # Prune destination folder so we don't re-stage what we just created
         if "ephys" in dirnames:
             dirnames.remove("ephys")
+
+        # Skip files directly in session_path itself; only process subfolders
+        if os.path.abspath(dirpath) == os.path.abspath(session_path):
+            continue
 
         # (1) Stage the first settings.xml we encounter
         if (not staged_settings) and ("settings.xml" in filenames):
@@ -75,7 +80,7 @@ def stage_ephys_streams(session_path: str) -> None:
                 safe_hardlink(src_ts, dst_ts, overwrite=True)
 
     if not found_any_dat:
-        raise ValueError(f"There should be at least one .dat file in: {session_path}")
+        raise ValueError(f"There should be at least one .dat file in subfolders of: {session_path}")
 
 
 rule stage_ephys_from_openephys_tree:
@@ -100,19 +105,28 @@ rule stage_ephys_from_openephys_tree:
 
 rule init_session_templates:
     input:
-        #xml_t=ancient(config["template_xml"]),
         man_t=ancient(config["template_manual_json"]),
-        ks_t=ancient(config["kilosort"]["settings_path"]),
+        #ks_t=ancient(config["kilosort"]["settings_path"]),
     output:
-        #xml=os.path.join(config["src_path"], "{animal}", "{session}", "{session}.xml"),
-        man=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
-        ks=os.path.join(config["src_path"], "{animal}", "{session}", "kilosort.json"),
-    shell:
-        # mkdir -p {session_dir(wildcards)}
-        r"""
-        cp {input.man_t} {output.man}
-        cp {input.ks_t}  {output.ks}
-        """
+        marker=os.path.join(config["src_path"], "{animal}", "{session}", ".templates_initialized")
+    run:
+        import os
+        import shutil
+
+        session_dir = os.path.dirname(output.marker)
+        man = os.path.join(session_dir, "manual.json")
+        #ks = os.path.join(session_dir, "kilosort.json")
+
+        os.makedirs(session_dir, exist_ok=True)
+
+        if not os.path.exists(man):
+            shutil.copy2(input.man_t, man)
+
+        # if not os.path.exists(ks):
+        #     shutil.copy2(input.ks_t, ks)
+
+        with open(output.marker, "w") as f:
+            f.write("OK\n")
 
 
 rule copy_ephys_ns:
@@ -124,80 +138,3 @@ rule copy_ephys_ns:
         dat=n_path('{animal}', '{session}', '{session}.dat')
     shell:
         "ln {input.xml} {output.xml}; ln {input.dat} {output.dat}"
-
-
-# rule create_xml_from_template:
-#     input:
-#         template=ancient(config['template_xml'])
-#     output:
-#         xml=os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.xml')
-#     shell:
-#         "cp {input.template} {output.xml}"
-
-
-# rule create_manual_json_from_template:
-#     input:
-#         template=ancient(config['template_manual_json'])
-#     output:
-#         man_json=os.path.join(config['src_path'], '{animal}', '{session}', 'manual.json')
-#     shell:
-#         "cp {input.template} {output.man_json}"
-
-
-# rule create_kilosort_settings_from_template:
-#     input:
-#         template=ancient(config['kilosort']['settings_path'])
-#     output:
-#         kilo=os.path.join(config['src_path'], '{animal}', '{session}', 'kilosort.json')
-#     shell:
-#         "cp {input.template} {output.kilo}"
-
-# rule move_dat_from_subfolder:
-#     output:
-#         dat=os.path.join(config['src_path'], '{animal}', '{session}', '{session}.dat'),
-#         ts_path = os.path.join(config['src_path'], '{animal}', '{session}', 'timestamps.npy')
-#     run:
-#         session_path = os.path.join(config['src_path'], wildcards.animal, wildcards.session)
-#         stage_ephys_streams(session_path)
-
-
-# rule copy_ephys_ks:
-#     input:
-#         dat=ancient(os.path.join(config['src_path'], '{animal}', '{session}', '{session}' + '.dat'))
-#     output:
-#         dat=k_path('{animal}', '{session}', '{session}.dat')
-#     shell:
-#         "ln {input.dat} {output.dat}"
-
-# Creates a hard link in the session folder to the actual raw files with recorded ephys data.
-# For Neuropixels recordings, also creates a hard link to the ADC raw data file.
-# rule move_dat_from_subfolder:
-#     output:
-#         dat=os.path.join(config['src_path'], '{animal}', '{session}', '{session}.dat'),
-#         ts_path = os.path.join(config['src_path'], '{animal}', '{session}', 'timestamps.npy')
-#     run:
-#         import os
-#         import shutil
-
-#         # Define the source path
-#         session_path = os.path.join(config['src_path'], wildcards.animal, wildcards.session)
-
-#         dat_path = None
-#         for dirpath, dirnames, filenames in os.walk(session_path):
-#             for filename in [f for f in filenames if f.endswith('.dat')]:
-#                 parent_dirname = os.path.basename(dirpath)
-#                 dat_path = os.path.join(dirpath, filename)
-
-#                 if parent_dirname.find('OneBox-ADC') > 0:  # this is ADC dat file, special case for NP
-#                     subprocess.run(['ln', dat_path, os.path.join(session_path, 'ADC.dat')])
-
-#                     # assume here should be timestamps file too - need to move it up as well
-#                     adc_ts_path = os.path.join(dirpath, 'timestamps.npy')
-#                     subprocess.run(['ln', adc_ts_path, os.path.join(session_path, 'ADC_timestamps.npy')])
-#                 else:
-#                     subprocess.run(['ln', dat_path, output.dat])
-#                     ts_path = os.path.join(dirpath, 'timestamps.npy')
-#                     subprocess.run(['ln', ts_path, os.path.join(session_path, 'timestamps.npy')])
-
-#         if dat_path is None:
-#             raise ValueError("There should be at least one .dat file in the session path")

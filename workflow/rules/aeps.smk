@@ -20,7 +20,8 @@ rule extract_aeps:
         lfp         =os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'lfp.h5'),
         lfp_base    =os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'baseline.h5'),
         artifacts   =os.path.join(config['dst_path'], '{animal}', '{session}', 'LFP', 'artifacts.h5'),
-        aeps_metrics=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'aeps_lfp_metrics.h5')
+        aeps_metrics=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'aeps_lfp_metrics.h5'),
+        init        =os.path.join(config["src_path"], "{animal}", "{session}", ".templates_initialized"),
     output:
         aeps=os.path.join(config['dst_path'], '{animal}', '{session}', 'AEP', 'AEPs.h5')
     script:

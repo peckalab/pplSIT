@@ -17,7 +17,7 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: True          # extract LFP
+  LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
@@ -52,6 +52,9 @@ session_IDs:
   - "017278_ppcSIT_2026-03-21_19-01-13"
   - "017278_ppcSIT_2026-03-22_17-32-30"
   - "017278_ppcSIT_2026-03-23_10-39-02"
+  - "017278_ppcSIT_2026-03-23_16-17-50"
+  - "017278_ppcSIT_2026-03-24_14-51-12"
+  - "017278_ppcSIT_2026-03-25_13-29-32"
 
 
   

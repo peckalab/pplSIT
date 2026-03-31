@@ -173,20 +173,90 @@ checkpoint stage_streams_to_kilosort_folder:
             f.write("\n".join(streams) + "\n")
 
 
-rule do_kilosort_stream:
-    input:
-        staged=lambda wc: staged_marker_path(wc.animal, wc.session),   # ensures staging happened
-        settings=lambda wc: session_kilosort_settings_path(wc.animal, wc.session, wc.stream),
-        probe=lambda wc: stream_probe_path(wc.animal, wc.session, wc.stream),
-        dat=lambda wc: stream_dat_path(wc.animal, wc.session, wc.stream),
-    output:
-        st=k_path("{animal}", "{session}", "{stream}", "spike_times.npy"),
-        sc=k_path("{animal}", "{session}", "{stream}", "spike_clusters.npy"),
-        tp=k_path("{animal}", "{session}", "{stream}", "templates.npy"),
-    conda:
-        "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/kilosort"
-    script:
-        "../scripts/kilosort.py"
+if config.get("copy_kilosort_legacy", False):
+
+    rule do_kilosort_stream:
+        input:
+            staged=lambda wc: staged_marker_path(wc.animal, wc.session),
+            settings=lambda wc: session_kilosort_settings_path(wc.animal, wc.session, wc.stream),
+            probe=lambda wc: stream_probe_path(wc.animal, wc.session, wc.stream),
+            dat=lambda wc: stream_dat_path(wc.animal, wc.session, wc.stream),
+        output:
+            st=k_path("{animal}", "{session}", "{stream}", "spike_times.npy"),
+            sc=k_path("{animal}", "{session}", "{stream}", "spike_clusters.npy"),
+            tp=k_path("{animal}", "{session}", "{stream}", "templates.npy"),
+        run:
+            import os
+            import shutil
+            from pathlib import Path
+
+            ks_root = Path(config["dst_path"]) / wildcards.animal / wildcards.session / "kilosort"
+            stream_dir = ks_root / wildcards.stream
+            stream_dir.mkdir(parents=True, exist_ok=True)
+
+            exclude_names = {
+                wildcards.stream,   # do not recurse into destination subfolder
+                ".STAGED",
+                "kilosort.ready",
+            }
+
+            def should_skip(path: Path) -> bool:
+                name = path.name
+
+                if name in exclude_names:
+                    return True
+
+                if path.is_file() and name.endswith(".dat"):
+                    return True
+
+                return False
+
+            copied = []
+
+            for item in ks_root.iterdir():
+                if should_skip(item):
+                    continue
+
+                dst = stream_dir / item.name
+
+                if item.is_file():
+                    shutil.copy2(item, dst)
+                    copied.append((str(item), str(dst)))
+
+                elif item.is_dir():
+                    if dst.exists():
+                        shutil.rmtree(dst)
+                    shutil.copytree(item, dst)
+                    copied.append((str(item), str(dst)))
+
+            # Ensure required declared outputs exist after copy
+            missing = [p for p in output if not os.path.exists(p)]
+            if missing:
+                raise FileNotFoundError(
+                    "Legacy Kilosort copy completed, but required outputs are missing: "
+                    + ", ".join(missing)
+                )
+
+            print(f"Copied legacy Kilosort contents from {ks_root} -> {stream_dir}")
+            for src, dst in copied:
+                print(f"  {src} -> {dst}")
+
+else:
+
+    rule do_kilosort_stream:
+        input:
+            staged=lambda wc: staged_marker_path(wc.animal, wc.session),
+            settings=lambda wc: session_kilosort_settings_path(wc.animal, wc.session, wc.stream),
+            probe=lambda wc: stream_probe_path(wc.animal, wc.session, wc.stream),
+            dat=lambda wc: stream_dat_path(wc.animal, wc.session, wc.stream),
+        output:
+            st=k_path("{animal}", "{session}", "{stream}", "spike_times.npy"),
+            sc=k_path("{animal}", "{session}", "{stream}", "spike_clusters.npy"),
+            tp=k_path("{animal}", "{session}", "{stream}", "templates.npy"),
+        conda:
+            "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/kilosort"
+        script:
+            "../scripts/kilosort.py"
 
 
 rule kilosort_ready_stream:
