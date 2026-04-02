@@ -46,23 +46,76 @@ probe = load_probe(probe_path)
 save_p = snakemake.config["kilosort"].get("save_preprocessed", False)
 
 # select CUDA device with most free memory (fallback to configured device)
-best_dev_id = snakemake.config["kilosort"].get("cuda_device", 0)
+def pick_best_cuda_device(fallback_device=0, min_free_gb=8.0, max_utilization=20.0):
+    if not torch.cuda.is_available():
+        print("CUDA not available")
+        return fallback_device
 
-try:
-    dev_count = torch.cuda.device_count()
-    if dev_count > 0:
-        free_fracs = []
-        for dev_id in range(dev_count):
-            try:
-                m_free, m_total = torch.cuda.mem_get_info(dev_id)
-                free_fracs.append(m_free / max(m_total, 1))
-            except Exception:
-                free_fracs.append(-1.0)
-        cand = int(np.argmax(free_fracs))
-        if free_fracs[cand] >= 0:
-            best_dev_id = cand
-except Exception:
-    pass
+    try:
+        import subprocess
+
+        print("CUDA_VISIBLE_DEVICES =", os.environ.get("CUDA_VISIBLE_DEVICES"))
+
+        cmd = [
+            "nvidia-smi",
+            "--query-gpu=index,memory.free,memory.total,utilization.gpu",
+            "--format=csv,noheader,nounits",
+        ]
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+
+        gpu_rows = []
+        for line in result.stdout.strip().splitlines():
+            idx_s, free_s, total_s, util_s = [x.strip() for x in line.split(",")]
+            g = {
+                "idx": int(idx_s),
+                "free_mib": float(free_s),
+                "total_mib": float(total_s),
+                "util": float(util_s),
+            }
+            g["free_frac"] = g["free_mib"] / max(g["total_mib"], 1.0)
+            gpu_rows.append(g)
+
+        print("GPU rows from nvidia-smi:")
+        for g in gpu_rows:
+            print(g)
+
+        min_free_mib = min_free_gb * 1024.0
+        preferred = [
+            g for g in gpu_rows
+            if g["util"] <= max_utilization and g["free_mib"] >= min_free_mib
+        ]
+
+        print("Preferred GPUs:")
+        for g in preferred:
+            print(g)
+
+        if preferred:
+            best = max(preferred, key=lambda g: (g["free_mib"], -g["util"]))
+            print("Selected from preferred:", best)
+            return best["idx"]
+
+        for g in gpu_rows:
+            g["score"] = (100.0 - g["util"]) * 2 + 50.0 * g["free_frac"]
+
+        print("Scored GPUs:")
+        for g in gpu_rows:
+            print(g)
+
+        best = max(gpu_rows, key=lambda g: g["score"])
+        print("Selected from fallback:", best)
+        return best["idx"]
+
+    except Exception as e:
+        print(f"GPU auto-selection failed: {e}")
+        return fallback_device
+
+# select CUDA device using utilization + memory (fallback to configured device)
+best_dev_id = snakemake.config["kilosort"].get("cuda_device", 0)
+best_dev_id = pick_best_cuda_device(
+    fallback_device=best_dev_id,
+    min_free_gb=8.0,
+    max_utilization=20.0,
+)
 
 print(f"USING CUDA DEVICE: {best_dev_id}")
 
