@@ -1,6 +1,9 @@
 # run snakemake from ../workflow folder:
 # snakemake -n --configfile=../config/andrey/016700.yaml --use-conda --cores=20
 #
+# to clean a certain rule and all downstream rules:
+# snakemake --configfile=../config/andrey/016700.yaml --use-conda --cores=20 --touch --forcerun do_kilosort_stream
+#
 # mount nevermind via SSHFS
 # sshfs sobolev@10.153.172.1:/nevermind.neuro/share/ag-grothe nevermind
 # sshfs andrey@10.153.170.1:/storage2 storage2
@@ -14,14 +17,14 @@ blocks:  # blocks of pipeline to run
   MoSeq: True        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
+  LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: True         # extract Auditory Evoked Responses
   PSTH_bar: True
   PSTH_bootstrap: True
-  PSTH_shuffle: False
+  PSTH_shuffle: True
   PSTH_bnMAPs: False
   spatial: False
   population: True
@@ -29,7 +32,7 @@ blocks:  # blocks of pipeline to run
   manifold_states: True
   metronome: False
   video: False
-  sound_phase_lock: False
+  sound_phase_lock: True
   segments: True
   activity_matrices: True
   ensembles: False
@@ -53,13 +56,13 @@ session_IDs:
   - "016700_ppcSIT_2025-11-10_16-59-58"
   - "016700_ppcSIT_2025-11-11_10-06-07"
   - "016700_ppcSIT_2025-11-12_10-23-15"
-  # - "016700_ppcSIT_2025-11-13_09-07-44"
-  # - "016700_ppcSIT_2025-11-13_21-27-17"  # 3-4
-  # - "016700_ppcSIT_2025-11-14_10-20-29"  # 3-4
-  # - "016700_ppcSIT_2025-11-14_15-52-25"
-  # - "016700_ppcSIT_2025-11-17_10-50-51"
-  # - "016700_ppcSIT_2025-11-18_13-18-07"  # 3-4
-  # - "016700_ppcSIT_2025-11-19_13-11-14"  # 3-4
+  - "016700_ppcSIT_2025-11-13_09-07-44"
+  - "016700_ppcSIT_2025-11-13_21-27-17"  # 3-4
+  - "016700_ppcSIT_2025-11-14_10-20-29"  # 3-4
+  - "016700_ppcSIT_2025-11-14_15-52-25"
+  - "016700_ppcSIT_2025-11-17_10-50-51"
+  - "016700_ppcSIT_2025-11-18_13-18-07"  # 3-4
+  - "016700_ppcSIT_2025-11-19_13-11-14"  # 3-4
 
 copy_kilosort_legacy: True  # whether to copy kilosort results from legacy layout (if True, will look for them in dst_path/kilosort and copy to dst_path/kilosort/<stream>)
 migration:

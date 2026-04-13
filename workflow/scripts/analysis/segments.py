@@ -35,10 +35,21 @@ y_pos_ev = tl[sound_events[:, 2].astype(np.int32)][:, 2]
 speed_ev = np.zeros(len(sound_events))
 for i in range(len(sound_events)):
     idx_start = int(sound_events[i][2])
+
     if i < len(sound_events) - 1:
-        idx_end = int(sound_events[i+1][2])
+        idx_end = int(sound_events[i + 1][2])
     else:
         idx_end = len(tl)
+
+    # guard against zero-length or reversed slices
+    if idx_end <= idx_start:
+        # fallback: use single-sample speed at idx_start if possible
+        if 0 <= idx_start < len(tl):
+            speed_ev[i] = tl[idx_start, 3]
+        else:
+            speed_ev[i] = 0.0
+        continue
+
     speed_ev[i] = tl[idx_start:idx_end][:, 3].max()
 
 speed_max = 0.04

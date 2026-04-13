@@ -5,6 +5,7 @@ rule shuffle_micro_profiles:
         units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
     output:
         dst_file=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'shuffle_micro.h5')
+    threads: 16
     script:
         "../../scripts/analysis/shuffle_micro_profiles.py"
 

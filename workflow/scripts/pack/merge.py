@@ -77,12 +77,20 @@ def build_dis_matrix(sound_events, trials, cfg):
             continue
         last_sound_idx = dis_idxs_before_end[-1]
         if sound_events[last_sound_idx][1] > 2:
-            # only if trial was not full duration it is a true fail
+            # find distractor period containing last_sound_idx
+            match = np.where((dis_start_idxs <= last_sound_idx) & (last_sound_idx <= dis_end_idxs))[0]
+
+            if len(match) == 0:
+                # no matching distractor period found; skip or warn
+                continue
+
+            dis_idx = match[-1]
+
             if (idx_tl_fail_end - idx_tl_fail_start) < cfg["experiment"]["trial_duration"] * 100:
-                dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = 1
+                dis_results[dis_idx] = 1
             else:
                 # timeout
-                dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = -1
+                dis_results[dis_idx] = -1
 
     return np.column_stack(
         [

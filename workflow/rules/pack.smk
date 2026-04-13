@@ -50,6 +50,19 @@ def has_raw_ephys_session(wc) -> bool:
     return False
 
 
+def has_ephys_config_set(wc) -> bool:
+    session_path = os.path.join(config["src_path"], wc.animal, wc.session)
+    manual_json_path = os.path.join(session_path, "manual.json")
+    
+    if not os.path.exists(manual_json_path):
+        return False
+
+    with open(manual_json_path) as f:
+        m = json.load(f)
+
+    return "ephys" in m and "offset" in m["ephys"] and isinstance(m["ephys"]["offset"], dict)
+
+
 def optional_file(path):
     return path if os.path.exists(path) else []
 
@@ -105,7 +118,7 @@ rule pack_merge:
         # trigger ephys sync only for sessions that have raw ephys data
         sync_ephys=lambda wc: (
             [os.path.join(config["dst_path"], wc.animal, wc.session, "sync", "sounds_sync.ephys.h5")]
-            if has_raw_ephys_session(wc) else []
+            if (has_raw_ephys_session(wc) and has_ephys_config_set(wc)) else []
         ),
     output:
         meta=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.h5")

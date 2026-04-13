@@ -7,24 +7,6 @@ from utils.probe import oe2kilosort
 
 # ---------- helpers ----------
 
-def list_streams_for_kilosort(config, animal, session):
-    """
-    Return stream names under src/<animal>/<session>/ephys/*, excluding ADC streams.
-    """
-    ephys_root = os.path.join(get_session_src_dir(config, animal, session), "ephys")
-    if not os.path.isdir(ephys_root):
-        return []
-
-    streams = []
-    for name in sorted(os.listdir(ephys_root)):
-        full = os.path.join(ephys_root, name)
-        if not os.path.isdir(full):
-            continue
-        if "adc" in name.lower():
-            continue
-        streams.append(name)
-    return streams
-
 def safe_hardlink(src: str, dst: str, overwrite: bool = True) -> None:
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     if overwrite and os.path.lexists(dst):
@@ -104,33 +86,10 @@ def stream_probe_path(animal, session, stream):
 def session_kilosort_settings_path(animal, session, stream):
     return k_path(animal, session, stream, "settings.json")
 
-def read_streams_from_marker(marker_path):
-    if not os.path.exists(marker_path):
-        return []
-    with open(marker_path, "r") as f:
-        return [ln.strip() for ln in f if ln.strip()]
-
-def streams_after_staging(wc):
-    """
-    This is the key Fix A function.
-    It forces Snakemake to run the checkpoint first.
-    """
-    ck = checkpoints.stage_streams_to_kilosort_folder.get(
-        animal=wc.animal,
-        session=wc.session,
-    )
-    marker = ck.output.marker
-    
-    streams = read_streams_from_marker(marker)
-
-    if not streams:
-        raise ValueError(f"No streams found in marker {marker}")
-
-    return streams
 
 # ---------- the rules ----------
 
-checkpoint stage_streams_to_kilosort_folder:
+rule stage_streams_to_kilosort_folder:
     """
     Links dat + timestamps into:
       processed/<animal>/<session>/kilosort/<stream>/
@@ -138,9 +97,7 @@ checkpoint stage_streams_to_kilosort_folder:
     Writes marker file listing streams.
     """
     input:
-        settings=lambda wc: os.path.join(config["src_path"], wc.animal, wc.session, "ephys", "settings.xml"),
-        ephys_staged=os.path.join(config["src_path"], "{animal}", "{session}", "ephys", ".STAGED"),
-        #kilosort_json=os.path.join(config["src_path"], "{animal}", "{session}", "kilosort.json")
+        ephys_staged=ancient(os.path.join(config["src_path"], "{animal}", "{session}", "ephys", ".STAGED")),
         kilosort_json=ancient(config["kilosort"]["settings_path"]),
     output:
         marker=os.path.join(config["dst_path"], "{animal}", "{session}", "kilosort", ".STAGED"),
@@ -149,7 +106,7 @@ checkpoint stage_streams_to_kilosort_folder:
         animal = wildcards.animal
         session = wildcards.session
 
-        streams = list_streams_for_kilosort(config, animal, session)
+        streams = streams_for_session(config, animal, session)
         if len(streams) == 0:
             raise ValueError(
                 f"No non-ADC streams found in the raw. "
@@ -177,10 +134,7 @@ if config.get("copy_kilosort_legacy", False):
 
     rule do_kilosort_stream:
         input:
-            staged=lambda wc: staged_marker_path(wc.animal, wc.session),
-            settings=lambda wc: session_kilosort_settings_path(wc.animal, wc.session, wc.stream),
-            probe=lambda wc: stream_probe_path(wc.animal, wc.session, wc.stream),
-            dat=lambda wc: stream_dat_path(wc.animal, wc.session, wc.stream),
+            staged=ancient(lambda wc: staged_marker_path(wc.animal, wc.session))
         output:
             st=k_path("{animal}", "{session}", "{stream}", "spike_times.npy"),
             sc=k_path("{animal}", "{session}", "{stream}", "spike_clusters.npy"),
@@ -245,14 +199,11 @@ else:
 
     rule do_kilosort_stream:
         input:
-            staged=lambda wc: staged_marker_path(wc.animal, wc.session),
-            settings=lambda wc: session_kilosort_settings_path(wc.animal, wc.session, wc.stream),
-            probe=lambda wc: stream_probe_path(wc.animal, wc.session, wc.stream),
-            dat=lambda wc: stream_dat_path(wc.animal, wc.session, wc.stream),
+            staged=ancient(lambda wc: staged_marker_path(wc.animal, wc.session))
         output:
             st=k_path("{animal}", "{session}", "{stream}", "spike_times.npy"),
             sc=k_path("{animal}", "{session}", "{stream}", "spike_clusters.npy"),
-            tp=k_path("{animal}", "{session}", "{stream}", "templates.npy"),
+            tp=k_path("{animal}", "{session}", "{stream}", "templates.npy")
         conda:
             "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/kilosort"
         script:
@@ -261,7 +212,6 @@ else:
 
 rule kilosort_ready_stream:
     input:
-        probe=k_path("{animal}", "{session}", "{stream}", "probe.json"),
         st=k_path("{animal}", "{session}", "{stream}", "spike_times.npy"),
         sc=k_path("{animal}", "{session}", "{stream}", "spike_clusters.npy"),
         tp=k_path("{animal}", "{session}", "{stream}", "templates.npy"),
@@ -277,42 +227,17 @@ rule kilosort_ready_session:
             config["dst_path"], wc.animal, wc.session, "kilosort", ".STAGED"
         ),
         ready_files=lambda wc: expand(
-            os.path.join(config["dst_path"], wc.animal, wc.session, "kilosort", "{stream}", "kilosort.ready"),
-            stream=streams_after_staging(wc),
+            os.path.join(
+                config["dst_path"],
+                wc.animal,
+                wc.session,
+                "kilosort",
+                "{stream}",
+                "kilosort.ready"
+            ),
+            stream=streams_for_session_wc(wc),
         )
     output:
         ready=k_path("{animal}", "{session}", "kilosort.ready")
     shell:
         "touch {output}"
-
-
-# rule do_kilosort:
-#     input:
-#         settings=ancient(os.path.join(config['src_path'], '{animal}', '{session}', 'kilosort.json')),
-#         probe=ancient(os.path.join(config['src_path'], '{animal}', '{session}', 'probe.json')),
-#         dat_file=ancient(k_path('{animal}', '{session}', '{session}.dat'))
-#     output:
-#         # put the whitened filtered path here
-#         k_path('{animal}', '{session}', 'spike_times.npy'),
-#         k_path('{animal}', '{session}', 'spike_clusters.npy'),
-#         k_path('{animal}', '{session}', 'templates.npy')
-#     conda:
-#         "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/kilosort"
-#     script:
-#         "../scripts/kilosort.py"
-
-
-#  # finalize processing
-# rule kilosort_ready:
-#     input:
-#         probe=k_path('{animal}', '{session}', 'probe.json'),
-#         st=k_path('{animal}', '{session}', 'spike_times.npy'),
-#         sc=k_path('{animal}', '{session}', 'spike_clusters.npy'),
-#         tp=k_path('{animal}', '{session}', 'templates.npy')
-#     output:
-#         k_path('{animal}', '{session}', 'kilosort.ready')
-#     params:
-#         session="{session}",
-#         animal="{animal}"
-#     shell:
-#         "touch %s" % k_path('{params.animal}', '{params.session}', 'kilosort.ready')

@@ -10,6 +10,7 @@ def stream_name_from_dir(parent_dirname: str) -> str:
         return parent_dirname.split(".")[-1]
     return parent_dirname
 
+
 def safe_hardlink(src: str, dst: str, overwrite: bool = True) -> None:
     """Create a hardlink dst -> src. Optionally overwrite dst if it exists."""
     os.makedirs(os.path.dirname(dst), exist_ok=True)
