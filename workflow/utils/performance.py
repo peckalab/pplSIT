@@ -279,6 +279,8 @@ def plot_session_metrics(tl, trial_idxs, cfg, fig_path):
     fig.tight_layout()
     if fig_path is not None:
         fig.savefig(fig_path)
+    else:
+        plt.show()
 
 def plot_performance(cfg, perf, fig_path):
     fig = plt.figure(figsize=(4, 4))
@@ -309,3 +311,5 @@ def plot_performance(cfg, perf, fig_path):
     fig.tight_layout()
     if fig_path is not None:
         fig.savefig(fig_path)
+    else:
+        plt.show()
