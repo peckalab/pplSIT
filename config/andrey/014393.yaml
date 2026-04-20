@@ -10,18 +10,18 @@
 blocks:  # blocks of pipeline to run
   meta: True         # pack main metadata into HDF5
   performance: True   # performance metrics
-  DLC: False        # Deep lab cut
+  DLC: True        # Deep lab cut
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
+  LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
   PSTH_bar: True
-  PSTH_bootstrap: False
-  PSTH_shuffle: False
+  PSTH_bootstrap: True
+  PSTH_shuffle: True
   PSTH_bnMAPs: False
   spatial: False
   population: False
@@ -32,23 +32,24 @@ blocks:  # blocks of pipeline to run
   sound_phase_lock: False
   segments: True
   activity_matrices: True
-  ensembles: True
+  ensembles: False
   covariance: True
   vectors: True
 
 session_IDs:  
-  # - "014393_ppcSIT_2025-04-16_11-20-15"
+  - "014393_ppcSIT_2025-04-16_11-20-15"
   # - "014393_ppcSIT_2025-04-16_21-25-03"
-  # - "014393_ppcSIT_2025-04-23_09-23-02"
+  - "014393_ppcSIT_2025-04-23_09-23-02"
   - "014393_ppcSIT_2025-04-23_20-27-09"
-  # - "014393_ppcSIT_2025-04-24_08-57-16"
+  - "014393_ppcSIT_2025-04-24_08-57-16"
   - "014393_ppcSIT_2025-04-24_20-53-08"
-  # - "014393_ppcSIT_2025-04-25_08-42-15"
+  - "014393_ppcSIT_2025-04-25_08-42-15"
   - "014393_ppcSIT_2025-04-25_15-42-45"
-  # - "014393_ppcSIT_2025-04-28_09-57-10"
-  # - "014393_ppcSIT_2025-04-29_09-05-50"
+  - "014393_ppcSIT_2025-04-28_09-57-10"
+  - "014393_ppcSIT_2025-04-29_09-05-50"
   - "014393_ppcSIT_2025-04-29_22-10-49"
 
+copy_kilosort_legacy: True  # whether to copy kilosort results from legacy layout (if True, will look for them in dst_path/kilosort and copy to dst_path/kilosort/<stream>)
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"
@@ -177,7 +178,7 @@ sound_phase_lock:
   ipi_for_shuffle: 0.25
 
 segments:
-  ensembles: True
+  ensembles: False
   tgt_sta_min_pulses: 20
   bgr_sta_min_pulses: 12
   sil_sta_min_pulses: 12

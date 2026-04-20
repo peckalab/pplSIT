@@ -1,6 +1,9 @@
 # run snakemake from ../workflow folder:
 # snakemake -n --configfile=../config/andrey/016700.yaml --use-conda --cores=20
 #
+# to clean a certain rule and all downstream rules:
+# snakemake --configfile=../config/andrey/016700.yaml --use-conda --cores=20 --touch --forcerun do_kilosort_stream
+#
 # mount nevermind via SSHFS
 # sshfs sobolev@10.153.172.1:/nevermind.neuro/share/ag-grothe nevermind
 # sshfs andrey@10.153.170.1:/storage2 storage2
@@ -12,7 +15,7 @@ blocks:  # blocks of pipeline to run
   performance: True   # performance metrics
   DLC: True        # Deep lab cut
   MoSeq: True        # MoSeq
-  descendants: True   # speed, HD etc. from MoSeq and others
+  descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
   LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
@@ -21,7 +24,7 @@ blocks:  # blocks of pipeline to run
   AEPs: True         # extract Auditory Evoked Responses
   PSTH_bar: True
   PSTH_bootstrap: True
-  PSTH_shuffle: False
+  PSTH_shuffle: True
   PSTH_bnMAPs: False
   spatial: False
   population: True
@@ -31,12 +34,12 @@ blocks:  # blocks of pipeline to run
   video: False
   sound_phase_lock: True
   segments: True
-  activity_matrices: False
+  activity_matrices: True
   ensembles: False
-  covariance: False
+  covariance: True
   vectors: False
   CCR: True
-  state_decoder_ev_su: True
+  state_decoder_ev_su: False
 
 session_IDs:  
   # - "016700_ppcSIT_2025-11-03_12-12-04"
@@ -61,7 +64,9 @@ session_IDs:
   - "016700_ppcSIT_2025-11-18_13-18-07"  # 3-4
   - "016700_ppcSIT_2025-11-19_13-11-14"  # 3-4
 
-
+copy_kilosort_legacy: True  # whether to copy kilosort results from legacy layout (if True, will look for them in dst_path/kilosort and copy to dst_path/kilosort/<stream>)
+migration:
+  dry_run: true
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"

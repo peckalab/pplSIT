@@ -1,5 +1,8 @@
 # run snakemake from ../workflow folder:
 # snakemake -n --configfile=../config/andrey/016672.yaml --use-conda --cores=20
+#
+# to clean a certain rule and all downstream rules:
+# snakemake --configfile=../config/andrey/016672.yaml --use-conda --cores=20 --touch --forcerun do_kilosort_stream
 # 
 # find files / modified date
 # find . -name phy.log -printf "%p %TY-%Tm-%Td %TH:%TM:%TS %Tz\n"
@@ -23,8 +26,8 @@ blocks:  # blocks of pipeline to run
   units: True      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
   PSTH_bar: True
-  PSTH_bootstrap: False
-  PSTH_shuffle: False
+  PSTH_bootstrap: True
+  PSTH_shuffle: True
   PSTH_bnMAPs: False
   spatial: False
   population: False
@@ -71,30 +74,32 @@ session_IDs:
   # - "016672_devSITpassive_2025-11-05_11-35-46"
 
   # active sessions
-  # - "016672_devSITactive_2025-10-20_15-13-28"  # naive
-  # - "016672_devSITactive_2025-10-21_21-25-15"  # learning
-  # - "016672_devSITactive_2025-10-23_15-05-37"  # learning
-  - "016672_devSITactive_2025-10-24_17-18-47"
-  - "016672_devSITactive_2025-10-27_12-36-37"
-  # - "016672_devSITactive_2025-10-28_21-02-10"
-  # - "016672_devSITactive_2025-10-29_13-36-00"
-  # - "016672_devSITactive_2025-10-30_11-23-50"
+  - "016672_devSITactive_2025-10-20_15-13-28"  # naive
+  - "016672_devSITactive_2025-10-21_21-25-15"  # learning
+  - "016672_devSITactive_2025-10-23_15-05-37"  # learning
+  # - "016672_devSITactive_2025-10-24_17-18-47"
+  # - "016672_devSITactive_2025-10-27_12-36-37"  # fucked up
+  - "016672_devSITactive_2025-10-28_21-02-10"
+  - "016672_devSITactive_2025-10-29_13-36-00"
+  - "016672_devSITactive_2025-10-30_11-23-50"
   # - "016672_devSITactive_2025-10-31_14-50-34"  # good restored session (26 mins)
-  # - "016672_devSITactive_2025-10-31_15-23-44"
-  # - "016672_devSITactive_2025-11-03_10-39-56"
-  # - "016672_devSITactive_2025-11-04_10-11-10"
-  # - "016672_devSITactive_2025-11-05_10-45-16"  # last session with box controls
-  # - "016672_devSITactive_2025-11-06_21-16-33"
-  # - "016672_devSITactive_2025-11-07_13-18-09"
-  # - "016672_devSITactive_2025-11-10_16-03-29"
-  # - "016672_devSITactive_2025-11-11_17-41-18"  # R - channels flipped, but should be still fine
-  # - "016672_devSITactive_2025-11-12_14-58-44"  # R
-  # - "016672_devSITactive_2025-11-13_20-25-42"  # R - BGR 1195
-  # - "016672_devSITactive_2025-11-14_13-57-22"  # R - BGR 660
-  # - "016672_devSITactive_2025-11-17_13-56-04"  # L - distractors
-  # - "016672_devSITactive_2025-11-18_14-22-05"  # R - distractors
-  # - "016672_devSITactive_2025-11-19_14-42-36"  # L - distractors (so much noise..)
+  - "016672_devSITactive_2025-10-31_15-23-44"
+  - "016672_devSITactive_2025-11-03_10-39-56"
+  - "016672_devSITactive_2025-11-04_10-11-10"
+  - "016672_devSITactive_2025-11-05_10-45-16"  # last session with box controls
+  - "016672_devSITactive_2025-11-06_21-16-33"
+  - "016672_devSITactive_2025-11-07_13-18-09"
+  - "016672_devSITactive_2025-11-10_16-03-29"
+  - "016672_devSITactive_2025-11-11_17-41-18"  # R - channels flipped, but should be still fine
+  - "016672_devSITactive_2025-11-12_14-58-44"  # R
+  - "016672_devSITactive_2025-11-13_20-25-42"  # R - BGR 1195
+  - "016672_devSITactive_2025-11-14_13-57-22"  # R - BGR 660
+  - "016672_devSITactive_2025-11-17_13-56-04"  # L - distractors
+  - "016672_devSITactive_2025-11-18_14-22-05"  # R - distractors
+  - "016672_devSITactive_2025-11-19_14-42-36"  # L - distractors (so much noise..)
   
+
+copy_kilosort_legacy: True  # whether to copy kilosort results from legacy layout (if True, will look for them in dst_path/kilosort and copy to dst_path/kilosort/<stream>)
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"

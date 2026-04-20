@@ -28,7 +28,7 @@ with h5py.File(snakemake.input[0], 'r') as f:
 
 # compute speed from MoSeq centroid, smooth with 1 sec gaussian
 width = 75  # 100 points ~= 1 sec with at 100Hz
-kernel = signal.gaussian(width, std=(width) / 7.2)
+kernel = signal.windows.gaussian(width, std=(width) / 7.2)
 dx = np.sqrt(np.square(np.diff(moseq[:, 3])) + np.square(np.diff(moseq[:, 4])))
 dt = np.diff(moseq[:, 0])
 speed = np.concatenate([dx/dt, [dx[-1]/dt[-1]]])

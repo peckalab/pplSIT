@@ -116,21 +116,26 @@ def staple_pulsetrain(pulses, periods):
 def staple_spike_times(s_times, periods, mode='sequence'):
     # 'sequence' - periods follow each other in a sequence
     # 'overlay'  - all periods aligned to time zero
-    # returns list of lists for each given period!
-    all_spikes  = []  # collect as groups
+    # returns list of arrays for each given period
+    all_spikes = []
     sil_dur = 0
+
     for period in periods:
-        idxs_tl_l, idxs_tl_r = period[0], period[1]
         t_start, t_end = period[0], period[1]
 
-        spikes = s_times[(s_times > t_start) & (s_times < t_end)]
-        spikes -= t_start  # align to time 0
-        if mode == 'sequence':
-            spikes += sil_dur  # adjust to already processed silence periods
-        all_spikes.append(spikes)
+        spikes = np.array(
+            s_times[(s_times > t_start) & (s_times < t_end)],
+            copy=True
+        )
 
+        spikes -= t_start
+        if mode == 'sequence':
+            spikes += sil_dur
+
+        all_spikes.append(spikes)
         sil_dur += t_end - t_start
-    return all_spikes  #np.array([item for sublist in all_spikes for item in sublist])
+
+    return all_spikes
 
 
 def get_psth_matrix(psth_file, electrodes):

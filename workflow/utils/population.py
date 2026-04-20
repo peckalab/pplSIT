@@ -6,6 +6,7 @@ from scipy import signal
 from scipy import stats
 from sklearn import decomposition
 from utils.spiketrain import get_shuffled
+from utils.maths import gaussian_kernel
 
 
 def unit_activity_matrix(meta_file, units_file, electrodes, bin_size=0.01, shuffle=False):
@@ -122,7 +123,7 @@ def activity_at_phase(s_path, phase=4, electrodes=[1, 2], do_pca=False, k_width=
 
     # smooth
     if k_width is not None:
-        kernel  = signal.gaussian(k_width, std=(k_width) / 7.2)
+        kernel  = gaussian_kernel(k_width, std=k_width / 7.2)
         pop_act = np.convolve(pop_act, kernel, 'same') / kernel.sum()
 
     # filter slow oscillations
@@ -185,7 +186,7 @@ def pop_activity_phase_shifted(s_path, bins_bgr, bins_tgt, electrodes=[1, 2], do
 
         # smooth
         if k_width is not None:
-            kernel  = signal.gaussian(k_width, std=(k_width) / 7.2)
+            kernel  = gaussian_kernel(k_width, std=k_width / 7.2)
             pop_act = np.convolve(pop_act, kernel, 'same') / kernel.sum()
 
         # filter slow oscillations

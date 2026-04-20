@@ -4,8 +4,7 @@ import numpy as np
 
 rule extract_lfp_raw_stream:
     input:
-        staged=ephys_staged_marker,
-        dat=ephys_stream_dat
+        staged=ephys_staged_marker
     output:
         os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5")
     script:
@@ -14,7 +13,7 @@ rule extract_lfp_raw_stream:
 
 rule extract_lfp_artifacts_stream:
     input:
-        os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5")
+        ancient(os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5"))
     output:
         artifacts=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "artifacts.h5"),
         artifacts_pdf=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "artifacts.pdf")
@@ -25,7 +24,7 @@ rule extract_lfp_artifacts_stream:
 rule extract_lfp_baseline_stream:
     input:
         meta=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.h5"),
-        lfp_h5=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5"),
+        lfp_h5=ancient(os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5")),
         artifacts=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "artifacts.h5")
     output:
         lfp_base=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "baseline.h5"),
@@ -39,7 +38,7 @@ rule lfp_ready_session:
         staged=ephys_staged_marker,
         baselines=lambda wc: expand(
             os.path.join(config["dst_path"], wc.animal, wc.session, "LFP", "{stream}", "baseline.h5"),
-            stream=streams_for_session_from_ephys(wc)
+            stream=streams_for_session_wc(wc)
         )
     output:
         os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "lfp.ready")

@@ -1,4 +1,7 @@
-import os, sys, json
+import os
+import sys
+import json
+import glob
 import torch
 import numpy as np
 
@@ -13,12 +16,52 @@ sys.path.append(parent_dir)
 from utils.kilosort import infer_n_chan_bin
 
 
+def get_stream_kilosort_dir(snakemake):
+    """
+    Return processed/<animal>/<session>/kilosort/<stream>
+    """
+    return os.path.join(
+        snakemake.config["dst_path"],
+        snakemake.wildcards.animal,
+        snakemake.wildcards.session,
+        "kilosort",
+        snakemake.wildcards.stream,
+    )
+
+
+def resolve_stream_inputs(snakemake):
+    """
+    Resolve settings.json, probe.json, and the single .dat file
+    from the current stream folder.
+    """
+    stream_dir = get_stream_kilosort_dir(snakemake)
+
+    if not os.path.isdir(stream_dir):
+        raise FileNotFoundError(f"Kilosort stream directory not found: {stream_dir}")
+
+    settings_path = os.path.join(stream_dir, "settings.json")
+    probe_path = os.path.join(stream_dir, "probe.json")
+
+    if not os.path.exists(settings_path):
+        raise FileNotFoundError(f"settings.json not found: {settings_path}")
+
+    if not os.path.exists(probe_path):
+        raise FileNotFoundError(f"probe.json not found: {probe_path}")
+
+    dat_files = sorted(glob.glob(os.path.join(stream_dir, "*.dat")))
+    if len(dat_files) == 0:
+        raise FileNotFoundError(f"No .dat found in {stream_dir}")
+    if len(dat_files) > 1:
+        raise ValueError(f"Expected exactly one .dat in {stream_dir}, found: {dat_files}")
+
+    dat_path = dat_files[0]
+    return settings_path, probe_path, dat_path, stream_dir
+
+
 settings = DEFAULT_SETTINGS.copy()
 
-# --- inputs (named) ---
-settings_path = snakemake.input["settings"]
-probe_path    = snakemake.input["probe"]
-dat_path      = snakemake.input["dat"]
+# --- resolve paths from stream folder ---
+settings_path, probe_path, dat_path, stream_dir = resolve_stream_inputs(snakemake)
 
 # --- outputs ---
 # Put results next to spike_times.npy (stream folder)
@@ -35,10 +78,6 @@ settings["data_dir"] = os.path.dirname(dat_path)
 
 n_chan_bin = infer_n_chan_bin(dat_path, base_n_chan=384, dtype_bytes=2)
 settings["n_chan_bin"] = n_chan_bin
-
-# Optional: if your config has n_chan or similar, keep it consistent with the probe
-# (probe.json already implies 384 geometry channels)
-#settings["n_chan"] = 384  # only if your Kilosort version expects this
 
 # load probe configuration
 probe = load_probe(probe_path)
@@ -118,6 +157,10 @@ best_dev_id = pick_best_cuda_device(
 )
 
 print(f"USING CUDA DEVICE: {best_dev_id}")
+print(f"KILOSORT STREAM DIR: {stream_dir}")
+print(f"KILOSORT DAT: {dat_path}")
+print(f"KILOSORT SETTINGS: {settings_path}")
+print(f"KILOSORT PROBE: {probe_path}")
 
 assert probe["n_chan"] == 384 or getattr(probe, "n_chan", None) == 384
 if n_chan_bin == 385:
@@ -135,47 +178,6 @@ ops, st, clu, tF, Wall, similar_templates, is_ref, est_contam_rate, kept_spikes 
 # save configuration actually used
 with open(os.path.join(results_dir, "settings_used.json"), "w") as f:
     json.dump(settings, f, indent=2)
-
-
-# settings = DEFAULT_SETTINGS
-
-# # load settings
-# with open(snakemake.input[0]) as json_file:  
-#     settings_local = json.load(json_file)
-
-# settings.update(settings_local)
-# settings['data_dir'] = os.path.dirname(snakemake.input[2])
-
-# results_dir = os.path.dirname(snakemake.input[2])
-
-# # load probe configuration
-# probe = load_probe(snakemake.input[1])
-
-# save_p = snakemake.config['kilosort']['save_preprocessed']
-
-
-# # select CUDA device with most of free memory
-# try:
-#     dev_count = torch.cuda.device_count()
-#     dev_mem_stats = np.zeros([dev_count, 2])
-#     for dev_id in range(dev_count):
-#         m_free, m_total = torch.cuda.mem_get_info(dev_id)  # FIXME this fails with CUDA error: out of memory. 
-#         dev_mem_stats[dev_id] = np.array([m_free, m_total])
-
-#     best_dev_id = (dev_mem_stats[:, 0]/dev_mem_stats[:, 1]).argmax()
-    
-# except RuntimeError:
-#     best_dev_id = snakemake.config['kilosort']['cuda_device']
-
-# print('USING CUDA DEVICE: %s' % str(best_dev_id))
-
-# # run kilosort
-# ops, st, clu, tF, Wall, similar_templates, is_ref, est_contam_rate, kept_spikes = \
-#     run_kilosort(settings=settings, probe=probe, results_dir=results_dir, save_preprocessed_copy=save_p, device=torch.device(best_dev_id))
-
-# # save configuration
-# with open(os.path.join(results_dir, 'settings.json'), 'w') as f:
-#     f.write(json.dumps(settings, indent=2))
 
 
 """
