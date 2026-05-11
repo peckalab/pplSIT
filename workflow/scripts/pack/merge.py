@@ -119,7 +119,7 @@ base_path = snakemake.input["base"]
 sync_none_path = snakemake.input["sync_none"]
 # sync_ephys may be absent, [] (Snakemake optional), or a string
 sync_ephys_in = snakemake.input.get("sync_ephys", [])
-manual_path = snakemake.input.get("manual", None)
+manual_path = snakemake.params.get("manual", None)
 out_path  = snakemake.output["meta"]
 
 def _as_one_path(x):

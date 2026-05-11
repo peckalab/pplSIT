@@ -73,11 +73,13 @@ rule pack_base:
         events=os.path.join(config["src_path"], "{animal}", "{session}", "events.csv"),
         sounds=os.path.join(config["src_path"], "{animal}", "{session}", "sounds.csv"),
         cfg=os.path.join(config["src_path"], "{animal}", "{session}", "{session}.json"),
-        manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
+        # manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
         init=os.path.join(config["src_path"], "{animal}", "{session}", ".templates_initialized"),
         islands=lambda wc: optional_file(
             os.path.join(config["src_path"], wc.animal, wc.session, "islands.csv")
         ),
+    params:
+        manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json")
     output:
         base=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.base.h5")
     script:
@@ -111,7 +113,6 @@ rule sounds_sync_ephys:
 rule pack_merge:
     input:
         base=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.base.h5"),
-        manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
         sync_none=os.path.join(config["dst_path"], "{animal}", "{session}", "sync", "sounds_sync.none.h5"),
         init=os.path.join(config["src_path"], "{animal}", "{session}", ".templates_initialized"),
         
@@ -120,6 +121,8 @@ rule pack_merge:
             [os.path.join(config["dst_path"], wc.animal, wc.session, "sync", "sounds_sync.ephys.h5")]
             if (has_raw_ephys_session(wc) and has_ephys_config_set(wc)) else []
         ),
+    params:
+        manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json")
     output:
         meta=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.h5")
     script:

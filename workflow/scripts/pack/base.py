@@ -19,7 +19,7 @@ pack_base(
     snakemake.input.sounds,
     snakemake.input.islands,
     snakemake.input.cfg,
-    snakemake.input.manual,
+    snakemake.params.manual,
     snakemake.output.base,
     drift_coeff=snakemake.config["pack"]["drift_coeff"],
 )
