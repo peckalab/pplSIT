@@ -8,7 +8,7 @@ parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
-from utils.sync import get_sound_events_from_ADC, get_sound_events_from_openephys
+from utils.sync import get_sound_events_from_ADC, get_sound_events_from_openephys, refine_sound_events_from_ADC
 
 
 def _find_onebox(root: ET.Element) -> ET.Element:
@@ -143,6 +143,22 @@ if sync_type == "OneBox_ADC":
         s_rate=adc_sr,
         ch_no=adc_cc,
     )
+
+    adc_cfg = snakemake.config.get('pack', {}).get('adc_sync', {})
+    if adc_cfg.get('enabled', False):
+        f_lo = float(adc_cfg.get('f_lo', 600.0))
+        f_hi = float(adc_cfg.get('f_hi', 1400.0))
+        ev_detected, ev_synced = refine_sound_events_from_ADC(
+            ev_detected,
+            ev_synced,
+            adc_file=adc_dat,
+            adc_ts_file=adc_ts,
+            ephys_ts_file=ephys_ts,
+            channel=adc_channel,
+            f_lo=f_lo,
+            f_hi=f_hi,
+        )
+
     write_sync_h5(
         out_path=out_sync_h5,
         mode="OneBox_ADC",
