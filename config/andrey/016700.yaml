@@ -64,9 +64,7 @@ session_IDs:
   - "016700_ppcSIT_2025-11-18_13-18-07"  # 3-4
   - "016700_ppcSIT_2025-11-19_13-11-14"  # 3-4
 
-copy_kilosort_legacy: True  # whether to copy kilosort results from legacy layout (if True, will look for them in dst_path/kilosort and copy to dst_path/kilosort/<stream>)
-migration:
-  dry_run: true
+copy_kilosort_legacy: False  # whether to copy kilosort results from legacy layout (if True, will look for them in dst_path/kilosort and copy to dst_path/kilosort/<stream>)
 
 # source of raw data
 #src_path: "/home/sobolev/nevermind_ag-grothe/Andrey/data/"

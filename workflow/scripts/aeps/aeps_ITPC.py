@@ -12,6 +12,25 @@ fs = snakemake.config['lfp']['target_rate']
 
 # AEPs
 with h5py.File(snakemake.input[0], 'r') as f:
+    if area == 'any':
+        available_areas = list(f.keys())
+        if len(available_areas) == 0:
+            raise ValueError(f"No area groups found in AEP file: {snakemake.input[0]}")
+        area = available_areas[0]
+    else:
+        if area not in f:
+            raise KeyError(
+                f"Requested area '{area}' not found in AEP file: {snakemake.input[0]}. "
+                f"Available areas: {list(f.keys())}"
+            )
+
+    if metric not in f[area]:
+        raise KeyError(
+            f"Requested metric '{metric}' not found in area '{area}' "
+            f"of AEP file: {snakemake.input[0]}. "
+            f"Available metrics: {list(f[area].keys())}"
+        )
+
     lfp_trials = np.array(f[area][metric])  # (n_trials, n_samples)
 
 # reading state indices

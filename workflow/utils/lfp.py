@@ -204,3 +204,160 @@ def highpass_lfp(lfp, fs, cutoff=40.0, order=4):
     nyq = fs / 2.0
     b, a = butter(order, cutoff/nyq, btype='high')
     return filtfilt(b, a, lfp, axis=0)
+
+
+def compute_aep_snr(
+    signal_1d: np.ndarray,
+    stim_times: np.ndarray,
+    fs: float,
+    evoked_window_ms: tuple[float, float] = (0.0, 125.0),
+    sustained_window_ms: tuple[float, float] = (125.0, 250.0),
+    min_valid_trials: int = 10,
+    eps: float = 1e-12,
+) -> dict:
+    """
+    Compute an AEP channel-quality score for one LFP channel.
+
+    Score definition
+    ----------------
+    score = evoked_ptp / sustained_std
+
+    where:
+      - evoked_ptp: peak-to-peak amplitude of the TRIAL-AVERAGED response
+        in the evoked window
+      - sustained_std: standard deviation of sustained-window samples pooled
+        across valid trials
+
+    Parameters
+    ----------
+    signal_1d : np.ndarray
+        1D LFP signal for a single channel, shape (time,).
+    stim_times : np.ndarray
+        Stimulus onset times in samples (same sampling rate as signal_1d).
+        Can be integer or float; values will be rounded to nearest sample.
+    fs : float
+        Sampling rate in Hz.
+    evoked_window_ms : tuple[float, float], default (0.0, 125.0)
+        Evoked window relative to stimulus onset, in ms.
+    sustained_window_ms : tuple[float, float], default (125.0, 250.0)
+        Sustained/noise window relative to stimulus onset, in ms.
+    min_valid_trials : int, default 10
+        Minimum number of complete, finite trials required to compute
+        a reliable score.
+    eps : float, default 1e-12
+        Small value to avoid division by zero.
+
+    Returns
+    -------
+    dict
+        Dictionary with:
+          - score : float
+          - evoked_ptp : float
+          - sustained_std : float
+          - n_valid_trials : int
+          - avg_aep : np.ndarray
+                Trial-averaged segment from 0 to sustained_window_ms[1]
+          - time_ms : np.ndarray
+                Time axis for avg_aep in ms
+          - valid_trial_mask : np.ndarray
+                Boolean mask over input stim_times for valid extracted trials
+
+    Notes
+    -----
+    - This function assumes post-stimulus extraction only (0 to max window end).
+    - Trials that would exceed signal bounds are discarded.
+    - Trials containing NaN/Inf are discarded.
+    """
+
+    signal_1d = np.asarray(signal_1d, dtype=float).squeeze()
+    stim_times = np.asarray(stim_times)
+
+    if signal_1d.ndim != 1:
+        raise ValueError("signal_1d must be a 1D array.")
+    if stim_times.ndim != 1:
+        raise ValueError("stim_times must be a 1D array.")
+    if fs <= 0:
+        raise ValueError("fs must be positive.")
+
+    # Convert windows to sample indices
+    evoked_start = int(round(evoked_window_ms[0] * fs / 1000.0))
+    evoked_end = int(round(evoked_window_ms[1] * fs / 1000.0))
+    sustained_start = int(round(sustained_window_ms[0] * fs / 1000.0))
+    sustained_end = int(round(sustained_window_ms[1] * fs / 1000.0))
+
+    if evoked_start < 0 or sustained_start < 0:
+        raise ValueError("Window starts must be >= 0 ms.")
+    if not (0 <= evoked_start < evoked_end <= sustained_start < sustained_end):
+        raise ValueError(
+            "Windows must satisfy: 0 <= evoked_start < evoked_end <= "
+            "sustained_start < sustained_end."
+        )
+
+    seg_len = sustained_end
+    if seg_len <= 0:
+        raise ValueError("Segment length must be positive.")
+
+    # Round stim times to nearest sample
+    stim_idx = np.round(stim_times).astype(int)
+
+    segments = []
+    valid_trial_mask = np.zeros(len(stim_idx), dtype=bool)
+
+    n_samples = signal_1d.shape[0]
+
+    for i, t in enumerate(stim_idx):
+        start = t
+        end = t + seg_len
+
+        if start < 0 or end > n_samples:
+            continue
+
+        seg = signal_1d[start:end]
+
+        if seg.shape[0] != seg_len:
+            continue
+        if not np.all(np.isfinite(seg)):
+            continue
+
+        segments.append(seg)
+        valid_trial_mask[i] = True
+
+    n_valid_trials = len(segments)
+
+    time_ms = np.arange(seg_len) * 1000.0 / fs
+
+    if n_valid_trials < min_valid_trials:
+        return {
+            "score": 0.0,
+            "evoked_ptp": 0.0,
+            "sustained_std": np.nan,
+            "n_valid_trials": n_valid_trials,
+            "avg_aep": np.full(seg_len, np.nan),
+            "time_ms": time_ms,
+            "valid_trial_mask": valid_trial_mask,
+        }
+
+    segments = np.stack(segments, axis=0)  # trials x time
+
+    # Trial-averaged AEP
+    avg_aep = np.mean(segments, axis=0)
+
+    # Evoked amplitude from averaged AEP
+    evoked_trace = avg_aep[evoked_start:evoked_end]
+    evoked_ptp = float(np.ptp(evoked_trace))
+
+    # Noise from sustained samples pooled across valid trials
+    sustained_samples = segments[:, sustained_start:sustained_end].reshape(-1)
+    sustained_std = float(np.std(sustained_samples, ddof=0))
+
+    score = float(evoked_ptp / max(sustained_std, eps))
+
+    return {
+        "score": score,
+        "evoked_ptp": evoked_ptp,
+        "sustained_std": sustained_std,
+        "n_valid_trials": n_valid_trials,
+        "avg_aep": avg_aep,
+        "time_ms": time_ms,
+        "valid_trial_mask": valid_trial_mask,
+    }

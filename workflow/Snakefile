@@ -93,14 +93,7 @@ target_names_dict = {
         'LFP/lfp.ready',
     ],
     'AEPs':    [
-        'AEP/AEPs.h5', 
-        'AEP/aeps_lfp_metrics.h5',
-        #'analysis/AEP_components.h5', 
-        #'analysis/aeps_maps.pdf', 
-        'AEP/aeps_profiles.pdf',
-        'AEP/aeps_ITPC.h5',
-        'AEP/aeps_ITPC.pdf',
-        'AEP/aeps_EV_SU_metrics.h5'
+        'AEP/aep.ready', 
     ],
     'neurosuite': ['neurosuite/neurosuite.ready'],
     'kilosort':   ['kilosort/kilosort.ready'],

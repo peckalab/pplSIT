@@ -17,11 +17,11 @@ blocks:  # blocks of pipeline to run
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
+  LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: True      # extract spike trains from sorted data
-  AEPs: False         # extract Auditory Evoked Responses
+  AEPs: True         # extract Auditory Evoked Responses
   PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
@@ -33,7 +33,7 @@ blocks:  # blocks of pipeline to run
   metronome: False
   video: False
   sound_phase_lock: False
-  segments: False
+  segments: True
   activity_matrices: True
   ensembles: False
   covariance: True
@@ -46,6 +46,8 @@ session_IDs:
   # - "017276_ppcSIT_2026-02-19_09-44-31"
   # - "017276_ppcSIT_2026-02-19_21-34-16"
   - "017276_ppcSIT_2026-02-20_15-22-50"
+
+copy_kilosort_legacy: False  # whether to copy kilosort results from legacy layout (if True, will look for them in dst_path/kilosort and copy to dst_path/kilosort/<stream>)
 
   
 
@@ -89,6 +91,22 @@ lfp:
   target_rate: 1000  # target LFP sampling rate in Hz
   chunk_size_sec: 10  # chunk size for conversion in seconds
   aep_dur: 0.25  # Auditory evoked response duration in sec
+  aep_pre: 0.12
+  aep_sig: 0.125
+  artifacts:
+    z_thresh: 8.0
+    win_ms: 200
+    step_ms: 100
+    min_dur_ms: 500
+    merge_gap_ms: 2000
+  aep_ITPC:
+    area: 'any'
+    metric: 'avg_across_channels'  # weighted_avg, zscored_avg, raw_AEPs (last is 2D)
+  baseline:
+    min_duration_ms: 500
+    stationary_thresh: 0.04  # m/s
+  EV_SU:
+    kernel_sizes: [0, 4, 8, 12, 16]
 
 # analysis configurations
 psth:

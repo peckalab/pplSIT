@@ -21,6 +21,18 @@ kernel_sizes = snakemake.config['lfp']['EV_SU']['kernel_sizes']
 
 # AEPs
 with h5py.File(snakemake.input[0], 'r') as f:
+    if area == 'any':
+        available_areas = list(f.keys())
+        if len(available_areas) == 0:
+            raise ValueError(f"No area groups found in AEP file: {snakemake.input[0]}")
+        area = available_areas[0]
+    else:
+        if area not in f:
+            raise KeyError(
+                f"Requested area '{area}' not found in AEP file: {snakemake.input[0]}. "
+                f"Available areas: {list(f.keys())}"
+            )
+
     cc_originals = {
         'avg_across_channels': np.array(f[area]['avg_across_channels']),
         'weighted_avg': np.array(f[area]['weighted_avg']),
