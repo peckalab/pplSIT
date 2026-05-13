@@ -4,6 +4,8 @@ import numpy as np
 from scipy import signal
 from scipy.ndimage import median_filter
 
+from utils.session import build_stimulus_catalog, detect_session_paradigm
+
 
 def head_direction(tl, hd_update_speed=0.04):
     width = 200  # 100 points ~= 1 sec at 100Hz
@@ -134,6 +136,21 @@ def build_dis_matrix(sound_events, trials, cfg):
     ).astype(np.int32)
 
 
+def read_csv_matrix(f_path):
+    with open(f_path) as ff:
+        header = ff.readline().strip()
+        body = ff.read().strip()
+
+    if not body:
+        col_count = len([col for col in header.split(",") if col.strip()])
+        return header, np.empty((0, col_count), dtype=float)
+
+    data = np.loadtxt(f_path, delimiter=",", skiprows=1)
+    if data.ndim == 1:
+        data = data[np.newaxis, :]
+    return header, data
+
+
 def pack_base(
     pos_file,
     ev_file,
@@ -158,23 +175,28 @@ def pack_base(
     with open(man_file) as jf:
         manual = json.load(jf)
 
+    paradigm = detect_session_paradigm(parameters)
+    stimulus_catalog = build_stimulus_catalog(parameters)
     offset = manual.get("ephys", {}).get("offset", 0)
 
     # ---------- write HDF5 ----------
     os.makedirs(os.path.dirname(dst_file), exist_ok=True)
     with h5py.File(dst_file, "w") as f:
+        f.attrs["session_paradigm"] = paradigm
+        f.attrs["experiment_type"] = str(parameters.get("experiment", {}).get("experiment_type", ""))
+        f.attrs["stimulus_catalog"] = json.dumps(stimulus_catalog)
+
         raw = f.create_group("raw")
         raw.attrs["parameters"] = json.dumps(parameters)
         raw.attrs["manual"] = json.dumps(manual)
+        raw.attrs["session_paradigm"] = paradigm
 
         # -------- save raw CSVs ------------
         ds_names = ["positions", "events", "sounds", "islands"]
         for ds_name, f_path in zip(ds_names, [pos_file, ev_file, snd_file, isl_file]):
             if (not f_path) or (not os.path.exists(f_path)):
                 continue
-            with open(f_path) as ff:
-                headers = ff.readline()
-            data = np.loadtxt(f_path, delimiter=",", skiprows=1)
+            headers, data = read_csv_matrix(f_path)
             ds = raw.create_dataset(ds_name, data=data)
             ds.attrs["headers"] = headers
 
@@ -211,6 +233,8 @@ def pack_base(
         # -------- processed ------------
         proc = f.create_group("processed")
         proc.attrs["parameters"] = json.dumps(parameters)
+        proc.attrs["session_paradigm"] = paradigm
+        proc.attrs["stimulus_catalog"] = json.dumps(stimulus_catalog)
 
         # convert timeline to 100 Hz
         time_freq = 100
@@ -245,6 +269,9 @@ def pack_base(
 
         ds = proc.create_dataset("trial_idxs", data=trials)
         ds.attrs["headers"] = "t_start_idx, t_end_idx, target_x, target_y, target_r, fail_or_success"
+        if paradigm == "passive":
+            ds = proc.create_dataset("epoch_idxs", data=trials)
+            ds.attrs["headers"] = "epoch_start_idx, epoch_end_idx, epoch_x, epoch_y, epoch_r, epoch_state"
 
         # ---- drift/offset handling (base only) ----
         if isinstance(offset, int):
@@ -322,12 +349,15 @@ def pack_base(
         timeline.attrs["headers"] = "time, x, y, speed, hd, trial_no, sound_ids, x_raw, y_raw"
 
         # target matrix
-        tgt_matrix = build_tgt_matrix(sound_events, trials)
+        if paradigm == "active":
+            tgt_matrix = build_tgt_matrix(sound_events, trials)
+        else:
+            tgt_matrix = np.zeros((0, 5), dtype=np.int32)
         ds = proc.create_dataset("target_matrix", data=tgt_matrix)
         ds.attrs["headers"] = "sound_idx_start, sound_idx_end, tl_idx_start, tl_idx_end, result"
 
         # distractor matrix
-        if parameters["experiment"].get("distractor_fail", False):
+        if paradigm == "active" and parameters["experiment"].get("distractor_fail", False):
             dis_matrix = build_dis_matrix(sound_events, trials, parameters)
             ds = proc.create_dataset("distractor_matrix", data=dis_matrix)
             ds.attrs["headers"] = "sound_idx_start, sound_idx_end, tl_idx_start, tl_idx_end, result"

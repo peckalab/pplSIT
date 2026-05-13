@@ -1,6 +1,7 @@
 import os
 import yaml
 from  utils.snakefile import *
+from utils.session import get_session_paradigm
 
 # examples of Snakemake workflows:
 # https://snakemake.github.io/snakemake-workflow-catalog/
@@ -206,6 +207,38 @@ target_names_dict = {
     ]
 }
 
+passive_target_names_dict = {
+    'PSTH_bar': [
+        'analysis/psth_passive_all_sounds.pdf',
+        'analysis/psth_passive_all_sounds_stationary.pdf',
+        'analysis/psth_passive_all_sounds_running.pdf',
+    ],
+}
+
+active_only_blocks = {
+    'performance',
+    'AEPs',
+    'PSTH_bootstrap',
+    'PSTH_shuffle',
+    'PSTH_bnMAPs',
+    'population',
+    'CCR',
+    'coherence',
+    'manifold_states',
+    'metronome',
+    'video',
+    'sound_phase_lock',
+    'activity_matrices',
+    'covariance',
+    'ensembles',
+    'segments',
+    'vectors',
+    'state_decoder_ev_su',
+    'state_decoder_unit_mx',
+    'episodic_map',
+    'cognitiveS',
+}
+
 animal_targets_dict = {
     'unit_match': [
         ('unit_match', 'MatchTable.csv')
@@ -218,12 +251,21 @@ cross_animal_targets_dict = {
     # ]
 }
 
-def collect_target_names():
+def collect_target_names_for_session(animal, session):
     target_names = []
+    paradigm = get_session_paradigm(config['src_path'], animal, session)
 
     for block_name, enabled in config['blocks'].items():
         if not enabled:
             continue
+
+        if paradigm == 'passive':
+            if block_name in passive_target_names_dict:
+                target_names += passive_target_names_dict[block_name]
+                continue
+            if block_name in active_only_blocks:
+                continue
+
         if not block_name in target_names_dict:
             continue
         
@@ -257,7 +299,6 @@ def collect_cross_animal_target_names():
     
     return cross_animal_target_names
 
-target_names = collect_target_names()
 animal_target_names = collect_animal_target_names()
 cross_animal_target_names = collect_cross_animal_target_names()
 
@@ -270,7 +311,7 @@ def get_targets(wildcards):
     targets = []
     build_target = lambda animal, session, name: os.path.join(config['dst_path'], animal, session, name)
     for animal, session in zip(animals, sessions):
-        for name in target_names:
+        for name in collect_target_names_for_session(animal, session):
             targets.append(build_target(animal, session, name))
 
     # add animal-level targets

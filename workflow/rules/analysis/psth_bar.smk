@@ -21,6 +21,18 @@ rule psth_micro:
         "../../scripts/analysis/psth_micro.py"
 
 
+rule psth_micro_passive:
+    input:
+        meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
+        units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
+    output:
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_passive_all_sounds.pdf'),
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_passive_all_sounds_stationary.pdf'),
+        os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'psth_passive_all_sounds_running.pdf')
+    script:
+        "../../scripts/analysis/psth_passive.py"
+
+
 rule psth_macro:
     input:
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),

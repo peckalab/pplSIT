@@ -9,6 +9,7 @@ sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
 from utils.performance import calculate_performance, plot_session_metrics, plot_performance
+from utils.session import detect_session_paradigm
 
 
 with h5py.File(snakemake.input[0], 'r') as f:
@@ -18,6 +19,12 @@ with h5py.File(snakemake.input[0], 'r') as f:
     trials = np.array(f['processed']['trial_idxs'])
     cfg = json.loads(f['processed'].attrs['parameters'])
     islands = np.array(f['raw'].get('islands', None))
+    paradigm = f['processed'].attrs.get('session_paradigm', detect_session_paradigm(cfg))
+
+if isinstance(paradigm, bytes):
+    paradigm = paradigm.decode()
+if paradigm != 'active':
+    raise ValueError("performance.py is active-session only and is not meaningful for passive sessions.")
 
 distractor_fail = cfg['experiment'].get('distractor_fail', False)
 
