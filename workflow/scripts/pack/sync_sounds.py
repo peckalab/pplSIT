@@ -93,7 +93,7 @@ def write_sync_h5(out_path: str, mode: str, manual: dict,
 
 # ----------------- main -----------------
 
-manual_path   = snakemake.input["manual"]
+manual_path   = snakemake.params["manual"]
 settings_xml  = snakemake.input["settings"]
 sounds_csv    = snakemake.input["sounds"]
 events_csv    = snakemake.input["events"]

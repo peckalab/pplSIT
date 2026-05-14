@@ -1,3 +1,4 @@
+import json
 import os
 
 
@@ -50,17 +51,33 @@ def has_raw_ephys_session(wc) -> bool:
     return False
 
 
+def _manual_json_requests_ephys_sync(path: str) -> bool:
+    with open(path) as f:
+        m = json.load(f)
+    return "ephys" in m and "offset" in m["ephys"] and isinstance(m["ephys"]["offset"], dict)
+
+
 def has_ephys_config_set(wc) -> bool:
+    """
+    Used at DAG construction for pack_merge's optional sync_ephys input.
+
+    Session manual.json may not exist yet: init_session_templates creates it
+    from config['template_manual_json'] when writing .templates_initialized.
+    If we only looked at the session file, the first DAG would omit
+    sounds_sync_ephys until a second run. Fall back to the template when the
+    session file is still absent.
+    """
     session_path = os.path.join(config["src_path"], wc.animal, wc.session)
     manual_json_path = os.path.join(session_path, "manual.json")
-    
-    if not os.path.exists(manual_json_path):
-        return False
 
-    with open(manual_json_path) as f:
-        m = json.load(f)
+    if os.path.exists(manual_json_path):
+        return _manual_json_requests_ephys_sync(manual_json_path)
 
-    return "ephys" in m and "offset" in m["ephys"] and isinstance(m["ephys"]["offset"], dict)
+    template = config.get("template_manual_json")
+    if template and os.path.exists(template):
+        return _manual_json_requests_ephys_sync(template)
+
+    return False
 
 
 def optional_file(path):
@@ -100,10 +117,13 @@ rule sounds_sync_ephys:
     input:
         staged=os.path.join(config["src_path"], "{animal}", "{session}", "ephys", ".STAGED"),
         settings=os.path.join(config["src_path"], "{animal}", "{session}", "ephys", "settings.xml"),
-        manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
         sounds=os.path.join(config["src_path"], "{animal}", "{session}", "sounds.csv"),
         events=os.path.join(config["src_path"], "{animal}", "{session}", "events.csv"),
+        # manual.json is created by init_session_templates when missing; it is not a declared output
+        # there (see copy.smk) so Snakemake will not delete it before init runs.
         init=os.path.join(config["src_path"], "{animal}", "{session}", ".templates_initialized"),
+    params:
+        manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
     output:
         sync=os.path.join(config["dst_path"], "{animal}", "{session}", "sync", "sounds_sync.ephys.h5")
     script:

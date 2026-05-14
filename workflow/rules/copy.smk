@@ -109,7 +109,10 @@ rule init_session_templates:
         man_t=ancient(config["template_manual_json"]),
         #ks_t=ancient(config["kilosort"]["settings_path"]),
     output:
-        marker=os.path.join(config["src_path"], "{animal}", "{session}", ".templates_initialized")
+        # Only the marker is a declared output so Snakemake does not delete manual.json before this
+        # job runs (default behavior removes outputs first). manual.json is still created in run when
+        # missing; sessions with manual but no marker must not lose manual.
+        marker=os.path.join(config["src_path"], "{animal}", "{session}", ".templates_initialized"),
     run:
         import os
         import shutil
