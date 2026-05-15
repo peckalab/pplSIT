@@ -11,6 +11,7 @@ sys.path.append(parent_dir)
 from utils.neurosuite import get_unit_names_sorted
 from utils.psth import get_spike_counts
 from utils.maths import pval2text
+from utils.session import detect_session_paradigm
 
 
 s_path  = os.path.dirname(snakemake.input[0])
@@ -22,6 +23,12 @@ with h5py.File(snakemake.input[0], 'r') as f:
     cfg = json.loads(f['processed'].attrs['parameters'])
     sound_events = np.array(f['processed']['sound_events'])
     tl = np.array(f['processed']['timeline'])
+    paradigm = f['processed'].attrs.get('session_paradigm', detect_session_paradigm(cfg))
+
+if isinstance(paradigm, bytes):
+    paradigm = paradigm.decode()
+if paradigm != 'active':
+    raise ValueError("psth_micro.py is active-session only. Use the passive PSTH outputs for passive sessions.")
 
 spike_times = {}
 depth = {}

@@ -119,7 +119,7 @@ base_path = snakemake.input["base"]
 sync_none_path = snakemake.input["sync_none"]
 # sync_ephys may be absent, [] (Snakemake optional), or a string
 sync_ephys_in = snakemake.input.get("sync_ephys", [])
-manual_path = snakemake.input.get("manual", None)
+manual_path = snakemake.params.get("manual", None)
 out_path  = snakemake.output["meta"]
 
 def _as_one_path(x):
@@ -164,6 +164,10 @@ with h5py.File(sync_path, "r") as sync:
 
 
 with h5py.File(out_path, "a") as f:
+    session_paradigm = f.attrs.get("session_paradigm", "active")
+    if isinstance(session_paradigm, bytes):
+        session_paradigm = session_paradigm.decode()
+
     # record which sync artifact was used
     f.attrs["sounds_sync_mode"] = mode
 
@@ -235,18 +239,23 @@ with h5py.File(out_path, "a") as f:
         ds.attrs["headers"] = "time, x, y, speed, hd, trial_no, sound_ids, x_raw, y_raw"
 
         # --- rebuild target_matrix / distractor_matrix from updated sound_events ---
-        tgt_matrix = build_tgt_matrix(sound_events, trials)
+        if session_paradigm == "active":
+            tgt_matrix = build_tgt_matrix(sound_events, trials)
+        else:
+            tgt_matrix = np.zeros((0, 5), dtype=np.int32)
         if "target_matrix" in proc:
             del proc["target_matrix"]
         ds = proc.create_dataset("target_matrix", data=tgt_matrix)
         ds.attrs["headers"] = "sound_idx_start, sound_idx_end, tl_idx_start, tl_idx_end, result"
 
-        if parameters.get("experiment", {}).get("distractor_fail", False):
+        if session_paradigm == "active" and parameters.get("experiment", {}).get("distractor_fail", False):
             dis_matrix = build_dis_matrix(sound_events, trials, parameters)
             if "distractor_matrix" in proc:
                 del proc["distractor_matrix"]
             ds = proc.create_dataset("distractor_matrix", data=dis_matrix)
             ds.attrs["headers"] = "sound_idx_start, sound_idx_end, tl_idx_start, tl_idx_end, result"
+        elif "distractor_matrix" in proc:
+            del proc["distractor_matrix"]
 
         # --- annotate correction ---
         proc.attrs["sound_time_correction"] = json.dumps(

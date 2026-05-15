@@ -277,7 +277,10 @@ def plot_session_metrics(tl, trial_idxs, cfg, fig_path):
     ax.set_title('Speed', fontsize=14)
 
     fig.tight_layout()
-    fig.savefig(fig_path)
+    if fig_path is not None:
+        fig.savefig(fig_path)
+    else:
+        plt.show()
 
 def plot_performance(cfg, perf, fig_path):
     fig = plt.figure(figsize=(4, 4))
@@ -306,4 +309,7 @@ def plot_performance(cfg, perf, fig_path):
     ax.set_ylabel('Successful trials, %', fontsize=14)
             
     fig.tight_layout()
-    fig.savefig(fig_path)
+    if fig_path is not None:
+        fig.savefig(fig_path)
+    else:
+        plt.show()

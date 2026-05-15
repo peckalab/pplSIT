@@ -56,6 +56,9 @@ def get_spike_counts(spk_times, pulse_times, hw=0.25, bin_count=51):
     # spk_times = np.sort(spk_times)
 
     bins = np.linspace(-hw, hw, bin_count)
+    if pulse_times.size == 0:
+        return bins, np.zeros(bin_count - 1, dtype=np.float64)
+
     counts, bin_width = _psth_numba(spk_times, pulse_times, hw, bin_count)
 
     # normalize to firing rate

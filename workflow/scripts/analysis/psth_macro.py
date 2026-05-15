@@ -13,6 +13,7 @@ sys.path.append(parent_dir)
 from utils.psth import get_spike_counts
 from utils.neurosuite import get_unit_names_sorted
 from utils.events import get_sound_event_periods
+from utils.session import detect_session_paradigm
 
 
 with h5py.File(snakemake.input[0], 'r') as f:
@@ -21,6 +22,12 @@ with h5py.File(snakemake.input[0], 'r') as f:
     tgt_matrix = np.array(f['processed']['target_matrix'])
     trials = np.array(f['processed']['trial_idxs'])
     cfg = json.loads(f['processed'].attrs['parameters'])
+    paradigm = f['processed'].attrs.get('session_paradigm', detect_session_paradigm(cfg))
+
+if isinstance(paradigm, bytes):
+    paradigm = paradigm.decode()
+if paradigm != 'active':
+    raise ValueError("psth_macro.py is active-session only and does not apply to passive sessions.")
 
 spike_times = {}
 with h5py.File(snakemake.input[1], 'r') as f:
