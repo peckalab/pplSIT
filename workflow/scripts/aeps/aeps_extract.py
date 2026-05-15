@@ -333,7 +333,7 @@ def _write_area_group(
 # Load inputs
 # -----------------------------------------------------------------------------
 
-with open(snakemake.input[0]) as json_file:
+with open(snakemake.params["manual"]) as json_file:
     manual_cfg = json.load(json_file)
 
 if "AEPs" not in manual_cfg:
@@ -341,21 +341,21 @@ if "AEPs" not in manual_cfg:
 
 aeps_cfg = manual_cfg["AEPs"]
 
-with h5py.File(snakemake.input[1], "r") as f:
+with h5py.File(snakemake.input[0], "r") as f:
     sound_events = np.array(f["processed"]["sound_events"])
 
-with h5py.File(snakemake.input[2], "r") as f:
+with h5py.File(snakemake.input[1], "r") as f:
     lfp = np.array(f["lfp"]).T  # time x channels
 
-with h5py.File(snakemake.input[3], "r") as f:
+with h5py.File(snakemake.input[2], "r") as f:
     baselines = np.array(f["lfp_base"])
     baseline_per_channel = baselines[:, 0]  # kept for compatibility/future use
     baseline_stds = baselines[:, 1]
 
-with h5py.File(snakemake.input[4], "r") as f:
+with h5py.File(snakemake.input[3], "r") as f:
     artifact_mask = np.array(f["artifact_mask"]).astype(bool)
 
-with h5py.File(snakemake.input[5], "r") as f:
+with h5py.File(snakemake.input[4], "r") as f:
     metrics = np.array(f["aeps_lfp_metrics"])  # e.g. snrs, amplitudes, pre-stim baselines
     amplitude_weights = metrics[:, 1]
 
