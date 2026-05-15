@@ -201,7 +201,7 @@ target_names_dict = {
 
 animal_targets_dict = {
     'unit_match': [
-        ('unit_match', 'MatchTable.csv')
+        ('unit_match', 'probe_group_summary.csv')
     ]
 }
 
