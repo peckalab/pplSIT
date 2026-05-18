@@ -12,6 +12,27 @@ from utils.aeps import outlier_lims, AEP_metrics_lims
 
 # --------------------------
 
+def mean_ste(x):
+    """
+    x: trials x time
+    Returns nan-robust mean, STE, and number of valid trials.
+    A trial is considered valid if it has at least one finite value.
+    """
+    x = np.asarray(x, dtype=float)
+
+    mean = np.nanmean(x, axis=0)
+
+    valid_trials = np.any(np.isfinite(x), axis=1)
+    n_valid = int(np.sum(valid_trials))
+
+    if n_valid == 0:
+        ste = np.full(x.shape[1], np.nan)
+    else:
+        ste = np.nanstd(x[valid_trials], axis=0) / np.sqrt(n_valid)
+
+    return mean, ste, n_valid
+
+
 # load timeline / events
 with h5py.File(snakemake.input[0], 'r') as f:
     tl           = np.array(f['processed']['timeline'])
@@ -65,35 +86,36 @@ cols = len(aeps.keys())
 fig, axes = plt.subplots(rows, cols, figsize=(6*cols, 4.5*rows))
 
 for k, (area, aeps_mx) in enumerate(aeps.items()):
-    # means
-    aeps_bgr_mean = np.nanmean(aeps_mx[sound_events[:, 1] == 1], axis=0)
-    aeps_tgt_mean = np.nanmean(aeps_mx[sound_events[:, 1] == 2], axis=0)
-    aeps_bgr_sta_mean = np.nanmean(aeps_mx[(sound_events[:, 1] == 1) & (stationary_during_sound)], axis=0)
-    aeps_bgr_run_mean = np.nanmean(aeps_mx[(sound_events[:, 1] == 1) & (~stationary_during_sound)], axis=0)
-    aeps_tgt_sta_mean = np.nanmean(aeps_mx[(sound_events[:, 1] == 2) & (stationary_during_sound)], axis=0)
-    aeps_sil_mean = np.nanmean(aeps_mx[sound_events[:, 1] == 0], axis=0)
-    aeps_1st_succ = np.nanmean(aeps_mx[tgt_mx[tgt_mx[:, 4] == 1][:, 0]], axis=0)
-    aeps_1st_rewd = np.nanmean(aeps_mx[tgt_mx[tgt_mx[:, 4] == 1][:, 1] + 1], axis=0)
+    # masks / indices
+    mask_bgr = sound_events[:, 1] == 1
+    mask_tgt = sound_events[:, 1] == 2
+    mask_sil = sound_events[:, 1] == 0
+    mask_bgr_sta = mask_bgr & stationary_during_sound
+    mask_bgr_run = mask_bgr & (~stationary_during_sound)
+    mask_tgt_sta = mask_tgt & stationary_during_sound
 
-    # counts
-    aeps_bgr_count = np.sum(sound_events[:, 1] == 1)
-    aeps_tgt_count = np.sum(sound_events[:, 1] == 2)
-    aeps_bgr_sta_count = np.sum((sound_events[:, 1] == 1) & (stationary_during_sound))
-    aeps_bgr_run_count = np.sum((sound_events[:, 1] == 1) & (~stationary_during_sound))
-    aeps_tgt_sta_count = np.sum((sound_events[:, 1] == 2) & (stationary_during_sound))
-    aeps_sil_count = np.sum(sound_events[:, 1] == 0)
-    aeps_1st_succ_count = len(tgt_mx[tgt_mx[:, 4] == 1][:, 0])
-    aeps_1st_rewd_count = len(tgt_mx[tgt_mx[:, 4] == 1][:, 1] + 1)
+    succ_idx = tgt_mx[tgt_mx[:, 4] == 1][:, 0].astype(int)
+    rewd_idx = (tgt_mx[tgt_mx[:, 4] == 1][:, 1] + 1).astype(int)
 
-    # STEs
-    aeps_bgr_ste = aeps_mx[sound_events[:, 1] == 1].std(axis=0) / np.sqrt(aeps_bgr_count)
-    aeps_tgt_ste = aeps_mx[sound_events[:, 1] == 2].std(axis=0) / np.sqrt(aeps_tgt_count)
-    aeps_bgr_sta_ste = aeps_mx[(sound_events[:, 1] == 1) & (stationary_during_sound)].std(axis=0) / np.sqrt(aeps_bgr_sta_count)
-    aeps_bgr_run_ste = aeps_mx[(sound_events[:, 1] == 1) & (~stationary_during_sound)].std(axis=0) / np.sqrt(aeps_bgr_run_count)
-    aeps_tgt_sta_ste = aeps_mx[(sound_events[:, 1] == 2) & (stationary_during_sound)].std(axis=0) / np.sqrt(aeps_tgt_sta_count)
-    aeps_sil_ste = aeps_mx[sound_events[:, 1] == 0].std(axis=0) / np.sqrt(aeps_sil_count)
-    aeps_1st_succ_ste = aeps_mx[tgt_mx[tgt_mx[:, 4] == 1][:, 0]].std(axis=0) / np.sqrt(aeps_1st_succ_count)
-    aeps_1st_rewd_ste = aeps_mx[tgt_mx[tgt_mx[:, 4] == 1][:, 1] + 1].std(axis=0) / np.sqrt(aeps_1st_rewd_count)
+    # subsets
+    x_bgr = aeps_mx[mask_bgr]
+    x_tgt = aeps_mx[mask_tgt]
+    x_bgr_sta = aeps_mx[mask_bgr_sta]
+    x_bgr_run = aeps_mx[mask_bgr_run]
+    x_tgt_sta = aeps_mx[mask_tgt_sta]
+    x_sil = aeps_mx[mask_sil]
+    x_1st_succ = aeps_mx[succ_idx]
+    x_1st_rewd = aeps_mx[rewd_idx]
+
+    # means + STEs + valid counts
+    aeps_bgr_mean, aeps_bgr_ste, aeps_bgr_count = mean_ste(x_bgr)
+    aeps_tgt_mean, aeps_tgt_ste, aeps_tgt_count = mean_ste(x_tgt)
+    aeps_bgr_sta_mean, aeps_bgr_sta_ste, aeps_bgr_sta_count = mean_ste(x_bgr_sta)
+    aeps_bgr_run_mean, aeps_bgr_run_ste, aeps_bgr_run_count = mean_ste(x_bgr_run)
+    aeps_tgt_sta_mean, aeps_tgt_sta_ste, aeps_tgt_sta_count = mean_ste(x_tgt_sta)
+    aeps_sil_mean, aeps_sil_ste, aeps_sil_count = mean_ste(x_sil)
+    aeps_1st_succ, aeps_1st_succ_ste, aeps_1st_succ_count = mean_ste(x_1st_succ)
+    aeps_1st_rewd, aeps_1st_rewd_ste, aeps_1st_rewd_count = mean_ste(x_1st_rewd)
 
 
     combs = [
@@ -134,16 +156,44 @@ for k, (area, aeps_mx) in enumerate(aeps.items()):
         if i == 0:
             ax.set_title(area, fontsize=14)
         
+        x0 = np.linspace(0, aep_dur * 1000, len(comb[0]))
+        x1 = np.linspace(0, aep_dur * 1000, len(comb[1]))
 
-        # shade with STE
-        ax.fill_between(np.linspace(0,aep_dur*1000,len(combs_ste[i][0])),0.2*(comb[0] - combs_ste[i][0]), 0.2*(comb[0]+combs_ste[i][0]), color=colors[i][0], alpha=0.3)
-        # line plot of the mean
-        ax.plot(comb[0] * 0.2, color=colors[i][0], label=f'{labels[i][0]} ({combs_counts[i][0]})')  # 0.2 OpenEphys scaling factor
-        
-        # shade with STE
-        ax.fill_between(np.linspace(0,aep_dur*1000,len(combs_ste[i][1])),0.2*(comb[1] - combs_ste[i][1]), 0.2*(comb[1]+combs_ste[i][1]), color=colors[i][1], alpha=0.3)
-        # line plot of the mean
-        ax.plot(comb[1] * 0.2, color=colors[i][1], label=f'{labels[i][1]} ({combs_counts[i][1]})')
+        # condition 1
+        if np.any(np.isfinite(comb[0])):
+            if np.any(np.isfinite(combs_ste[i][0])):
+                ax.fill_between(
+                    x0,
+                    0.2 * (comb[0] - combs_ste[i][0]),
+                    0.2 * (comb[0] + combs_ste[i][0]),
+                    color=colors[i][0],
+                    alpha=0.4
+                )
+            ax.plot(
+                x0,
+                comb[0] * 0.2,
+                color=colors[i][0],
+                lw=1.5,
+                label=f'{labels[i][0]} ({combs_counts[i][0]})'
+            )
+
+        # condition 2
+        if np.any(np.isfinite(comb[1])):
+            if np.any(np.isfinite(combs_ste[i][1])):
+                ax.fill_between(
+                    x1,
+                    0.2 * (comb[1] - combs_ste[i][1]),
+                    0.2 * (comb[1] + combs_ste[i][1]),
+                    color=colors[i][1],
+                    alpha=0.4
+                )
+            ax.plot(
+                x1,
+                comb[1] * 0.2,
+                color=colors[i][1],
+                lw=1.5,
+                label=f'{labels[i][1]} ({combs_counts[i][1]})'
+            )
         
         ax.axhline(0, color='black')
         ax.axvline(0, color='black')
