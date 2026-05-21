@@ -33,13 +33,22 @@ rule extract_lfp_baseline_stream:
         "../scripts/lfp/baseline.py"
 
 
+rule extract_lfp_baseline_passive_stream:
+    input:
+        meta=os.path.join(config["dst_path"], "{animal}", "{session}", "meta.h5"),
+        lfp_h5=ancient(os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5")),
+        artifacts=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "artifacts.h5")
+    output:
+        lfp_base=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "baseline_passive.h5"),
+        lfp_base_plot=os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "baseline_passive.pdf")
+    script:
+        "../scripts/lfp/baseline_passive.py"
+
+
 rule lfp_ready_session:
     input:
         staged=ephys_staged_marker,
-        baselines=lambda wc: expand(
-            os.path.join(config["dst_path"], wc.animal, wc.session, "LFP", "{stream}", "baseline.h5"),
-            stream=streams_for_session_wc(wc)
-        )
+        baselines=lfp_baseline_h5_paths_for_session_wc
     output:
         os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "lfp.ready")
     shell:

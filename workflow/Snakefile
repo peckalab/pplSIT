@@ -201,6 +201,9 @@ target_names_dict = {
 }
 
 passive_target_names_dict = {
+    'AEPs': [
+        'AEP/aep.ready',
+    ],
     'PSTH_bar': [
         'analysis/psth_passive_all_sounds.pdf',
         'analysis/psth_passive_all_sounds_stationary.pdf',

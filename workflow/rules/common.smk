@@ -1,4 +1,7 @@
+import glob
+import json
 import os, sys
+from functools import lru_cache
 
 def get_session_src_dir(config, animal, session):
     return os.path.join(config["src_path"], animal, session)
@@ -116,3 +119,72 @@ def streams_for_session(config, animal, session):
 
 def streams_for_session_wc(wc):
     return streams_for_session(config, wc.animal, wc.session)
+
+
+@lru_cache(maxsize=None)
+def session_paradigm_for(animal, session):
+    animal = str(animal).strip()
+    session = str(session).strip()
+    session_dir = os.path.join(config["src_path"], animal, session)
+    cfg_candidates = sorted(glob.glob(os.path.join(session_dir, "*.json")))
+    if not cfg_candidates:
+        raise FileNotFoundError(f"No session json found in {session_dir}")
+
+    preferred_cfg = os.path.join(session_dir, f"{session}.json")
+    cfg_path = preferred_cfg if preferred_cfg in cfg_candidates else cfg_candidates[0]
+    with open(cfg_path, "r") as f:
+        parameters = json.load(f)
+    sounds = parameters.get("sound", {}).get("sounds", {})
+    return "active" if "background" in sounds else "passive"
+
+
+def lfp_baseline_h5_path(animal, session, stream):
+    animal = str(animal).strip()
+    session = str(session).strip()
+    stream = str(stream).strip()
+    filename = "baseline_passive.h5" if session_paradigm_for(animal, session) == "passive" else "baseline.h5"
+    return os.path.join(config["dst_path"], animal, session, "LFP", stream, filename)
+
+
+def lfp_baseline_pdf_path(animal, session, stream):
+    animal = str(animal).strip()
+    session = str(session).strip()
+    stream = str(stream).strip()
+    filename = "baseline_passive.pdf" if session_paradigm_for(animal, session) == "passive" else "baseline.pdf"
+    return os.path.join(config["dst_path"], animal, session, "LFP", stream, filename)
+
+
+def lfp_baseline_h5_for_wc(wc):
+    return lfp_baseline_h5_path(wc.animal, wc.session, wc.stream)
+
+
+def lfp_baseline_h5_paths_for_session_wc(wc):
+    return [
+        lfp_baseline_h5_path(wc.animal, wc.session, stream)
+        for stream in streams_for_session_wc(wc)
+    ]
+
+
+def aep_profile_pdf_path(animal, session, stream):
+    animal = str(animal).strip()
+    session = str(session).strip()
+    stream = str(stream).strip()
+    filename = "aeps_profiles_passive.pdf" if session_paradigm_for(animal, session) == "passive" else "aeps_profiles.pdf"
+    return os.path.join(config["dst_path"], animal, session, "AEP", stream, filename)
+
+
+def aep_profile_paths_for_session_wc(wc):
+    return [
+        aep_profile_pdf_path(wc.animal, wc.session, stream)
+        for stream in streams_for_session_wc(wc)
+    ]
+
+
+def aep_itpc_plot_paths_for_session_wc(wc):
+    if session_paradigm_for(wc.animal, wc.session) == "passive":
+        return []
+
+    return [
+        os.path.join(config["dst_path"], wc.animal, wc.session, "AEP", stream, "aeps_ITPC.pdf")
+        for stream in streams_for_session_wc(wc)
+    ]
