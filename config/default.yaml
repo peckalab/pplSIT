@@ -12,6 +12,7 @@ blocks:  # blocks of pipeline to run
   PSTH_bar: False
   PSTH_bootstrap: False
   PSTH_shuffle: False
+  STRF_passive: False
   spatial: False
   population: False
   coherence: False
@@ -103,6 +104,13 @@ psth:
     bin_count: 51
     boot_iter_count: 100
     # xlim: [-0.25, 0.25] # if not specified , defaults to [-latency, latency]
+
+strf_passive:
+  pre: 0.05
+  post: 0.25
+  bin_count: 61
+  min_events: 3
+  units_per_page: 8
 
 # neural manifolds
 nMAP_electrodes:
