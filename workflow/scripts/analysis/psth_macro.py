@@ -60,7 +60,7 @@ else:
 
 # add noise offsets (silence without reward)
 noise_offset_idxs = []
-for i in range(len(tl)):
+for i in range(len(tl)-1):
     if tl[i, 6] == -1 and tl[i+1, 6] == 0:
         noise_offset_idxs.append(i+1)
 
