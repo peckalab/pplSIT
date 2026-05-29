@@ -48,6 +48,7 @@ include: "rules/moseq.smk"
 include: "rules/descendants.smk"
 include: "rules/analysis/shuffle.smk"
 include: "rules/analysis/psth_bar.smk"
+include: "rules/analysis/strf_passive.smk"
 include: "rules/analysis/psth_bootstrap.smk"
 include: "rules/aeps.smk"
 include: "rules/analysis/spatial.smk"
@@ -208,6 +209,10 @@ passive_target_names_dict = {
         'analysis/psth_passive_all_sounds.pdf',
         'analysis/psth_passive_all_sounds_stationary.pdf',
         'analysis/psth_passive_all_sounds_running.pdf',
+    ],
+    'STRF_passive': [
+        'analysis/strf_passive.h5',
+        'analysis/strf_passive.pdf',
     ],
 }
 
