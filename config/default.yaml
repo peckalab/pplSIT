@@ -195,6 +195,7 @@ segments:
     radius: 0.05
 
 unit_match:
+  method: 'unitmatchpy' # unitmatchpy is implemented; deepunitmatch is reserved for a future adapter
   sample_amount: 1000 # for both CV, at least 500 per CV
   spike_width: 61 # assuming 30khz sampling, 82 and 61 are common choices (KS1-3, KS4), covers the AP and space around needed for processing
   n_channels: 384 #neuropixels default, the number of channels EXCLUDING sync channels

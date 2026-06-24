@@ -4,7 +4,18 @@ import numpy as np
 from joblib import Parallel, delayed
 # import matplotlib.pyplot as plt
 import os
-import json
+
+
+def infer_n_channels_total(dat_file, base_n_channels, dtype_bytes=2):
+    n_bytes = os.path.getsize(dat_file)
+    candidates = [base_n_channels, base_n_channels + 1]
+    for n_channels_total in candidates:
+        if n_bytes % (dtype_bytes * n_channels_total) == 0:
+            return n_channels_total
+    raise ValueError(
+        f"Cannot infer channel count for {dat_file}. File size {n_bytes} is not "
+        f"divisible by int16 samples for {base_n_channels} or {base_n_channels + 1} channels."
+    )
 
 #Set Up Parameters
 sample_amount = snakemake.config['unit_match']['sample_amount'] # 1000 # for both CV, at least 500 per CV
@@ -35,11 +46,8 @@ all_unit_ids = all_unit_ids[0]
 #Extract the units 
 
 if extract_good_units_only:
-    #load metadata
-    with open(snakemake.input.oebin_file, 'r') as file:
-        meta = json.load(file)
     n_bytes = os.path.getsize(snakemake.input.dat_file)
-    n_channels_tot = int(meta['continuous'][0]['num_channels'])
+    n_channels_tot = infer_n_channels_total(snakemake.input.dat_file, n_channels)
     n_samples = int(n_bytes / (2*n_channels_tot))
 
     #create memmap to raw data, for that session
@@ -66,11 +74,8 @@ else:
     
     #Extracting ALL the Units
     n_units = len(np.unique(spike_ids))
-    #load metadata
-    with open(snakemake.input.oebin_file, 'r') as file:
-        meta = json.load(file)
     n_bytes = os.path.getsize(snakemake.input.dat_file)
-    n_channels_tot = int(meta['continuous'][0]['num_channels'])
+    n_channels_tot = infer_n_channels_total(snakemake.input.dat_file, n_channels)
     n_samples = int(n_bytes / (2*n_channels_tot))
 
     #create memmap to raw data, for that session

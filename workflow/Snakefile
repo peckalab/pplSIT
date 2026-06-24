@@ -196,9 +196,7 @@ target_names_dict = {
     'low_D_embeddings': [
         'episodic_map/low_D_embeddings.h5'
     ],
-    'raw_waveforms': [
-        'kilosort/RawWaveforms/RawWaveforms.ready'
-    ]
+    'raw_waveforms': []
 }
 
 passive_target_names_dict = {
@@ -258,6 +256,13 @@ def collect_target_names_for_session(animal, session):
 
     for block_name, enabled in config['blocks'].items():
         if not enabled:
+            continue
+
+        if block_name == 'raw_waveforms':
+            target_names += [
+                os.path.join('kilosort', stream, 'RawWaveforms', 'RawWaveforms.ready')
+                for stream in streams_for_session(config, animal, session)
+            ]
             continue
 
         if paradigm == 'passive':

@@ -14,7 +14,22 @@ import pandas as pd
 import json
 
 
-def group_sessions_by_probe(animal_id, base_path, require_phy_folder=False):
+def parse_stream_waveform_path(path):
+    path = Path(path)
+    if path.parent.name != "RawWaveforms":
+        raise ValueError(f"Expected RawWaveforms/*.npy path, got: {path}")
+    stream_dir = path.parents[1]
+    if stream_dir.parent.name != "kilosort":
+        raise ValueError(f"Expected .../kilosort/<stream>/RawWaveforms/*.npy path, got: {path}")
+    return {
+        "session": stream_dir.parent.parent.name,
+        "stream": stream_dir.name,
+        "ks_dir": str(stream_dir),
+        "waveform_path": str(path),
+    }
+
+
+def group_recordings_by_probe(animal_id, base_path, require_phy_folder=False):
     animal_path = Path(base_path) / animal_id
     if not animal_path.exists():
         raise FileNotFoundError(f"Animal path not found: {animal_path}")
@@ -22,28 +37,39 @@ def group_sessions_by_probe(animal_id, base_path, require_phy_folder=False):
     groups = {}
     for session_dir in sorted(p for p in animal_path.iterdir() if p.is_dir()):
         kilosort_dir = session_dir / "kilosort"
-        if require_phy_folder and not (kilosort_dir / ".phy").is_dir():
+        if not kilosort_dir.is_dir():
             continue
 
-        probe_path = kilosort_dir / "probe.json"
-        if not probe_path.exists():
-            continue
+        for stream_dir in sorted(p for p in kilosort_dir.iterdir() if p.is_dir()):
+            if require_phy_folder and not (stream_dir / ".phy").is_dir():
+                continue
 
-        with open(probe_path, "r") as f:
-            content = json.load(f)
+            probe_path = stream_dir / "probe.json"
+            if not probe_path.exists():
+                continue
 
-        key = json.dumps(content, sort_keys=True)
-        groups.setdefault(key, []).append(session_dir.name)
+            with open(probe_path, "r") as f:
+                content = json.load(f)
 
-    return sorted(groups.items(), key=lambda item: (-len(item[1]), item[1]))
+            key = json.dumps(content, sort_keys=True)
+            groups.setdefault(key, []).append({
+                "session": session_dir.name,
+                "stream": stream_dir.name,
+                "ks_dir": str(stream_dir),
+            })
+
+    return sorted(
+        groups.items(),
+        key=lambda item: (-len(item[1]), [(r["session"], r["stream"]) for r in item[1]])
+    )
 
 
-def run_unit_match_for_group(group_npy_files, group_session_ids, save_dir):
+def run_unit_match_for_group(group_npy_files, group_records, save_dir):
     # Get default parameters, can add your own before or after!
     param = default_params.get_default_param()
 
     # also get KS_dirs from the raw_waveforms paths
-    KS_dirs = [str(Path(p).parents[1]) for p in group_npy_files]  # RawWaveforms -> unit_match
+    KS_dirs = [parse_stream_waveform_path(p)["ks_dir"] for p in group_npy_files]
     KS_dirs = sorted(list(set(KS_dirs)))
 
     param['KS_dirs'] = KS_dirs
@@ -197,43 +223,64 @@ def run_unit_match_for_group(group_npy_files, group_session_ids, save_dir):
     )
 
     # save also the correspondence between session ids and their corresponding index
-    session_id_df = pd.DataFrame({'session_id': group_session_ids, 'session_index': range(len(group_session_ids))})
+    recording_ids = [f"{record['session']}::{record['stream']}" for record in group_records]
+    session_id_df = pd.DataFrame({
+        'recording_id': recording_ids,
+        'session_id': [record['session'] for record in group_records],
+        'stream': [record['stream'] for record in group_records],
+        'ks_dir': [record['ks_dir'] for record in group_records],
+        'session_index': range(len(group_records)),
+    })
     session_id_df.to_csv(os.path.join(save_dir, 'session_id_mapping.csv'), index=False)
 
 
-# snakemake.input.npy_files is a list of paths
-npy_files = list(snakemake.input.npy_files)
+method = snakemake.config.get('unit_match', {}).get('method', 'unitmatchpy')
+if method != 'unitmatchpy':
+    raise NotImplementedError(
+        f"unit_match.method={method!r} is not implemented yet. "
+        "The stream-aware adapter boundary is in place; use 'unitmatchpy' until DeepUnitMatch is wired."
+    )
+
+# snakemake.input.npy_files contains RawWaveforms/*.npy plus label/spike rerun triggers.
+npy_files = [
+    str(path) for path in snakemake.input.npy_files
+    if str(path).endswith('.npy') and Path(str(path)).parent.name == 'RawWaveforms'
+]
 animal_id = snakemake.wildcards.animal
 base_path = snakemake.config.get('dst_path', '/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed')
 require_phy_folder = snakemake.config.get('unit_match', {}).get('require_phy_folder', False)
 
-grouped_sessions = group_sessions_by_probe(animal_id, base_path, require_phy_folder=require_phy_folder)
+grouped_recordings = group_recordings_by_probe(animal_id, base_path, require_phy_folder=require_phy_folder)
 
-session_to_npy_files = {}
+recording_to_npy_files = {}
 for npy_path in npy_files:
-    session_name = Path(npy_path).parents[2].name  # RawWaveforms/unit_match -> kilosort -> session
-    session_to_npy_files.setdefault(session_name, []).append(npy_path)
+    record = parse_stream_waveform_path(npy_path)
+    recording_key = (record["session"], record["stream"])
+    recording_to_npy_files.setdefault(recording_key, []).append(npy_path)
 
 group_results = []
-for group_index, (_, sessions) in enumerate(grouped_sessions, start=1):
-    group_session_ids = sorted(list(set(sessions)))
+for group_index, (_, records) in enumerate(grouped_recordings, start=1):
+    group_records = sorted(records, key=lambda record: (record["session"], record["stream"]))
     group_npy_files = []
-    for session in group_session_ids:
-        group_npy_files.extend(session_to_npy_files.get(session, []))
+    for record in group_records:
+        group_npy_files.extend(recording_to_npy_files.get((record["session"], record["stream"]), []))
 
     if not group_npy_files:
-        print(f"Skipping probe_json_{group_index}: no npy inputs for sessions {group_session_ids}.")
+        recording_ids = [f"{record['session']}::{record['stream']}" for record in group_records]
+        print(f"Skipping probe_json_{group_index}: no RawWaveforms inputs for recordings {recording_ids}.")
         continue
 
     save_dir = os.path.join(snakemake.config['prj_path'], 'unit_match', animal_id, f'probe_json_{group_index}')
     os.makedirs(save_dir, exist_ok=True)
 
-    run_unit_match_for_group(group_npy_files, group_session_ids, save_dir)
+    run_unit_match_for_group(group_npy_files, group_records, save_dir)
 
     group_results.append({
         'group': group_index,
-        'n_sessions': len(group_session_ids),
-        'sessions': ';'.join(group_session_ids),
+        'n_recordings': len(group_records),
+        'recordings': ';'.join(f"{record['session']}::{record['stream']}" for record in group_records),
+        'sessions': ';'.join(sorted(set(record['session'] for record in group_records))),
+        'streams': ';'.join(sorted(set(record['stream'] for record in group_records))),
         'save_dir': save_dir,
     })
 
