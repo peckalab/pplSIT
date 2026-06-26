@@ -19,7 +19,10 @@ def guess_sorter_inputs(wc):
     if config["units"]["source"] == "neurosuite":
         return [n_path(wc.animal, wc.session, "neurosuite.ready")]
     else:
-        return [ks_marker_path(wc)] + ks_ready_files(wc)
+        inputs = [ks_marker_path(wc)] + ks_ready_files(wc)
+        if config.get("units", {}).get("label_source", "ks") == "bombcell":
+            inputs += bombcell_ready_files(wc)
+        return inputs
 
 
 rule dump_units:

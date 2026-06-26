@@ -2,7 +2,60 @@ import os, json
 import numpy as np
 
 
-def load_ks_units_before(ks_path):
+def _normalize_bombcell_label(label):
+    return str(label).strip().upper()
+
+
+def load_bombcell_unit_labels(ks_path):
+    """
+    Read Bombcell unit type labels written for Phy compatibility.
+    Returns {cluster_id: label}.
+    """
+    tsv_path = os.path.join(ks_path, "cluster_bc_unitType.tsv")
+    if not os.path.exists(tsv_path):
+        raise FileNotFoundError(
+            f"Bombcell labels requested, but cluster_bc_unitType.tsv is missing: {tsv_path}"
+        )
+
+    with open(tsv_path, "r") as f:
+        header = f.readline().strip().split("\t")
+        col_idx = {name: i for i, name in enumerate(header)}
+
+        if "cluster_id" not in col_idx:
+            raise ValueError(f"Missing cluster_id column in {tsv_path}")
+
+        label_col = None
+        for candidate in ("bc_unitType", "unitType", "bc_unit_type"):
+            if candidate in col_idx:
+                label_col = col_idx[candidate]
+                break
+        if label_col is None:
+            raise ValueError(
+                f"Missing Bombcell unit type column in {tsv_path}. "
+                "Expected one of: bc_unitType, unitType, bc_unit_type."
+            )
+
+        labels = {}
+        for line in f:
+            if not line.strip():
+                continue
+            parts = line.rstrip("\n").split("\t")
+            cluster_id = int(parts[col_idx["cluster_id"]])
+            labels[cluster_id] = _normalize_bombcell_label(parts[label_col])
+
+    return labels
+
+
+def filter_cluster_ids_by_bombcell(ks_path, allowed_labels):
+    allowed = {_normalize_bombcell_label(label) for label in allowed_labels}
+    labels = load_bombcell_unit_labels(ks_path)
+    return np.array(
+        [cluster_id for cluster_id, label in labels.items() if label in allowed],
+        dtype=int
+    )
+
+
+def load_ks_units_before(ks_path, label_source="ks", bombcell_unit_types=None):
     """
     Load units from Kilosort BEFORE manual curation.
     Uses KSLabel == 'good' to load clusters.
@@ -21,23 +74,29 @@ def load_ks_units_before(ks_path):
     templates = np.load(os.path.join(ks_path, 'templates.npy'))
     ch_pos    = np.load(os.path.join(ks_path, 'channel_positions.npy'))
 
-    # ---- read cluster_KSLabel.tsv without pandas ----
-    good_idxs = []
-    tsv_path = os.path.join(ks_path, 'cluster_KSLabel.tsv')
+    if label_source == "bombcell":
+        good_idxs = filter_cluster_ids_by_bombcell(
+            ks_path,
+            bombcell_unit_types or ["GOOD", "NON-SOMA GOOD"]
+        )
+    else:
+        # ---- read cluster_KSLabel.tsv without pandas ----
+        good_idxs = []
+        tsv_path = os.path.join(ks_path, 'cluster_KSLabel.tsv')
 
-    with open(tsv_path, 'r') as f:
-        header = f.readline().strip().split('\t')
-        cluster_col = header.index('cluster_id') if 'cluster_id' in header else 0
-        label_col   = header.index('KSLabel')
+        with open(tsv_path, 'r') as f:
+            header = f.readline().strip().split('\t')
+            cluster_col = header.index('cluster_id') if 'cluster_id' in header else 0
+            label_col   = header.index('KSLabel')
 
-        for line in f:
-            parts = line.strip().split('\t')
-            cluster_id = int(parts[cluster_col])
-            label = parts[label_col]
-            if label == 'good':
-                good_idxs.append(cluster_id)
+            for line in f:
+                parts = line.strip().split('\t')
+                cluster_id = int(parts[cluster_col])
+                label = parts[label_col]
+                if label == 'good':
+                    good_idxs.append(cluster_id)
 
-    good_idxs = np.array(good_idxs, dtype=int)
+        good_idxs = np.array(good_idxs, dtype=int)
 
     # ---- template peak channel mapping ----
     template_maxchans = np.abs(templates).max(axis=1).argmax(axis=1)
@@ -65,7 +124,7 @@ def load_ks_units_before(ks_path):
     return all_units, all_pos
 
 
-def load_ks_units_after(ks_path):
+def load_ks_units_after(ks_path, label_source="ks", bombcell_unit_types=None):
     """
     Load kilosorted units AFTER manual curation.
     Returns:
@@ -97,6 +156,12 @@ def load_ks_units_after(ks_path):
 
     all_units = {}
     unit_info = {}
+    bombcell_good_ids = None
+    if label_source == "bombcell":
+        bombcell_good_ids = set(filter_cluster_ids_by_bombcell(
+            ks_path,
+            bombcell_unit_types or ["GOOD", "NON-SOMA GOOD"]
+        ).tolist())
 
     for shank in shanks:
         spiketrains = {}
@@ -108,14 +173,17 @@ def load_ks_units_after(ks_path):
 
             ks_label = r[col_idx['KSLabel']]
             group = r[col_idx['group']]
-
-            # Apply same filtering logic as original
-            if not ((ks_label == 'good') or (group == 'good')):
-                continue
-            if group == 'noise':
-                continue
-
             clu_id = int(r[col_idx['cluster_id']])
+
+            if label_source == "bombcell":
+                if clu_id not in bombcell_good_ids:
+                    continue
+            else:
+                # Apply same filtering logic as original
+                if not ((ks_label == 'good') or (group == 'good')):
+                    continue
+                if group == 'noise':
+                    continue
 
             # spike times
             spiketrains[clu_id] = s_times[s_clust == clu_id]

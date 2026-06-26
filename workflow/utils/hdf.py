@@ -34,6 +34,7 @@ class H5NAMES:
     best_m_rot  = {'name': 'best_match_rotation', 'dims': ['match between: A-B, B-C, A-C', 'correlation profile']}
     anat_pos    = {'name': 'anatomical_position', 'dims': ['XY']}
     kilosort    = {'name': 'kilosort_info', 'dims': ['Amplitude, ContamPct, amp, channel, depth, FR, label']}
+    bombcell_label = {'name': 'bombcell_label', 'dims': ['Bombcell unit type label']}
 
 
 def create_dataset(h5name, where, descriptor, dataset):

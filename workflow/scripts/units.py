@@ -11,7 +11,7 @@ sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
 from utils.neurosuite import load_clu_res, XMLHero
-from utils.kilosort import load_ks_units_before, load_ks_units_after
+from utils.kilosort import load_ks_units_before, load_ks_units_after, load_bombcell_unit_labels
 from utils.spiketrain import instantaneous_rate, spike_idxs
 from utils.hdf import create_dataset, H5NAMES
 from utils.spatial import place_field_2D, map_stats, get_field_patches
@@ -244,6 +244,28 @@ def _process_kilosort_stream(
     electrode_offset=0,
     t0_ref=None,
 ):
+    units_config = config.get("units", {})
+    label_source = units_config.get("label_source", "ks")
+    if label_source not in ("ks", "bombcell"):
+        raise ValueError(
+            f"Unsupported units.label_source: {label_source}. "
+            "Allowed values are 'ks' and 'bombcell'."
+        )
+
+    bombcell_unit_types = config.get("bombcell", {}).get(
+        "unit_types_for_units_h5",
+        ["GOOD", "NON-SOMA GOOD"]
+    )
+    bombcell_labels = None
+    if label_source == "bombcell":
+        bombcell_ready = os.path.join(stream_folder, "bombcell", "bombcell.ready")
+        if not os.path.exists(bombcell_ready):
+            raise FileNotFoundError(
+                f"Bombcell labels requested for stream {stream_name}, "
+                f"but the ready marker is missing: {bombcell_ready}"
+            )
+        bombcell_labels = load_bombcell_unit_labels(stream_folder)
+
     # settings + probe
     kilosort_settings_file = os.path.join(stream_folder, "settings.json")
     clu_info_file = os.path.join(stream_folder, "cluster_info.tsv")
@@ -268,9 +290,17 @@ def _process_kilosort_stream(
     # load units
     positions, unit_info = None, None
     if os.path.exists(clu_info_file):
-        units, unit_info = load_ks_units_after(stream_folder)
+        units, unit_info = load_ks_units_after(
+            stream_folder,
+            label_source=label_source,
+            bombcell_unit_types=bombcell_unit_types
+        )
     else:
-        units, positions = load_ks_units_before(stream_folder)
+        units, positions = load_ks_units_before(
+            stream_folder,
+            label_source=label_source,
+            bombcell_unit_types=bombcell_unit_types
+        )
 
     # write units for this stream
     timestamps = np.load(timestamps_path)
@@ -287,6 +317,16 @@ def _process_kilosort_stream(
             if t0_ref is None:
                 raise ValueError(f"t0_ref must be provided for stream {stream_name}")
 
+            valid_spike_mask = spiketrain < len(timestamps)
+            if not np.all(valid_spike_mask):
+                dropped_count = int(np.sum(~valid_spike_mask))
+                print(
+                    f"Warning: dropped {dropped_count} spike(s) for stream {stream_name}, "
+                    f"unit {unit_idx}; spike sample index exceeded timestamps length "
+                    f"({len(timestamps)})."
+                )
+                spiketrain = spiketrain[valid_spike_mask]
+
             s_times = timestamps[spiketrain] - t0_ref
 
             _compute_and_store_unit_metrics(
@@ -302,13 +342,27 @@ def _process_kilosort_stream(
                 unit_idx=unit_idx
             )
 
+            if bombcell_labels is not None:
+                label = bombcell_labels.get(int(unit_idx))
+                if label is not None:
+                    create_dataset(
+                        out_h5_path,
+                        unit_name,
+                        H5NAMES.bombcell_label,
+                        np.bytes_(label)
+                    )
+
 
 # load timeline once
 tl = _load_timeline(snakemake.input[0])
 
 source = snakemake.config["units"]["source"]
+label_source = snakemake.config.get("units", {}).get("label_source", "ks")
 
 if source == "neurosuite":
+    if label_source == "bombcell":
+        raise ValueError("units.label_source='bombcell' is only supported with units.source='kilosort'.")
+
     # Expect second input to be something like neurosuite.ready inside the sorted folder
     inputs = _flatten_snakemake_inputs(snakemake.input)
     if len(inputs) < 2:

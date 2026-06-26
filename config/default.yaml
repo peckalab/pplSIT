@@ -7,6 +7,7 @@ blocks:  # blocks of pipeline to run
   LFP: False          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: False  # sorting with kilosort
+  bombcell: False # Bombcell quality control on Kilosort streams
   units: False      # complete spike sorting with neurosuite / klustakwik
   AEPs: False         # extract Auditory Evoked Responses
   PSTH_bar: False
@@ -49,6 +50,15 @@ kilosort:
 # single units config: which sorter to use
 units:
   source: 'neurosuite'
+  label_source: 'ks' # ks | bombcell
+
+bombcell:
+  conda_env: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/bombcell"
+  kilosort_version: 4
+  threads: 8
+  split_good_and_mua_non_somatic: True
+  unit_types_for_units_h5: ["GOOD", "NON-SOMA GOOD"]
+  param_overrides: {}
 
 # deep lab cut config files
 dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"

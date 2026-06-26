@@ -42,6 +42,7 @@ include: "rules/performance.smk"
 include: "rules/lfp.smk"
 include: "rules/neurosuite.smk"
 include: "rules/kilosort.smk"
+include: "rules/bombcell.smk"
 include: "rules/units.smk"
 include: "rules/dlc.smk"
 include: "rules/moseq.smk"
@@ -196,7 +197,8 @@ target_names_dict = {
     'low_D_embeddings': [
         'episodic_map/low_D_embeddings.h5'
     ],
-    'raw_waveforms': []
+    'raw_waveforms': [],
+    'bombcell': []
 }
 
 passive_target_names_dict = {
@@ -261,6 +263,13 @@ def collect_target_names_for_session(animal, session):
         if block_name == 'raw_waveforms':
             target_names += [
                 os.path.join('kilosort', stream, 'RawWaveforms', 'RawWaveforms.ready')
+                for stream in streams_for_session(config, animal, session)
+            ]
+            continue
+
+        if block_name == 'bombcell':
+            target_names += [
+                os.path.join('kilosort', stream, 'bombcell', 'bombcell.ready')
                 for stream in streams_for_session(config, animal, session)
             ]
             continue
