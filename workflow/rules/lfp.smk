@@ -7,6 +7,10 @@ rule extract_lfp_raw_stream:
         staged=ephys_staged_marker
     output:
         os.path.join(config["dst_path"], "{animal}", "{session}", "LFP", "{stream}", "lfp.h5")
+    threads:
+        int(config.get("lfp", {}).get("scheduler_threads", 16))
+    resources:
+        io_heavy=int(config.get("lfp", {}).get("io_heavy", 1))
     script:
         "../scripts/lfp/lfp.py"
 

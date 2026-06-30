@@ -1,5 +1,7 @@
 import json
 import os
+import fcntl
+import glob
 from pathlib import Path
 
 
@@ -37,6 +39,20 @@ def _config_value(section, key, default=None):
     return snakemake.config.get(section, {}).get(key, default)
 
 
+def _acquire_io_heavy_lock():
+    lock_config = snakemake.config.get("io_heavy_lock", {})
+    if not lock_config.get("enabled", False):
+        return None
+
+    lock_path = str(lock_config.get("path", "/tmp/pplSIT_io_heavy.lock"))
+    os.makedirs(os.path.dirname(lock_path), exist_ok=True)
+    lock_handle = open(lock_path, "w")
+    print(f"Waiting for shared heavy-I/O lock: {lock_path}", flush=True)
+    fcntl.flock(lock_handle, fcntl.LOCK_EX)
+    print(f"Acquired shared heavy-I/O lock: {lock_path}", flush=True)
+    return lock_handle
+
+
 def _infer_n_channels(dat_path, base_n_channels, dtype_bytes=2):
     size = os.path.getsize(dat_path)
     candidates = []
@@ -62,12 +78,45 @@ def _required_outputs():
     ]
 
 
+def _single_match(pattern, description):
+    matches = sorted(glob.glob(pattern))
+    if len(matches) != 1:
+        raise FileNotFoundError(
+            f"Expected exactly one {description} matching {pattern}, found: {matches}"
+        )
+    return matches[0]
+
+
+def _require_files(paths, description):
+    missing = [path for path in paths if not os.path.exists(path)]
+    if missing:
+        raise FileNotFoundError(
+            f"Missing {description}: " + ", ".join(missing)
+        )
+
+
 ks_dir = os.path.dirname(str(snakemake.input.st))
-raw_file = str(snakemake.input.dat)
+raw_file = _single_match(os.path.join(ks_dir, "*.dat"), "Kilosort stream .dat file")
 save_path = os.path.dirname(str(snakemake.output.ready))
-settings_path = str(snakemake.input.settings)
+settings_path = os.path.join(ks_dir, "settings.json")
+io_heavy_lock_handle = _acquire_io_heavy_lock()
 
 os.makedirs(save_path, exist_ok=True)
+
+_require_files(
+    [
+        str(snakemake.input.st),
+        str(snakemake.input.sc),
+        str(snakemake.input.templates),
+        os.path.join(ks_dir, "spike_templates.npy"),
+        os.path.join(ks_dir, "amplitudes.npy"),
+        os.path.join(ks_dir, "whitening_mat_inv.npy"),
+        os.path.join(ks_dir, "channel_positions.npy"),
+        settings_path,
+        raw_file,
+    ],
+    "Bombcell Kilosort inputs",
+)
 
 with open(settings_path, "r") as f:
     ks_settings = json.load(f)

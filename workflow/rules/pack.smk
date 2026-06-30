@@ -126,6 +126,10 @@ rule sounds_sync_ephys:
         manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
     output:
         sync=os.path.join(config["dst_path"], "{animal}", "{session}", "sync", "sounds_sync.ephys.h5")
+    threads:
+        int(config.get("pack", {}).get("adc_sync", {}).get("scheduler_threads", 8))
+    resources:
+        io_heavy=int(config.get("pack", {}).get("adc_sync", {}).get("io_heavy", 1))
     script:
         "../scripts/pack/sync_sounds.py"
 

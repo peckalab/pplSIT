@@ -14,13 +14,7 @@ rule bombcell_stream:
         ready=k_path("{animal}", "{session}", "{stream}", "kilosort.ready"),
         st=k_path("{animal}", "{session}", "{stream}", "spike_times.npy"),
         sc=k_path("{animal}", "{session}", "{stream}", "spike_clusters.npy"),
-        spike_templates=k_path("{animal}", "{session}", "{stream}", "spike_templates.npy"),
         templates=k_path("{animal}", "{session}", "{stream}", "templates.npy"),
-        amplitudes=k_path("{animal}", "{session}", "{stream}", "amplitudes.npy"),
-        whitening_mat_inv=k_path("{animal}", "{session}", "{stream}", "whitening_mat_inv.npy"),
-        channel_positions=k_path("{animal}", "{session}", "{stream}", "channel_positions.npy"),
-        dat=lambda wc: stream_dat_path(wc.animal, wc.session, wc.stream),
-        settings=k_path("{animal}", "{session}", "{stream}", "settings.json"),
     output:
         ready=k_path("{animal}", "{session}", "{stream}", "bombcell", "bombcell.ready"),
         unit_type=k_path("{animal}", "{session}", "{stream}", "cluster_bc_unitType.tsv"),
@@ -35,6 +29,8 @@ rule bombcell_stream:
             "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/bombcell"
         )
     resources:
-        tmpdir="/tmp"
+        tmpdir="/tmp",
+        bombcell=int(config.get("bombcell", {}).get("resource_slots", 1)),
+        io_heavy=int(config.get("bombcell", {}).get("io_heavy", 1))
     script:
         "../scripts/bombcell.py"

@@ -34,6 +34,8 @@ pack:
     enabled: false
     f_lo: 600.0
     f_hi: 1400.0
+    scheduler_threads: 8
+    io_heavy: 1
 
 # neurosuite / klustakwik config files
 template_xml: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/60/60_SIT_2023-08-11_16-23-36/60_SIT_2023-08-11_16-23-36.xml"
@@ -56,9 +58,15 @@ bombcell:
   conda_env: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/bombcell"
   kilosort_version: 4
   threads: 8
+  resource_slots: 1
+  io_heavy: 1
   split_good_and_mua_non_somatic: True
   unit_types_for_units_h5: ["GOOD", "NON-SOMA GOOD"]
   param_overrides: {}
+
+io_heavy_lock:
+  enabled: False
+  path: "/tmp/pplSIT_io_heavy.lock"
 
 # deep lab cut config files
 dlc_config_path: "/mnt/nevermind.data-share/ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
@@ -75,6 +83,8 @@ lfp:
   source_rate: 30000 # original LFP sampling rate in Hz
   target_rate: 1000  # target LFP sampling rate in Hz
   chunk_size_sec: 10  # chunk size for conversion in seconds
+  scheduler_threads: 16
+  io_heavy: 1
   aep_dur: 0.25  # Auditory evoked response duration in sec
   aep_pre: 0.12
   aep_sig: 0.125
@@ -209,6 +219,9 @@ unit_match:
   sample_amount: 1000 # for both CV, at least 500 per CV
   spike_width: 61 # assuming 30khz sampling, 82 and 61 are common choices (KS1-3, KS4), covers the AP and space around needed for processing
   n_channels: 384 #neuropixels default, the number of channels EXCLUDING sync channels
+  raw_waveform_threads: 128
+  raw_waveform_workers: 128
+  raw_waveform_io_heavy: 1
   extract_good_units_only: False # bool, set to true if you want to only extract units marked as good 
   KS4_data: True #bool, set to true if using Kilosort, as KS4 spike times refer to start of waveform not peak
   samples_before: 20

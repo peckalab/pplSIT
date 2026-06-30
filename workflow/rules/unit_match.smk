@@ -67,7 +67,13 @@ rule extract_raw_waveforms:
         ready=k_path('{animal}', '{session}', '{stream}', 'RawWaveforms', 'RawWaveforms.ready')
     conda:
         "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/unit_match"
-    threads: 256
+    threads:
+        int(os.environ.get(
+            'RAW_WAVEFORM_THREADS',
+            config.get('unit_match', {}).get('raw_waveform_threads', 128)
+        ))
+    resources:
+        io_heavy=int(config.get('unit_match', {}).get('raw_waveform_io_heavy', 1))
     script:
         "../scripts/unit_match/extract_raw_waveforms.py"
 
