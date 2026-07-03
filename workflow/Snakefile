@@ -240,9 +240,17 @@ active_only_blocks = {
     'cognitiveS',
 }
 
+def configured_unit_match_methods():
+    unit_match_config = config.get('unit_match', {})
+    methods = unit_match_config.get('methods', unit_match_config.get('method', 'unitmatchpy'))
+    if isinstance(methods, str):
+        methods = [methods]
+    return [str(method).strip().lower() for method in methods]
+
 animal_targets_dict = {
     'unit_match': [
-        ('unit_match', 'probe_group_summary.csv')
+        ('unit_match', os.path.join(method, 'probe_group_summary.csv'))
+        for method in configured_unit_match_methods()
     ]
 }
 
@@ -321,6 +329,7 @@ cross_animal_target_names = collect_cross_animal_target_names()
 def get_targets(wildcards):
     sessions = expand("{session}", session=config["session_IDs"])
     animals  = expand("{animal}", animal=[s.split('_')[0] for s in config["session_IDs"]])
+    unique_animals = sorted(set(animals))
 
     # build target map for session-level targets
     targets = []
@@ -331,7 +340,7 @@ def get_targets(wildcards):
 
     # add animal-level targets
     build_animal_target = lambda animal, name: os.path.join(config['prj_path'], name[0], animal, name[1])
-    for animal in animals:
+    for animal in unique_animals:
         for name in animal_target_names:
             targets.append(build_animal_target(animal, name))
 

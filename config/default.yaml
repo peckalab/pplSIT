@@ -60,6 +60,13 @@ bombcell:
   threads: 8
   resource_slots: 1
   io_heavy: 1
+  unit_match_waveforms: False # if true, save BombCell RawWaveforms/Unit*_RawSpikes.npy for UnitMatch
+  force_unit_match_waveform_reextract: False
+  stage_raw_dat:
+    enabled: False
+    root: "/local/scratch/bengala/pplSIT/bombcell_stage"
+    cleanup: True
+    min_free_gb: 20
   split_good_and_mua_non_somatic: True
   unit_types_for_units_h5: ["GOOD", "NON-SOMA GOOD"]
   param_overrides: {}
@@ -215,7 +222,10 @@ segments:
     radius: 0.05
 
 unit_match:
-  method: 'unitmatchpy' # unitmatchpy is implemented; deepunitmatch is reserved for a future adapter
+  method: 'unitmatchpy' # backward-compatible single-method setting
+  methods: ['unitmatchpy'] # choose any of: unitmatchpy, deepunitmatch
+  conda_env: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/unit_match"
+  waveform_source: 'unitmatch' # unitmatch | bombcell
   sample_amount: 1000 # for both CV, at least 500 per CV
   spike_width: 61 # assuming 30khz sampling, 82 and 61 are common choices (KS1-3, KS4), covers the AP and space around needed for processing
   n_channels: 384 #neuropixels default, the number of channels EXCLUDING sync channels
@@ -227,3 +237,10 @@ unit_match:
   samples_before: 20
   match_good_units_only: True # bool, set to true if you want to only match units marked as good
   require_phy_folder: False # bool, only include sessions with kilosort/.phy
+  deepunitmatch:
+    source_path: null # optional path to a UnitMatch checkout's UnitMatchPy directory for source-only DeepUnitMatch
+    model_path: null # null uses the authors' pretrained/default model
+    device: 'cuda'
+    threshold: 0.5
+    expected_spike_width: 82 # authors' pretrained model expects spike_width=82, samples_before=20
+    tmp_dir: null # null uses prj_path/unit_match/<animal>/<method>/tmp/probe_json_<n>

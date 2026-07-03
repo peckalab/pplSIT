@@ -17,11 +17,16 @@ rule bombcell_stream:
         templates=k_path("{animal}", "{session}", "{stream}", "templates.npy"),
     output:
         ready=k_path("{animal}", "{session}", "{stream}", "bombcell", "bombcell.ready"),
+        raw_waveforms_ready=k_path("{animal}", "{session}", "{stream}", "bombcell", "RawWaveforms", "RawWaveforms.ready"),
         unit_type=k_path("{animal}", "{session}", "{stream}", "cluster_bc_unitType.tsv"),
         metrics_csv=k_path("{animal}", "{session}", "{stream}", "bombcell", "templates._bc_qMetrics.csv"),
         metrics_parquet=k_path("{animal}", "{session}", "{stream}", "bombcell", "templates._bc_qMetrics.parquet"),
     params:
         param_overrides=lambda wc: config.get("bombcell", {}).get("param_overrides", {}),
+        unit_match_waveforms=lambda wc: config.get("bombcell", {}).get("unit_match_waveforms", False),
+        force_unit_match_waveform_reextract=lambda wc: config.get("bombcell", {}).get("force_unit_match_waveform_reextract", False),
+        unit_match_spike_width=lambda wc: config.get("unit_match", {}).get("spike_width", None),
+        unit_match_sample_amount=lambda wc: config.get("unit_match", {}).get("sample_amount", None),
     threads: int(config.get("bombcell", {}).get("threads", 16))
     conda:
         config.get("bombcell", {}).get(

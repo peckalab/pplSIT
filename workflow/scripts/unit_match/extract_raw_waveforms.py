@@ -1,3 +1,4 @@
+import json
 import os
 import fcntl
 
@@ -131,6 +132,13 @@ else:
 
 del data
 
-# touch RawWaveforms.ready to signal completion
+# Record the extraction settings that determine the saved waveform shape.
 with open(os.path.join(KS_dirs[0], 'RawWaveforms', 'RawWaveforms.ready'), 'w') as f:
-    f.write('')
+    json.dump({
+        "spike_width": int(spike_width),
+        "samples_before": int(samples_before) if KS4_data else None,
+        "sample_amount": int(sample_amount),
+        "extract_good_units_only": bool(extract_good_units_only),
+        "KS4_data": bool(KS4_data),
+    }, f, indent=2)
+    f.write("\n")
