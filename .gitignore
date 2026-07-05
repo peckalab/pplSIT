@@ -163,5 +163,7 @@ cython_debug/
 .vscode
 workflow/.snakemake
 workflow/*.pdf
+workflow/*.out
+.codex
 
 manual/*
