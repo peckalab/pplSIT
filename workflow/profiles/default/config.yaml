@@ -1,0 +1,4 @@
+default-resources:
+  - mem_mb=None
+  - disk_mb=None
+  - tmpdir="/local/scratch/bengala/pplSIT/tmp"

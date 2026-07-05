@@ -1,0 +1,2 @@
+default-resources:
+  tmpdir: "/local/scratch/bengala/pplSIT/tmp"

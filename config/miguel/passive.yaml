@@ -11,20 +11,21 @@
 # sudo diskutil umount force /Users/andrey/nevermind
 
 blocks:  # blocks of pipeline to run
-  meta: False         # pack main metadata into HDF5
+  meta: True         # pack main metadata into HDF5
   performance: False   # performance metrics
   DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
   Audio: False       # process audio data
-  LFP: False          # extract LFP
+  LFP: True          # extract LFP
   neurosuite: False  # sorting with neurosuite / klustakwik
   kilosort: True  # sorting with kilosort
   units: False      # extract spike trains from sorted data
-  AEPs: False         # extract Auditory Evoked Responses
+  AEPs: True         # extract Auditory Evoked Responses
   PSTH_bar: True
   PSTH_bootstrap: False
   PSTH_shuffle: False
+  STRF_passive: True
   PSTH_bnMAPs: False
   spatial: False
   population: False
@@ -33,94 +34,48 @@ blocks:  # blocks of pipeline to run
   metronome: False
   video: False
   sound_phase_lock: False
-  segments: True
+  segments: False
   activity_matrices: False
   ensembles: False
   covariance: False
   vectors: False
   state_decoder_unit_mx: False
   bombcell: True # Bombcell quality control on Kilosort streams
-  unit_match: False # run unit matching across all sessions of an animal
+  raw_waveforms: False # extract raw waveforms for unit matching (session level)
 
-session_IDs:  
-  # - "017276_ppcSIT_2026-02-10_20-48-38"
-  # - "017276_ppcSIT_2026-02-13_16-12-25"
-  # - "017276_ppcSIT_2026-02-19_09-44-31"
-  # - "017276_ppcSIT_2026-02-19_21-34-16"
-  # - "017276_ppcSIT_2026-02-20_15-22-50"
-  - "017276_SIT_2026-02-27_18-21-34"
-  - "017276_SIT_2026-03-01_16-03-30"
-  # # - "017276_SIT_passive_2026-03-02_18-47-19"
-  - "017276_SIT_2026-03-02_19-17-21"
-  # - "017276_SIT_passive_2026-03-01_20-06-02"
-  - "017276_SIT_2026-03-03_10-53-45"
-  - "017276_SIT_2026-03-01_18-56-24"
-  - "017276_SIT_2026-03-03_14-59-35"
-  - "017276_SIT_2026-03-03_18-44-41"
-  - "017276_SIT_2026-03-04_10-21-06"
-  - "017276_SIT_2026-03-04_14-14-44"
-  - "017276_SIT_2026-03-04_17-47-45"
-  - "017276_SIT_2026-03-05_10-20-48"
-  - "017276_SIT_2026-03-05_14-21-01"
-  - "017276_SIT_2026-03-05_17-44-08"
-  - "017276_SIT_2026-03-06_10-14-14"
-  - "017276_SIT_2026-03-06_14-30-26"
-  - "017276_SIT_2026-03-06_14-58-02"
-  - "017276_SIT_2026-03-06_19-19-27"
-  - "017276_SIT_2026-03-07_13-44-19"
-  - "017276_SIT_2026-03-07_16-32-51"
-  - "017276_SIT_2026-03-07_19-14-57"
-  # - "017276_SIT_2026-03-08_13-24-10" # cable disconnected during recording ~40min and it seems that it affected the syncing
-  - "017276_SIT_2026-03-08_16-29-07"
-  - "017276_SIT_2026-03-08_19-34-55"
-  - "017276_SIT_2026-03-09_10-09-25"
-  - "017276_SIT_2026-03-09_14-35-02"
-  - "017276_SIT_2026-03-09_18-44-04"
-  - "017276_SIT_2026-03-10_10-28-17"
-  - "017276_SIT_2026-03-10_14-35-05"
-  - "017276_SIT_2026-03-10_19-02-23"
-  - "017276_SIT_2026-03-11_10-43-15"
-  - "017276_SIT_2026-03-11_14-45-58"
-  - "017276_SIT_2026-03-11_18-27-06"
-  - "017276_SIT_2026-03-12_10-41-43"
-  - "017276_SIT_2026-03-12_15-37-31"
-  - "017276_SIT_2026-03-12_18-58-54"
-  - "017276_SIT_2026-03-13_08-48-14"
-  - "017276_SIT_2026-03-24_17-49-25"
-  - "017276_SIT_2026-03-25_10-21-08"
-  - "017276_SIT_2026-04-01_14-05-42"
-  - "017276_SIT_2026-04-01_18-26-38"
-  - "017276_SIT_2026-04-02_10-31-40"
-  - "017276_SIT_2026-04-04_18-04-13"
-  - "017276_SIT_2026-04-08_19-27-38"
-  - "017276_SIT_2026-04-09_17-02-17"
-  - "017276_SIT_2026-04-10_18-29-58"
-  - "017276_SIT_2026-04-12_15-59-34"
-  - "017276_SIT_2026-04-12_18-11-48"
-  - "017276_SIT_2026-04-13_08-22-28"
-  - "017276_SIT_2026-04-13_14-08-11"
-  - "017276_SIT_2026-04-13_18-53-31"
-  - "017276_SIT_2026-04-14_15-28-53"
-  - "017276_SIT_2026-04-15_10-28-19"
-  - "017276_SIT_2026-04-15_11-00-22"
-  - "017276_SIT_2026-04-15_15-28-29"
-  - "017276_SIT_2026-04-15_18-12-31"
-  - "017276_SIT_2026-04-16_10-37-08"
-  - "017276_SIT_2026-04-16_15-20-36"
-  - "017276_SIT_2026-04-16_18-28-49"
-  # missing initially from analysis
-  - "017276_SIT_2026-03-13_12-24-41"
-  - "017276_SIT_2026-03-13_16-24-02"
-  - "017276_SIT_2026-03-13_17-42-09"
-  # - "017276_SIT_2026-04-01_10-40-33" # only 10 minutes, skip for now
-  - "017276_SIT_2026-04-02_14-45-44"
-  # - "017276_SIT_2026-04-04_16-36-31" #only 12min, skip for now
-  # - "017276_SIT_2026-04-06_13-32-41" # only 12min, skip for now
-  - "017276_SIT_2026-04-09_10-15-30"
-  - "017276_SIT_2026-04-10_10-44-33"
-  - "017276_SIT_2026-04-14_09-41-06"
-  - "017276_SIT_2026-04-14_17-58-15"
-  - "017276_SIT_2026-04-17_08-37-06"
+
+session_IDs:
+  # Calibration
+  - "017388_SIT_passive_2026-05-06_15-20-34"
+  - "017388_SIT_passive_2026-05-10_14-34-20"
+  - "017388_SIT_passive_2026-05-10_14-54-12"
+  - "017388_SIT_passive_2026-05-10_17-03-18"
+  - "017388_SIT_passive_2026-05-10_17-23-46"
+  - "017388_SIT_passive_2026-05-11_10-04-32"
+  # Version 1
+  - "017388_SIT_passive_2026-05-11_16-29-57"
+  - "017388_SIT_passive_2026-05-20_10-49-40"
+  - "017388_SIT_passive_2026-05-23_20-22-35"
+  - "017388_SIT_passive_2026-05-25_12-48-33"
+  - "017388_SIT_passive_2026-05-29_10-26-39"
+  - "017388_SIT_passive_2026-05-30_13-16-12"
+  - "017388_SIT_passive_2026-06-03_12-02-49"
+  - "017388_SIT_passive_2026-06-04_14-53-09"
+  - "017388_SIT_passive_2026-06-08_13-53-08"
+  
+  # Version 2
+  - "017388_SIT_passive_2026-05-11_16-51-25"
+  - "017388_SIT_passive_2026-05-20_19-22-53"
+  - "017388_SIT_passive_2026-05-24_12-57-07"
+  - "017388_SIT_passive_2026-05-29_14-42-03"
+  - "017388_SIT_passive_2026-06-03_14-51-53"
+  - "017388_SIT_passive_2026-06-08_10-32-10"
+  # Version 3
+  - "017388_SIT_passive_2026-05-20_20-44-53"
+  - "017388_SIT_passive_2026-05-24_20-27-23"
+  - "017388_SIT_passive_2026-05-29_17-03-07"
+  - "017388_SIT_passive_2026-06-03_19-49-59"
+  - "017388_SIT_passive_2026-06-08_11-15-29"
 
   
 
@@ -132,58 +87,28 @@ src_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw"
 #dst_path: "/home/sobolev/nevermind_ag-grothe/Andrey/sandbox/4Kate/processed"
 dst_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/"
 
-prj_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/projects/ICproject/"
-
-template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017276/manual.json"
+# template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017388/manual_original.json"
+template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017388/manual_version1.json"
+# template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017388/manual_version2.json"
+# template_manual_json: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017388/manual_version3.json"
 
 pack:
   drift_coeff: 0.000016666
   adc_sync:
     enabled: True
-    f_lo: 2400.0
-    f_hi: 6100.0
-    scheduler_threads: 8
-    io_heavy: 1
-
+    f_lo: 250.0
+    f_hi: 15000.0
 
 kilosort:
   settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017276/kilosort.json"
   #probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/017276/probe.json"
   save_preprocessed: False
   cuda_device: 3
-  jobs_per_gpu: 1
 
 # single units config: which sorter to use
 units:
   source: 'kilosort'
   label_source: 'bombcell' # ks | bombcell
-
-bombcell:
-  #streams: ["ProbeA", "ProbeB"]
-  threads: 32
-  resource_slots: 1
-  io_heavy: 1
-  unit_match_waveforms: True
-  force_unit_match_waveform_reextract: False
-  stage_raw_dat:
-    enabled: True
-    root: "/local/scratch/bengala/pplSIT/bombcell_stage"
-    cleanup: True
-    min_free_gb: 20
-
-unit_match:
-  conda_env: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/unit_match_py312"
-  waveform_source: 'bombcell'
-  spike_width: 82
-  raw_waveform_threads: 4
-  raw_waveform_workers: 4
-  raw_waveform_io_heavy: 4
-  methods: ["deepunitmatch", "unitmatchpy"]
-  deepunitmatch:
-    source_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/UnitMatch/UnitMatchPy"
-    model_path: null
-    tmp_dir:  "/local/scratch/bengala/pplSIT/deepunitmatch_tmp/017276"
-
 
 # deep lab cut config files
 #dlc_config_path: "/home/sobolev/nevermind_ag-grothe/Miguel/DeepLabCut/TrainedModels/implantedSIT-Miguel-2023-06-23/config.yaml"
@@ -201,8 +126,6 @@ lfp:
   source_rate: 30000 # original LFP sampling rate in Hz
   target_rate: 1000  # target LFP sampling rate in Hz
   chunk_size_sec: 10  # chunk size for conversion in seconds
-  scheduler_threads: 16
-  io_heavy: 1
   aep_dur: 0.25  # Auditory evoked response duration in sec
   aep_pre: 0.12
   aep_sig: 0.125
@@ -218,7 +141,7 @@ lfp:
   baseline:
     min_duration_ms: 500
     stationary_thresh: 0.04  # m/s
-
+  
 
 # analysis configurations
 psth:
@@ -330,3 +253,25 @@ vectors:
     step: 5
   units_to_exclude:
     '014393_ppcSIT_2025-04-23_20-27-09': ['2-300', '3-350']
+
+bombcell:
+  threads: 32
+  resource_slots: 1
+  io_heavy: 1
+  unit_match_waveforms: True
+  force_unit_match_waveform_reextract: False
+  stage_raw_dat:
+    enabled: True
+    root: "/local/scratch/bengala/pplSIT/bombcell_stage"
+    cleanup: True
+    min_free_gb: 20
+  param_overrides:
+    maxRPVviolations: 0.4
+    minSpatialDecaySlopeExp: 0.005
+    tauR_values: [0.0008]
+    tauR_valuesMin: 0.0008
+    tauR_valuesMax: 0.0008
+
+io_heavy_lock:
+  enabled: False
+  path: "/tmp/pplSIT_io_heavy.lock"
