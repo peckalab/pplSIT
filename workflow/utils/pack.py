@@ -118,12 +118,19 @@ def build_dis_matrix(sound_events, trials, cfg):
             continue
         last_sound_idx = dis_idxs_before_end[-1]
         if sound_events[last_sound_idx][1] > 2:
+            idx_dis = np.where(dis_end_idxs == last_sound_idx)[0]
+            if len(idx_dis) == 0:
+                idx_dis = np.where((dis_start_idxs <= last_sound_idx) & (last_sound_idx <= dis_end_idxs))[0]
+            if len(idx_dis) == 0:
+                continue
+            idx_dis = idx_dis[-1]
+
             # only if trial was not full duration it is a true fail
             if (idx_tl_fail_end - idx_tl_fail_start) < cfg["experiment"]["trial_duration"] * 100:
-                dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = 1
+                dis_results[idx_dis] = 1
             else:
                 # timeout (invalid)
-                dis_results[np.where(dis_end_idxs == last_sound_idx)[0][0]] = -1
+                dis_results[idx_dis] = -1
 
     return np.column_stack(
         [
