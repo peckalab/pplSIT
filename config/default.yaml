@@ -48,6 +48,7 @@ kilosort:
   settings_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/kilosort.json"
   probe_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/013829/probe.json"
   save_preprocessed: False
+  jobs_per_gpu: 1
 
 # single units config: which sorter to use
 units:
@@ -56,6 +57,7 @@ units:
 
 bombcell:
   conda_env: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/bombcell"
+  streams: null # null means all discovered streams; set e.g. ["ProbeA"] to limit Bombcell
   kilosort_version: 4
   threads: 8
   resource_slots: 1

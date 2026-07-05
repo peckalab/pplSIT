@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import glob
+import time
 import torch
 import numpy as np
 
@@ -84,76 +85,137 @@ probe = load_probe(probe_path)
 
 save_p = snakemake.config["kilosort"].get("save_preprocessed", False)
 
-# select CUDA device with most free memory (fallback to configured device)
-def pick_best_cuda_device(fallback_device=0, min_free_gb=8.0, max_utilization=20.0):
-    if not torch.cuda.is_available():
-        print("CUDA not available")
-        return fallback_device
+def get_cuda_device_rows():
+    import subprocess
 
-    try:
-        import subprocess
+    print("CUDA_VISIBLE_DEVICES =", os.environ.get("CUDA_VISIBLE_DEVICES"))
 
-        print("CUDA_VISIBLE_DEVICES =", os.environ.get("CUDA_VISIBLE_DEVICES"))
+    cmd = [
+        "nvidia-smi",
+        "--query-gpu=index,memory.free,memory.total,utilization.gpu",
+        "--format=csv,noheader,nounits",
+    ]
+    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
 
-        cmd = [
-            "nvidia-smi",
-            "--query-gpu=index,memory.free,memory.total,utilization.gpu",
-            "--format=csv,noheader,nounits",
-        ]
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    gpu_rows = []
+    for line in result.stdout.strip().splitlines():
+        idx_s, free_s, total_s, util_s = [x.strip() for x in line.split(",")]
+        g = {
+            "idx": int(idx_s),
+            "free_mib": float(free_s),
+            "total_mib": float(total_s),
+            "util": float(util_s),
+        }
+        g["free_frac"] = g["free_mib"] / max(g["total_mib"], 1.0)
+        gpu_rows.append(g)
 
-        gpu_rows = []
-        for line in result.stdout.strip().splitlines():
-            idx_s, free_s, total_s, util_s = [x.strip() for x in line.split(",")]
-            g = {
-                "idx": int(idx_s),
-                "free_mib": float(free_s),
-                "total_mib": float(total_s),
-                "util": float(util_s),
-            }
-            g["free_frac"] = g["free_mib"] / max(g["total_mib"], 1.0)
-            gpu_rows.append(g)
+    return gpu_rows
 
-        print("GPU rows from nvidia-smi:")
-        for g in gpu_rows:
-            print(g)
 
-        min_free_mib = min_free_gb * 1024.0
-        preferred = [
-            g for g in gpu_rows
-            if g["util"] <= max_utilization and g["free_mib"] >= min_free_mib
-        ]
+def rank_cuda_devices(gpu_rows, min_free_gb=8.0, max_utilization=20.0):
+    min_free_mib = min_free_gb * 1024.0
+    preferred = [
+        g for g in gpu_rows
+        if g["util"] <= max_utilization and g["free_mib"] >= min_free_mib
+    ]
 
-        print("Preferred GPUs:")
-        for g in preferred:
-            print(g)
+    print("Preferred GPUs:")
+    for g in preferred:
+        print(g)
 
-        if preferred:
-            best = max(preferred, key=lambda g: (g["free_mib"], -g["util"]))
-            print("Selected from preferred:", best)
-            return best["idx"]
+    if preferred:
+        return sorted(preferred, key=lambda g: (g["free_mib"], -g["util"]), reverse=True)
 
-        for g in gpu_rows:
-            g["score"] = (100.0 - g["util"]) * 2 + 50.0 * g["free_frac"]
+    for g in gpu_rows:
+        g["score"] = (100.0 - g["util"]) * 2 + 50.0 * g["free_frac"]
 
-        print("Scored GPUs:")
-        for g in gpu_rows:
-            print(g)
+    print("Scored GPUs:")
+    for g in gpu_rows:
+        print(g)
 
-        best = max(gpu_rows, key=lambda g: g["score"])
-        print("Selected from fallback:", best)
-        return best["idx"]
+    return sorted(gpu_rows, key=lambda g: g["score"], reverse=True)
 
-    except Exception as e:
-        print(f"GPU auto-selection failed: {e}")
-        return fallback_device
 
-# select CUDA device using utilization + memory (fallback to configured device)
-best_dev_id = snakemake.config["kilosort"].get("cuda_device", 0)
-best_dev_id = pick_best_cuda_device(
-    fallback_device=best_dev_id,
+def try_lock_cuda_device(device_id, lock_dir, jobs_per_gpu=1):
+    import fcntl
+
+    os.makedirs(lock_dir, exist_ok=True)
+    jobs_per_gpu = max(1, int(jobs_per_gpu))
+
+    for slot in range(jobs_per_gpu):
+        lock_path = os.path.join(lock_dir, f"gpu{device_id}.slot{slot}.lock")
+        lock_fh = open(lock_path, "w")
+
+        try:
+            fcntl.flock(lock_fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            lock_fh.close()
+            continue
+
+        lock_fh.seek(0)
+        lock_fh.truncate()
+        lock_fh.write(f"pid={os.getpid()}\ngpu={device_id}\nslot={slot}\nstream_dir={stream_dir}\n")
+        lock_fh.flush()
+        return lock_fh
+
+    return None
+
+
+# Select the best CUDA device that is not already locked by another Kilosort job.
+def pick_and_lock_best_cuda_device(
+    fallback_device=0,
     min_free_gb=8.0,
     max_utilization=20.0,
+    allowed_devices=None,
+    lock_dir="/tmp/pplSIT_kilosort_gpu_locks",
+    jobs_per_gpu=1,
+    wait_seconds=10,
+):
+    if not torch.cuda.is_available():
+        print("CUDA not available")
+        return fallback_device, None
+
+    allowed_devices = set(allowed_devices or [])
+
+    while True:
+        try:
+            gpu_rows = get_cuda_device_rows()
+            if allowed_devices:
+                gpu_rows = [g for g in gpu_rows if g["idx"] in allowed_devices]
+                if not gpu_rows:
+                    raise ValueError(f"No GPUs from cuda_devices={sorted(allowed_devices)} found by nvidia-smi.")
+
+            print("GPU rows from nvidia-smi:")
+            for g in gpu_rows:
+                print(g)
+
+            for candidate in rank_cuda_devices(gpu_rows, min_free_gb, max_utilization):
+                lock_fh = try_lock_cuda_device(candidate["idx"], lock_dir, jobs_per_gpu=jobs_per_gpu)
+                if lock_fh is not None:
+                    print("Selected and locked GPU:", candidate)
+                    return candidate["idx"], lock_fh
+
+            print(f"No unlocked GPU available in {lock_dir}; waiting {wait_seconds}s...")
+            time.sleep(wait_seconds)
+
+        except Exception as e:
+            print(f"GPU auto-selection failed: {e}")
+            lock_fh = try_lock_cuda_device(fallback_device, lock_dir, jobs_per_gpu=jobs_per_gpu)
+            if lock_fh is not None:
+                return fallback_device, lock_fh
+            print(f"Fallback GPU {fallback_device} is locked; waiting {wait_seconds}s...")
+            time.sleep(wait_seconds)
+
+
+kilosort_config = snakemake.config.get("kilosort", {})
+best_dev_id = kilosort_config.get("cuda_device", 0)
+best_dev_id, cuda_lock_fh = pick_and_lock_best_cuda_device(
+    fallback_device=best_dev_id,
+    min_free_gb=float(kilosort_config.get("cuda_min_free_gb", 8.0)),
+    max_utilization=float(kilosort_config.get("cuda_max_utilization", 20.0)),
+    allowed_devices=kilosort_config.get("cuda_devices", None),
+    lock_dir=kilosort_config.get("gpu_lock_dir", "/local/scratch/bengala/pplSIT/gpu_locks"),
+    jobs_per_gpu=int(kilosort_config.get("jobs_per_gpu", 1)),
 )
 
 print(f"USING CUDA DEVICE: {best_dev_id}")

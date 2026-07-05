@@ -2,7 +2,7 @@ import os
 
 
 def bombcell_ready_files(wc):
-    streams = streams_for_session_wc(wc)
+    streams = configured_streams_for_session_wc("bombcell", wc)
     return expand(
         k_path(wc.animal, wc.session, "{stream}", "bombcell", "bombcell.ready"),
         stream=streams

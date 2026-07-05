@@ -121,6 +121,34 @@ def streams_for_session_wc(wc):
     return streams_for_session(config, wc.animal, wc.session)
 
 
+def configured_streams_for_session(block_name, animal, session):
+    """
+    Return streams for a session, optionally filtered by <block_name>.streams.
+    If no filter is configured, all discovered streams are returned.
+    """
+    streams = streams_for_session(config, animal, session)
+    requested = config.get(block_name, {}).get("streams", None)
+
+    if requested is None:
+        return streams
+    if isinstance(requested, str):
+        requested = [requested]
+
+    requested = [str(stream).strip() for stream in requested if str(stream).strip()]
+    missing = sorted(set(requested) - set(streams))
+    if missing:
+        raise ValueError(
+            f"{block_name}.streams requested stream(s) not found for "
+            f"{animal}/{session}: {missing}. Available streams: {streams}"
+        )
+
+    return [stream for stream in streams if stream in requested]
+
+
+def configured_streams_for_session_wc(block_name, wc):
+    return configured_streams_for_session(block_name, wc.animal, wc.session)
+
+
 @lru_cache(maxsize=None)
 def session_paradigm_for(animal, session):
     animal = str(animal).strip()

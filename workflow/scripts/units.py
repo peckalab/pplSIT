@@ -116,6 +116,25 @@ def _read_streams(marker_path):
         return [ln.strip() for ln in f if ln.strip()]
 
 
+def _stream_uses_bombcell_labels(config, stream_name):
+    """
+    If units.label_source is bombcell, use Bombcell labels only for streams
+    selected by bombcell.streams. A null filter means all streams.
+    """
+    label_source = config.get("units", {}).get("label_source", "ks")
+    if label_source != "bombcell":
+        return False
+
+    requested = config.get("bombcell", {}).get("streams", None)
+    if requested is None:
+        return True
+    if isinstance(requested, str):
+        requested = [requested]
+
+    requested = {str(stream).strip() for stream in requested if str(stream).strip()}
+    return stream_name in requested
+
+
 def _electrode_offset_for_stream(stream_idx, n_shanks_per_stream=4):
     return stream_idx * n_shanks_per_stream
 
@@ -251,13 +270,16 @@ def _process_kilosort_stream(
             f"Unsupported units.label_source: {label_source}. "
             "Allowed values are 'ks' and 'bombcell'."
         )
+    effective_label_source = (
+        "bombcell" if _stream_uses_bombcell_labels(config, stream_name) else "ks"
+    )
 
     bombcell_unit_types = config.get("bombcell", {}).get(
         "unit_types_for_units_h5",
         ["GOOD", "NON-SOMA GOOD"]
     )
     bombcell_labels = None
-    if label_source == "bombcell":
+    if effective_label_source == "bombcell":
         bombcell_ready = os.path.join(stream_folder, "bombcell", "bombcell.ready")
         if not os.path.exists(bombcell_ready):
             raise FileNotFoundError(
@@ -292,13 +314,13 @@ def _process_kilosort_stream(
     if os.path.exists(clu_info_file):
         units, unit_info = load_ks_units_after(
             stream_folder,
-            label_source=label_source,
+            label_source=effective_label_source,
             bombcell_unit_types=bombcell_unit_types
         )
     else:
         units, positions = load_ks_units_before(
             stream_folder,
-            label_source=label_source,
+            label_source=effective_label_source,
             bombcell_unit_types=bombcell_unit_types
         )
 

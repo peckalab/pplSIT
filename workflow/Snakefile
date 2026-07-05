@@ -278,7 +278,7 @@ def collect_target_names_for_session(animal, session):
         if block_name == 'bombcell':
             target_names += [
                 os.path.join('kilosort', stream, 'bombcell', 'bombcell.ready')
-                for stream in streams_for_session(config, animal, session)
+                for stream in configured_streams_for_session('bombcell', animal, session)
             ]
             continue
 

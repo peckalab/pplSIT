@@ -206,6 +206,8 @@ else:
             tp=k_path("{animal}", "{session}", "{stream}", "templates.npy")
         conda:
             "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/kilosort"
+        resources:
+            kilosort_gpu=int(config.get("kilosort", {}).get("resource_slots", 1))
         script:
             "../scripts/kilosort.py"
 
