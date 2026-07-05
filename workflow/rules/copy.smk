@@ -31,6 +31,7 @@ def stage_ephys_streams(session_path: str) -> None:
       - derive stream_name from the folder containing the .dat
       - hardlink dat into session_path/ephys/<stream_name>/<original_dat_filename>
       - hardlink timestamps.npy (if present) into the same folder
+      - hardlink sample_numbers.npy (if present) into the same folder
 
     Additionally:
       - find the first settings.xml anywhere under session_path subfolders and hardlink it to
@@ -79,6 +80,11 @@ def stage_ephys_streams(session_path: str) -> None:
             if os.path.exists(src_ts):
                 dst_ts = os.path.join(dst_dir, "timestamps.npy")
                 safe_hardlink(src_ts, dst_ts, overwrite=True)
+
+            src_samples = os.path.join(dirpath, "sample_numbers.npy")
+            if os.path.exists(src_samples):
+                dst_samples = os.path.join(dst_dir, "sample_numbers.npy")
+                safe_hardlink(src_samples, dst_samples, overwrite=True)
 
     if not found_any_dat:
         raise ValueError(f"There should be at least one .dat file in subfolders of: {session_path}")

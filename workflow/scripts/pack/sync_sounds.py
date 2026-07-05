@@ -155,6 +155,8 @@ if sync_type == "OneBox_ADC":
             adc_ts_file=adc_ts,
             ephys_ts_file=ephys_ts,
             channel=adc_channel,
+            s_rate=adc_sr,
+            ch_no=adc_cc,
             f_lo=f_lo,
             f_hi=f_hi,
         )

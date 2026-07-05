@@ -4,12 +4,13 @@ from scipy.ndimage import uniform_filter1d
 from scipy.signal import butter, detrend, sosfilt
 from utils.neurosuite import XMLHero, DatHero
 import os
+import warnings
 
 def _moving_average_power(x, n):
     n = max(1, int(n))
     p = x * x
     p_s = uniform_filter1d(p, size=n, mode="nearest")
-    return np.sqrt(p_s)
+    return np.sqrt(np.maximum(p_s, 0))
 
 
 def _detect_onsets_hysteresis(env_s, hi, lo, min_on, min_off, min_gap):
@@ -79,6 +80,215 @@ def find_all_sine_onsets_adc(
 
     onsets = _detect_onsets_hysteresis(env_s, hi, lo, min_on, min_off, min_gap)
     return onsets, t[onsets], env_s, (lo, hi)
+
+
+def _format_timestamp_window(timestamps, center_idx, radius=3):
+    start = max(0, center_idx - radius)
+    stop = min(len(timestamps), center_idx + radius + 2)
+    pairs = [f"{i}:{timestamps[i]:.12g}" for i in range(start, stop)]
+    return "[" + ", ".join(pairs) + "]"
+
+
+def _sample_numbers_diagnostic(timestamp_path):
+    sample_numbers_path = os.path.join(os.path.dirname(timestamp_path), "sample_numbers.npy")
+    if not os.path.exists(sample_numbers_path):
+        return "sibling_sample_numbers: not found"
+
+    sample_numbers = np.load(sample_numbers_path, mmap_mode="r")
+    if len(sample_numbers) < 2:
+        return (
+            f"sibling_sample_numbers: {sample_numbers_path}\n"
+            f"  count={len(sample_numbers)}; not enough values to assess continuity"
+        )
+
+    diffs = np.diff(sample_numbers)
+    bad_idxs = np.where(diffs != 1)[0]
+    examples = []
+    for idx in bad_idxs[:8]:
+        examples.append(
+            f"{int(idx)}->{int(idx + 1)}: "
+            f"{int(sample_numbers[idx])} -> {int(sample_numbers[idx + 1])} "
+            f"(d={int(diffs[idx])})"
+        )
+    examples_text = ""
+    if examples:
+        examples_text = "\n  examples: " + "; ".join(examples)
+
+    return (
+        f"sibling_sample_numbers: {sample_numbers_path}\n"
+        f"  count={len(sample_numbers)}, "
+        f"min/max={int(np.min(sample_numbers))}/{int(np.max(sample_numbers))}, "
+        f"non_contiguous_steps={len(bad_idxs)}"
+        f"{examples_text}"
+    )
+
+
+def _load_contiguous_sample_numbers(timestamp_path, expected_len):
+    sample_numbers_path = os.path.join(os.path.dirname(timestamp_path), "sample_numbers.npy")
+    if not os.path.exists(sample_numbers_path):
+        raise FileNotFoundError(
+            f"Cannot rebuild timestamps because sample_numbers.npy is missing next to: "
+            f"{timestamp_path}"
+        )
+
+    sample_numbers = np.load(sample_numbers_path, mmap_mode="r")
+    if len(sample_numbers) != expected_len:
+        raise ValueError(
+            f"Cannot rebuild timestamps because sample_numbers length ({len(sample_numbers)}) "
+            f"does not match timestamps length ({expected_len}): {sample_numbers_path}"
+        )
+
+    diffs = np.diff(sample_numbers)
+    bad_idxs = np.where(diffs != 1)[0]
+    if len(bad_idxs):
+        examples = []
+        for idx in bad_idxs[:8]:
+            examples.append(
+                f"{int(idx)}->{int(idx + 1)}: "
+                f"{int(sample_numbers[idx])} -> {int(sample_numbers[idx + 1])} "
+                f"(d={int(diffs[idx])})"
+            )
+        raise ValueError(
+            f"Cannot rebuild timestamps because sample_numbers.npy is not contiguous: "
+            f"{sample_numbers_path}\n"
+            f"non_contiguous_steps={len(bad_idxs)}; examples: {'; '.join(examples)}"
+        )
+
+    return sample_numbers
+
+
+def _repair_minor_timestamp_inversions(timestamps, path, label):
+    timestamps = np.asarray(timestamps, dtype=float).copy()
+    if len(timestamps) < 2:
+        _validate_strictly_increasing_timestamps(timestamps, path, label)
+        return timestamps
+
+    diffs = np.diff(timestamps)
+    bad_idxs = np.where(diffs <= 0)[0]
+    if not len(bad_idxs):
+        return timestamps
+
+    positive_diffs = diffs[diffs > 0]
+    median_dt = np.median(positive_diffs) if len(positive_diffs) else np.nan
+    if not np.isfinite(median_dt) or median_dt <= 0:
+        _validate_strictly_increasing_timestamps(timestamps, path, label)
+
+    negative_value_count = int(np.sum(timestamps < 0))
+    largest_backstep = float(np.max(-diffs[bad_idxs]))
+    bad_fraction = len(bad_idxs) / max(1, len(diffs))
+
+    # Open Ephys occasionally emits tiny one-sample timestamp inversions. Preserve
+    # the OE clock in that case; only reject broad corruption such as -1 blocks.
+    if (
+        negative_value_count
+        or bad_fraction > 1e-4
+        or largest_backstep > 10 * float(median_dt)
+    ):
+        _validate_strictly_increasing_timestamps(timestamps, path, label)
+
+    repaired = timestamps.copy()
+    for idx in bad_idxs:
+        start = int(idx + 1)
+        repaired[start] = repaired[start - 1] + median_dt
+        scan_idx = start + 1
+        while scan_idx < len(repaired) and repaired[scan_idx] <= repaired[scan_idx - 1]:
+            repaired[scan_idx] = repaired[scan_idx - 1] + median_dt
+            scan_idx += 1
+
+    warnings.warn(
+        f"{label} timestamps.npy has {len(bad_idxs)} tiny non-increasing steps; "
+        "preserving the Open Ephys clock and repairing those local inversions for "
+        f"sync monotonicity. path: {path}",
+        RuntimeWarning,
+    )
+    return repaired
+
+
+def _load_adc_timestamps_for_sync(adc_ts_file, ephys_timestamps, s_rate):
+    adc_timestamps = np.load(adc_ts_file)
+    try:
+        _validate_strictly_increasing_timestamps(
+            adc_timestamps,
+            adc_ts_file,
+            "ADC",
+        )
+        return adc_timestamps, "timestamps.npy"
+    except ValueError as exc:
+        repaired = _repair_minor_timestamp_inversions(
+            adc_timestamps,
+            adc_ts_file,
+            "ADC",
+        )
+        return repaired, "timestamps.npy repaired"
+
+
+def _validate_strictly_increasing_timestamps(timestamps, path, label):
+    timestamps = np.asarray(timestamps)
+
+    problems = []
+    finite_mask = np.isfinite(timestamps)
+    nonfinite_idxs = np.where(~finite_mask)[0]
+    if len(nonfinite_idxs):
+        examples = ", ".join(str(int(i)) for i in nonfinite_idxs[:10])
+        problems.append(
+            f"non-finite values: count={len(nonfinite_idxs)}, first_indices=[{examples}]"
+        )
+
+    if len(timestamps) < 2:
+        problems.append(f"not enough timestamps: count={len(timestamps)}")
+        diffs = np.array([])
+    else:
+        diffs = np.diff(timestamps)
+        bad_step_idxs = np.where(diffs <= 0)[0]
+        if len(bad_step_idxs):
+            neg_idxs = np.where(diffs < 0)[0]
+            zero_idxs = np.where(diffs == 0)[0]
+            examples = []
+            for idx in bad_step_idxs[:8]:
+                examples.append(
+                    "idx "
+                    f"{int(idx)}->{int(idx + 1)}: "
+                    f"{timestamps[idx]:.12g} -> {timestamps[idx + 1]:.12g} "
+                    f"(dt={diffs[idx]:.12g}); "
+                    f"window={_format_timestamp_window(timestamps, int(idx))}"
+                )
+            neg_examples = []
+            for idx in neg_idxs[:8]:
+                neg_examples.append(
+                    "idx "
+                    f"{int(idx)}->{int(idx + 1)}: "
+                    f"{timestamps[idx]:.12g} -> {timestamps[idx + 1]:.12g} "
+                    f"(dt={diffs[idx]:.12g}); "
+                    f"window={_format_timestamp_window(timestamps, int(idx))}"
+                )
+            neg_detail = ""
+            if neg_examples:
+                neg_detail = (
+                    "\nfirst negative steps:\n  - " + "\n  - ".join(neg_examples)
+                )
+            problems.append(
+                "non-increasing steps: "
+                f"count={len(bad_step_idxs)}, "
+                f"negative={len(neg_idxs)}, zero={len(zero_idxs)}, "
+                "examples:\n  - " + "\n  - ".join(examples)
+                + neg_detail
+            )
+
+    if problems:
+        neg_value_count = int(np.sum(timestamps < 0)) if len(timestamps) else 0
+        min_value = np.nanmin(timestamps) if len(timestamps) else np.nan
+        max_value = np.nanmax(timestamps) if len(timestamps) else np.nan
+        median_dt = np.nanmedian(diffs) if len(diffs) else np.nan
+        raise ValueError(
+            f"Invalid {label} timestamp vector for sound/ephys sync.\n"
+            f"path: {path}\n"
+            f"count: {len(timestamps)}\n"
+            f"min/max: {min_value:.12g} / {max_value:.12g}\n"
+            f"negative_value_count: {neg_value_count}\n"
+            f"median_dt: {median_dt:.12g}\n"
+            f"{_sample_numbers_diagnostic(path)}\n"
+            + "\n".join(problems)
+        )
 
 
 def _merge_onsets_into_events(
@@ -165,6 +375,35 @@ def infer_adc_ch_no(adc_file, adc_ts_file, dtype=np.int16):
     return int(ch_no)
 
 
+def _load_adc_channel(adc_file, adc_ts_file, channel, ch_no=None, dtype=np.int16):
+    if ch_no is None:
+        ch_no = infer_adc_ch_no(adc_file, adc_ts_file, dtype=dtype)
+
+    if channel >= ch_no:
+        raise ValueError(
+            f"Requested ADC channel {channel}, but channel count is only {ch_no} "
+            f"for file {adc_file}"
+        )
+
+    raw = np.memmap(adc_file, dtype=dtype, mode="r")
+    if raw.size % ch_no != 0:
+        raise ValueError(
+            f"ADC file size ({raw.size} values) is not divisible by channel count {ch_no} "
+            f"for file {adc_file}"
+        )
+
+    n_frames = raw.size // ch_no
+    adc_timestamps = np.load(adc_ts_file, mmap_mode="r")
+    if n_frames != len(adc_timestamps):
+        raise ValueError(
+            f"ADC frame count mismatch: dat implies {n_frames} frames, "
+            f"timestamps has {len(adc_timestamps)} entries"
+        )
+
+    data = raw.reshape(n_frames, ch_no)
+    return np.asarray(data[:, channel], dtype=float), int(ch_no), int(n_frames)
+
+
 def get_sound_events_from_ADC(
     adc_file,
     adc_ts_file,
@@ -205,7 +444,6 @@ def get_sound_events_from_ADC(
     """
 
     # --- load metadata first ---
-    adc_timestamps = np.load(adc_ts_file)
     ephys_timestamps = np.load(ephys_ts_file)
     events_exp = np.loadtxt(events_file, skiprows=1, delimiter=",")
     events_csv = np.loadtxt(sounds_file, skiprows=1, delimiter=",")
@@ -230,6 +468,12 @@ def get_sound_events_from_ADC(
 
     # --- infer sample rate if needed ---
     if s_rate is None:
+        adc_timestamps = np.load(adc_ts_file)
+        _validate_strictly_increasing_timestamps(
+            adc_timestamps,
+            adc_ts_file,
+            "ADC",
+        )
         if len(adc_timestamps) < 2:
             raise ValueError("Cannot infer ADC sample rate from fewer than 2 timestamps")
         dt = np.median(np.diff(adc_timestamps))
@@ -237,24 +481,20 @@ def get_sound_events_from_ADC(
             raise ValueError(f"Invalid ADC timestamp spacing: median dt={dt}")
         s_rate = 1.0 / dt
 
+    adc_timestamps, adc_clock_source = _load_adc_timestamps_for_sync(
+        adc_ts_file,
+        ephys_timestamps,
+        s_rate,
+    )
+
     # --- load ADC data robustly ---
-    raw = np.memmap(adc_file, dtype=dtype, mode="r")
-    if raw.size % ch_no != 0:
-        raise ValueError(
-            f"ADC file size ({raw.size} values) is not divisible by channel count {ch_no} "
-            f"for file {adc_file}"
-        )
-
-    n_frames = raw.size // ch_no
-
-    if n_frames != len(adc_timestamps):
-        raise ValueError(
-            f"ADC frame count mismatch: dat implies {n_frames} frames, "
-            f"timestamps has {len(adc_timestamps)} entries"
-        )
-
-    data = raw.reshape(n_frames, ch_no)
-    channel_data = np.asarray(data[:, channel], dtype=float)
+    channel_data, ch_no, n_frames = _load_adc_channel(
+        adc_file,
+        adc_ts_file,
+        channel,
+        ch_no=ch_no,
+        dtype=dtype,
+    )
 
     # --- smoothing and thresholding ---
     kernel_width = max(3, int(round(s_rate / 100)))  # ~10 ms window
@@ -315,6 +555,8 @@ def refine_sound_events_from_ADC(
     ephys_ts_file,
     channel=11,
     s_rate=30300,
+    ch_no=None,
+    dtype=np.int16,
     f_lo=600.0,
     f_hi=1400.0,
     smooth_ms=1.0,
@@ -328,11 +570,20 @@ def refine_sound_events_from_ADC(
     max_missed_gap_s=0.1,
     anomaly_gap_s=-10.0,
 ):
-    dh = DatHero(adc_file, s_rate=s_rate, ch_no=12)
-    channel_data = dh.get_single_channel(channel)
+    channel_data, ch_no, n_frames = _load_adc_channel(
+        adc_file,
+        adc_ts_file,
+        channel,
+        ch_no=ch_no,
+        dtype=dtype,
+    )
 
-    adc_timestamps = np.load(adc_ts_file)
     ephys_timestamps = np.load(ephys_ts_file)
+    adc_timestamps, adc_clock_source = _load_adc_timestamps_for_sync(
+        adc_ts_file,
+        ephys_timestamps,
+        s_rate,
+    )
     t = adc_timestamps - ephys_timestamps[0]
 
     _, onsets_s, _, _ = find_all_sine_onsets_adc(
