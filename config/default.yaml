@@ -32,6 +32,9 @@ pack:
   drift_coeff: 0.000016666
   adc_sync:
     enabled: false
+    # Opt-in bounded timestamp repair for staged OneBox sync AND Kilosort units.
+    # When changing this, regenerate sound sync, meta, and units together.
+    repair_timestamps: false
     f_lo: 600.0
     f_hi: 1400.0
     scheduler_threads: 8

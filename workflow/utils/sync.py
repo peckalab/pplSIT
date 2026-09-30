@@ -89,6 +89,50 @@ def _format_timestamp_window(timestamps, center_idx, radius=3):
     return "[" + ", ".join(pairs) + "]"
 
 
+def _find_original_sample_numbers(timestamp_path, expected_len=None):
+    sample_numbers_path = os.path.join(os.path.dirname(timestamp_path), "sample_numbers.npy")
+    if os.path.exists(sample_numbers_path):
+        return sample_numbers_path
+
+    abs_timestamp_path = os.path.abspath(timestamp_path)
+    parts = abs_timestamp_path.split(os.sep)
+    if "ephys" not in parts:
+        return None
+
+    ephys_idx = len(parts) - 1 - parts[::-1].index("ephys")
+    session_path = os.sep.join(parts[:ephys_idx]) or os.sep
+    staged_stat = os.stat(abs_timestamp_path)
+
+    for dirpath, dirnames, filenames in os.walk(session_path):
+        if "ephys" in dirnames:
+            dirnames.remove("ephys")
+        if "timestamps.npy" not in filenames or "sample_numbers.npy" not in filenames:
+            continue
+
+        src_ts = os.path.join(dirpath, "timestamps.npy")
+        src_stat = os.stat(src_ts)
+        if (
+            src_stat.st_dev != staged_stat.st_dev
+            or src_stat.st_ino != staged_stat.st_ino
+        ):
+            continue
+
+        src_samples = os.path.join(dirpath, "sample_numbers.npy")
+        if expected_len is not None:
+            sample_numbers = np.load(src_samples, mmap_mode="r")
+            if len(sample_numbers) != expected_len:
+                raise ValueError(
+                    f"Found original sample_numbers.npy for {timestamp_path}, but length "
+                    f"({len(sample_numbers)}) does not match timestamps length "
+                    f"({expected_len}): {src_samples}"
+                )
+
+        # Read from the original folder; diagnostics/repair must not mutate raw data.
+        return src_samples
+
+    return None
+
+
 def _sample_numbers_diagnostic(timestamp_path):
     sample_numbers_path = os.path.join(os.path.dirname(timestamp_path), "sample_numbers.npy")
     if not os.path.exists(sample_numbers_path):
@@ -126,6 +170,11 @@ def _sample_numbers_diagnostic(timestamp_path):
 def _load_contiguous_sample_numbers(timestamp_path, expected_len):
     sample_numbers_path = os.path.join(os.path.dirname(timestamp_path), "sample_numbers.npy")
     if not os.path.exists(sample_numbers_path):
+        sample_numbers_path = _find_original_sample_numbers(
+            timestamp_path,
+            expected_len=expected_len,
+        )
+    if not sample_numbers_path or not os.path.exists(sample_numbers_path):
         raise FileNotFoundError(
             f"Cannot rebuild timestamps because sample_numbers.npy is missing next to: "
             f"{timestamp_path}"
@@ -157,7 +206,135 @@ def _load_contiguous_sample_numbers(timestamp_path, expected_len):
     return sample_numbers
 
 
+def _validate_sample_numbers_contiguous_if_present(timestamp_path, expected_len):
+    sample_numbers_path = os.path.join(os.path.dirname(timestamp_path), "sample_numbers.npy")
+    if not os.path.exists(sample_numbers_path):
+        sample_numbers_path = _find_original_sample_numbers(
+            timestamp_path,
+            expected_len=expected_len,
+        )
+    if not sample_numbers_path or not os.path.exists(sample_numbers_path):
+        return
+
+    _load_contiguous_sample_numbers(timestamp_path, expected_len)
+
+
+def _repair_leading_negative_timestamps(timestamps, path, label):
+    timestamps = np.asarray(timestamps, dtype=float).copy()
+    negative_idxs = np.where(timestamps < 0)[0]
+    if not len(negative_idxs):
+        return timestamps
+
+    valid_idxs = np.where(timestamps >= 0)[0]
+    if not len(valid_idxs):
+        raise ValueError(f"Cannot repair {label}: no nonnegative timestamp anchor: {path}")
+
+    first_valid = int(valid_idxs[0])
+    if first_valid == 0 or not np.array_equal(negative_idxs, np.arange(first_valid)):
+        raise ValueError(f"Cannot repair {label}: negative timestamps are not a leading prefix: {path}")
+
+    sample_numbers = _load_contiguous_sample_numbers(path, len(timestamps))
+    diffs = np.diff(timestamps[first_valid:])
+    positive_diffs = diffs[diffs > 0]
+    median_dt = np.median(positive_diffs) if len(positive_diffs) else np.nan
+    if (
+        not np.isfinite(median_dt)
+        or median_dt <= 0
+        or not np.isfinite(timestamps[first_valid])
+    ):
+        raise ValueError(f"Cannot repair {label}: insufficient valid timestamp spacing: {path}")
+
+    sample_offsets = sample_numbers[first_valid] - sample_numbers[:first_valid]
+    timestamps[:first_valid] = timestamps[first_valid] - sample_offsets * median_dt
+
+    warnings.warn(
+        f"{label} timestamps.npy has {first_valid} leading negative values; "
+        "backfilled them from contiguous sample_numbers.npy and the first valid "
+        f"Open Ephys timestamp. path: {path}",
+        RuntimeWarning,
+    )
+    return timestamps
+
+
 def _repair_minor_timestamp_inversions(timestamps, path, label):
+    timestamps = np.asarray(timestamps, dtype=float).copy()
+    if len(timestamps) < 2:
+        _validate_strictly_increasing_timestamps(timestamps, path, label)
+        return timestamps
+
+    diffs = np.diff(timestamps)
+    bad_idxs = np.where(diffs <= 0)[0]
+    if not len(bad_idxs):
+        return timestamps
+
+    positive_diffs = diffs[diffs > 0]
+    median_dt = np.median(positive_diffs) if len(positive_diffs) else np.nan
+    if not np.isfinite(median_dt) or median_dt <= 0:
+        _validate_strictly_increasing_timestamps(timestamps, path, label)
+
+    negative_value_count = int(np.sum(timestamps < 0))
+    max_backstep_idx = int(bad_idxs[np.argmax(-diffs[bad_idxs])])
+    largest_backstep = float(-diffs[max_backstep_idx])
+    bad_fraction = len(bad_idxs) / max(1, len(diffs))
+    max_repair_span_samples = 64
+
+    # Interpolate only sparse, bounded inversions between valid OE clock anchors.
+    # Large jumps and broad corruption must still fail validation.
+    if (
+        negative_value_count
+        or bad_fraction > 1e-4
+        or largest_backstep > max_repair_span_samples * float(median_dt)
+    ):
+        _validate_strictly_increasing_timestamps(timestamps, path, label)
+
+    _validate_sample_numbers_contiguous_if_present(path, len(timestamps))
+
+    repaired = timestamps.copy()
+    max_repair_span = 0
+    next_unrepaired = 1
+    for bad_idx in bad_idxs:
+        start = int(bad_idx + 1)
+        if start < next_unrepaired or repaired[start] > repaired[start - 1]:
+            continue
+        scan_idx = start + 1
+        while (
+            scan_idx < len(repaired)
+            and timestamps[scan_idx] <= repaired[start - 1]
+            and scan_idx - start <= max_repair_span_samples
+        ):
+            scan_idx += 1
+
+        if (
+            scan_idx >= len(repaired)
+            or timestamps[scan_idx] <= repaired[start - 1]
+            or scan_idx - start > max_repair_span_samples
+        ):
+            _validate_strictly_increasing_timestamps(timestamps, path, label)
+
+        repair_span = scan_idx - start
+        max_repair_span = max(max_repair_span, repair_span)
+        repaired[start:scan_idx] = np.linspace(
+            repaired[start - 1],
+            timestamps[scan_idx],
+            repair_span + 2,
+        )[1:-1]
+        next_unrepaired = scan_idx + 1
+
+    _validate_strictly_increasing_timestamps(repaired, path, label)
+
+    warnings.warn(
+        f"{label} timestamps.npy has {len(bad_idxs)} tiny non-increasing steps; "
+        "preserving the Open Ephys clock and repairing those local inversions for "
+        "sync monotonicity. "
+        f"max_backstep={largest_backstep:.6g}s "
+        f"({largest_backstep / float(median_dt):.1f} samples), "
+        f"max_repair_span={max_repair_span} samples. path: {path}",
+        RuntimeWarning,
+    )
+    return repaired
+
+
+def _repair_legacy_timestamp_inversions(timestamps, path, label):
     timestamps = np.asarray(timestamps, dtype=float).copy()
     if len(timestamps) < 2:
         _validate_strictly_increasing_timestamps(timestamps, path, label)
@@ -204,22 +381,51 @@ def _repair_minor_timestamp_inversions(timestamps, path, label):
     return repaired
 
 
-def _load_adc_timestamps_for_sync(adc_ts_file, ephys_timestamps, s_rate):
-    adc_timestamps = np.load(adc_ts_file)
+def _load_timestamps_for_sync(timestamp_file, label):
+    """Opt-in bounded repair, shared by sound synchronization and unit extraction."""
+    timestamps = np.load(timestamp_file)
+    if timestamps.ndim != 1 or len(timestamps) < 2 or not np.all(np.isfinite(timestamps)):
+        raise ValueError(f"Invalid {label} timestamps: expected a finite 1-D vector of length >= 2: {timestamp_file}")
+    repaired = _repair_leading_negative_timestamps(timestamps, timestamp_file, label)
+    repaired = _repair_minor_timestamp_inversions(repaired, timestamp_file, label)
+    _validate_strictly_increasing_timestamps(repaired, timestamp_file, label)
+    changed = not np.array_equal(repaired, timestamps)
+    return repaired, "timestamps.npy repaired" if changed else "timestamps.npy"
+
+
+def _load_adc_timestamps_for_sync(adc_ts_file, ephys_timestamps, s_rate, repair_timestamps=False):
+    if repair_timestamps:
+        return _load_timestamps_for_sync(adc_ts_file, "ADC")
+    timestamps = np.load(adc_ts_file)
     try:
-        _validate_strictly_increasing_timestamps(
-            adc_timestamps,
-            adc_ts_file,
-            "ADC",
-        )
-        return adc_timestamps, "timestamps.npy"
-    except ValueError as exc:
-        repaired = _repair_minor_timestamp_inversions(
-            adc_timestamps,
-            adc_ts_file,
-            "ADC",
-        )
+        _validate_strictly_increasing_timestamps(timestamps, adc_ts_file, "ADC")
+        return timestamps, "timestamps.npy"
+    except ValueError:
+        repaired = _repair_legacy_timestamp_inversions(timestamps, adc_ts_file, "ADC")
+        # The legacy repair's early return could silently retain NaN/inf.
+        _validate_strictly_increasing_timestamps(repaired, adc_ts_file, "ADC")
         return repaired, "timestamps.npy repaired"
+
+
+def _load_ephys_timestamps_for_sync(ephys_ts_file, repair_timestamps=False):
+    if not repair_timestamps:
+        return np.load(ephys_ts_file)
+    timestamps, _ = _load_timestamps_for_sync(ephys_ts_file, "reference ephys")
+    return timestamps
+
+
+def reference_ephys_timestamp_path(ephys_root):
+    """Use the same first non-ADC stream as sound synchronization."""
+    if not os.path.isdir(ephys_root):
+        raise ValueError(f"ephys_root does not exist: {ephys_root}")
+    streams = sorted(d for d in os.listdir(ephys_root)
+                     if os.path.isdir(os.path.join(ephys_root, d)) and "adc" not in d.lower())
+    if not streams:
+        raise ValueError(f"No non-ADC probe streams found under {ephys_root}")
+    path = os.path.join(ephys_root, streams[0], "timestamps.npy")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Reference ephys timestamps.npy not found: {path}")
+    return path
 
 
 def _validate_strictly_increasing_timestamps(timestamps, path, label):
@@ -415,6 +621,7 @@ def get_sound_events_from_ADC(
     s_rate=None,
     ch_no=None,
     dtype=np.int16,
+    repair_timestamps=False,
 ):
     """
     Detect sound pulse periods from ADC channel and align logged sounds to ephys time.
@@ -444,7 +651,7 @@ def get_sound_events_from_ADC(
     """
 
     # --- load metadata first ---
-    ephys_timestamps = np.load(ephys_ts_file)
+    ephys_timestamps = _load_ephys_timestamps_for_sync(ephys_ts_file, repair_timestamps)
     events_exp = np.loadtxt(events_file, skiprows=1, delimiter=",")
     events_csv = np.loadtxt(sounds_file, skiprows=1, delimiter=",")
 
@@ -468,12 +675,13 @@ def get_sound_events_from_ADC(
 
     # --- infer sample rate if needed ---
     if s_rate is None:
-        adc_timestamps = np.load(adc_ts_file)
-        _validate_strictly_increasing_timestamps(
-            adc_timestamps,
-            adc_ts_file,
-            "ADC",
-        )
+        if repair_timestamps:
+            adc_timestamps, _ = _load_adc_timestamps_for_sync(
+                adc_ts_file, ephys_timestamps, s_rate, repair_timestamps=True,
+            )
+        else:
+            adc_timestamps = np.load(adc_ts_file)
+            _validate_strictly_increasing_timestamps(adc_timestamps, adc_ts_file, "ADC")
         if len(adc_timestamps) < 2:
             raise ValueError("Cannot infer ADC sample rate from fewer than 2 timestamps")
         dt = np.median(np.diff(adc_timestamps))
@@ -485,6 +693,7 @@ def get_sound_events_from_ADC(
         adc_ts_file,
         ephys_timestamps,
         s_rate,
+        repair_timestamps=repair_timestamps,
     )
 
     # --- load ADC data robustly ---
@@ -569,6 +778,7 @@ def refine_sound_events_from_ADC(
     order=4,
     max_missed_gap_s=0.1,
     anomaly_gap_s=-10.0,
+    repair_timestamps=False,
 ):
     channel_data, ch_no, n_frames = _load_adc_channel(
         adc_file,
@@ -578,11 +788,12 @@ def refine_sound_events_from_ADC(
         dtype=dtype,
     )
 
-    ephys_timestamps = np.load(ephys_ts_file)
+    ephys_timestamps = _load_ephys_timestamps_for_sync(ephys_ts_file, repair_timestamps)
     adc_timestamps, adc_clock_source = _load_adc_timestamps_for_sync(
         adc_ts_file,
         ephys_timestamps,
         s_rate,
+        repair_timestamps=repair_timestamps,
     )
     t = adc_timestamps - ephys_timestamps[0]
 

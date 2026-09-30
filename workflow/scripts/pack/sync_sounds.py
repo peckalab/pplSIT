@@ -8,7 +8,8 @@ parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
-from utils.sync import get_sound_events_from_ADC, get_sound_events_from_openephys, refine_sound_events_from_ADC
+from utils.sync import (get_sound_events_from_ADC, get_sound_events_from_openephys,
+                        refine_sound_events_from_ADC, reference_ephys_timestamp_path)
 
 
 def _find_onebox(root: ET.Element) -> ET.Element:
@@ -43,30 +44,6 @@ def _single_file(glob_pattern: str, what: str) -> str:
     if len(hits) != 1:
         raise ValueError(f"Expected exactly one {what} matching {glob_pattern}, found: {hits}")
     return hits[0]
-
-
-def _pick_reference_ephys_timestamps(ephys_root: str) -> str:
-    """
-    For OneBox_ADC sync we need ephys_ts_file to define time zero.
-    Choose timestamps.npy from the first non-ADC stream (ProbeA/ProbeB).
-    """
-    if not os.path.isdir(ephys_root):
-        raise ValueError(f"ephys_root does not exist: {ephys_root}")
-
-    stream_dirs = sorted(
-        d for d in os.listdir(ephys_root)
-        if os.path.isdir(os.path.join(ephys_root, d))
-    )
-
-    probe_dirs = [d for d in stream_dirs if "adc" not in d.lower()]
-    if not probe_dirs:
-        raise ValueError(f"No non-ADC probe streams found under {ephys_root}")
-
-    ts = os.path.join(ephys_root, probe_dirs[0], "timestamps.npy")
-    if not os.path.exists(ts):
-        raise FileNotFoundError(f"Reference ephys timestamps.npy not found: {ts}")
-
-    return ts
 
 
 def write_sync_h5(out_path: str, mode: str, manual: dict,
@@ -130,7 +107,9 @@ if sync_type == "OneBox_ADC":
     if not os.path.exists(adc_ts):
         raise FileNotFoundError(f"ADC timestamps.npy not found: {adc_ts}")
 
-    ephys_ts = _pick_reference_ephys_timestamps(ephys_root)
+    ephys_ts = reference_ephys_timestamp_path(ephys_root)
+    adc_cfg = snakemake.config.get("pack", {}).get("adc_sync", {})
+    repair_timestamps = adc_cfg.get("repair_timestamps", False)
 
     ev_detected, ev_synced = get_sound_events_from_ADC(
         adc_file=adc_dat,
@@ -142,9 +121,9 @@ if sync_type == "OneBox_ADC":
         event_th=event_th,
         s_rate=adc_sr,
         ch_no=adc_cc,
+        repair_timestamps=repair_timestamps,
     )
 
-    adc_cfg = snakemake.config.get('pack', {}).get('adc_sync', {})
     if adc_cfg.get('enabled', False):
         f_lo = float(adc_cfg.get('f_lo', 600.0))
         f_hi = float(adc_cfg.get('f_hi', 1400.0))
@@ -157,6 +136,7 @@ if sync_type == "OneBox_ADC":
             channel=adc_channel,
             s_rate=adc_sr,
             ch_no=adc_cc,
+            repair_timestamps=repair_timestamps,
             f_lo=f_lo,
             f_hi=f_hi,
         )
@@ -175,6 +155,7 @@ if sync_type == "OneBox_ADC":
             "adc_dat": adc_dat,
             "adc_ts": adc_ts,
             "ephys_ts": ephys_ts,
+            "repair_timestamps": repair_timestamps,
         }
     )
 

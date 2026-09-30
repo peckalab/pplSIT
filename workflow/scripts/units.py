@@ -11,6 +11,7 @@ sys.path.append(os.getcwd())
 sys.path.append(parent_dir)
 
 from utils.neurosuite import load_clu_res, XMLHero
+from utils.sync import _load_ephys_timestamps_for_sync, reference_ephys_timestamp_path
 from utils.kilosort import load_ks_units_before, load_ks_units_after, load_bombcell_unit_labels
 from utils.spiketrain import instantaneous_rate, spike_idxs
 from utils.hdf import create_dataset, H5NAMES
@@ -27,7 +28,7 @@ metric_names = (
 )
 
 
-def get_session_ephys_t0(ephys_root, probe_streams):
+def get_session_ephys_t0(ephys_root, probe_streams, repair_timestamps=False):
     """
     Return a common session reference time from staged ephys timestamps.
 
@@ -41,8 +42,13 @@ def get_session_ephys_t0(ephys_root, probe_streams):
     Returns
     -------
     float
-        Earliest first timestamp across probe streams
+        Earliest first timestamp across probe streams by default. With repair
+        enabled, the repaired origin of the same reference stream used by sound sync.
     """
+    if repair_timestamps:
+        path = reference_ephys_timestamp_path(ephys_root)
+        return float(_load_ephys_timestamps_for_sync(path, True)[0])
+
     t0s = []
 
     for stream_name in probe_streams:
@@ -325,7 +331,10 @@ def _process_kilosort_stream(
         )
 
     # write units for this stream
-    timestamps = np.load(timestamps_path)
+    repair_timestamps = config.get("pack", {}).get("adc_sync", {}).get("repair_timestamps", False)
+    if repair_timestamps:
+        timestamps_path = os.path.join(config["src_path"], animal, session, "ephys", stream_name, "timestamps.npy")
+    timestamps = _load_ephys_timestamps_for_sync(timestamps_path, repair_timestamps)
 
     for electrode_idx in units.keys():
         unit_idxs = units[electrode_idx]
@@ -409,7 +418,8 @@ else:
     session = snakemake.params["session"]
 
     ephys_root = os.path.join(snakemake.config["src_path"], animal, session, "ephys")
-    t0_ref = get_session_ephys_t0(ephys_root, streams)
+    repair_timestamps = snakemake.config.get("pack", {}).get("adc_sync", {}).get("repair_timestamps", False)
+    t0_ref = get_session_ephys_t0(ephys_root, streams, repair_timestamps)
 
     for stream_idx, stream in enumerate(streams):
         stream_folder = os.path.join(ks_root, stream)
