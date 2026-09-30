@@ -241,8 +241,8 @@ if passive:
     ]
 
     label_combs = [
-        [f"{sound["freq"]}Hz" for key, sound in cfg['sound']['sounds'].items() if 'F' in key],
-        [f"{float(sound["duration"])*1000}ms" for key, sound in cfg['sound']['sounds'].items() if 'D' in key]
+        [f"{sound['freq']}Hz" for key, sound in cfg['sound']['sounds'].items() if 'F' in key],
+        [f"{float(sound['duration'])*1000}ms" for key, sound in cfg['sound']['sounds'].items() if 'D' in key]
         # ignore stationary / run for passive
         # ['bgr_sta', 'tgt_sta'],
         # ['bgr_sta', 'bgr_run'],
