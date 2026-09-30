@@ -157,6 +157,7 @@ psth:
     bin_count: 151
     shuf_iter_count: 100
     figsize: 4
+    xlim: [0, 0.25]
   macro:
     latency: 7.25
     bin_count: 31

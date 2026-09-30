@@ -100,6 +100,7 @@ event_groups = [
 
 hw = snakemake.config["psth"]["micro"]["latency"]
 bc = snakemake.config["psth"]["micro"]["bin_count"]
+xlim = snakemake.config["psth"]["micro"].get("xlim", [-hw, hw])
 units_per_page = 12
 cols = 3
 
@@ -167,7 +168,7 @@ for title, out_path, idxs_group in event_groups:
                 ax.axvline(0, color="black", ls="--", lw=1)
                 if stim_dur is not None:
                     ax.axvspan(0, stim_dur, alpha=0.12, color="gray")
-                ax.set_xlim(-hw, hw)
+                ax.set_xlim(xlim[0], xlim[1])
                 ax.set_ylim(bottom=0)
                 ax.set_title(unit_name, fontsize=11)
                 ax.grid(alpha=0.2)

@@ -40,6 +40,7 @@ ev_names = {0: 'SIL', 1: 'BGR', 2: 'TGT', -1: 'NOI'}
 
 hw = snakemake.config['psth']['micro']['latency']
 bc = snakemake.config['psth']['micro']['bin_count']
+xlim = snakemake.config['psth']['micro'].get('xlim', [-hw, hw])
 
 speed_max = 0.04
 speed_ev = tl[sound_events[:, 2].astype(np.int32)][:, 3]
@@ -106,7 +107,7 @@ for fig_id, stim_comb in enumerate(stim_comb_idxs):
         ax.axvspan(0 - hw, 0 - hw + bgr_dur, alpha=0.3, color='gray')
         ax.set_title(unit_name, fontsize=14)
         ax.legend(loc='lower right', prop={'size': 10})
-        ax.set_xlim(-hw, hw)
+        ax.set_xlim(xlim[0], xlim[1])
         if i % 3 == 0:
             ax.set_ylabel("Firing Rate, Hz", fontsize=14)
             
