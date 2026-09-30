@@ -45,7 +45,7 @@ blocks:  # blocks of pipeline to run
 
 
 session_IDs:
-  # 017276
+  # 017276 passive
   - "017276_SIT_passive_2026-04-16_19-36-14"
   - "017276_SIT_passive_2026-03-13_18-25-54"
   - "017276_SIT_passive_2026-03-02_18-47-19"
@@ -239,6 +239,19 @@ bombcell:
     root: "/local/scratch/bengala/pplSIT/bombcell_stage"
     cleanup: True
     min_free_gb: 20
+
+unit_match:
+  conda_env: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/unit_match_py312"
+  waveform_source: 'bombcell'
+  spike_width: 82
+  raw_waveform_threads: 4
+  raw_waveform_workers: 4
+  raw_waveform_io_heavy: 4
+  methods: ["deepunitmatch", "unitmatchpy"]
+  deepunitmatch:
+    source_path: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/UnitMatch/UnitMatchPy"
+    model_path: null
+    tmp_dir:  "/local/scratch/bengala/pplSIT/deepunitmatch_tmp/017276"
 
 io_heavy_lock:
   enabled: False

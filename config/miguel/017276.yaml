@@ -12,7 +12,7 @@
 
 blocks:  # blocks of pipeline to run
   meta: False         # pack main metadata into HDF5
-  performance: False   # performance metrics
+  performance: True   # performance metrics
   DLC: False        # Deep lab cut
   MoSeq: False        # MoSeq
   descendants: False   # speed, HD etc. from MoSeq and others
@@ -22,8 +22,8 @@ blocks:  # blocks of pipeline to run
   kilosort: True  # sorting with kilosort
   units: False      # extract spike trains from sorted data
   AEPs: False         # extract Auditory Evoked Responses
-  PSTH_bar: True
-  PSTH_bootstrap: False
+  PSTH_bar: False
+  PSTH_bootstrap: True
   PSTH_shuffle: False
   PSTH_bnMAPs: False
   spatial: False
@@ -33,7 +33,7 @@ blocks:  # blocks of pipeline to run
   metronome: False
   video: False
   sound_phase_lock: False
-  segments: True
+  segments: False
   activity_matrices: False
   ensembles: False
   covariance: False
@@ -50,30 +50,28 @@ session_IDs:
   # - "017276_ppcSIT_2026-02-20_15-22-50"
   - "017276_SIT_2026-02-27_18-21-34"
   - "017276_SIT_2026-03-01_16-03-30"
-  # # - "017276_SIT_passive_2026-03-02_18-47-19"
   - "017276_SIT_2026-03-02_19-17-21"
-  # - "017276_SIT_passive_2026-03-01_20-06-02"
   - "017276_SIT_2026-03-03_10-53-45"
   - "017276_SIT_2026-03-01_18-56-24"
   - "017276_SIT_2026-03-03_14-59-35"
   - "017276_SIT_2026-03-03_18-44-41"
-  - "017276_SIT_2026-03-04_10-21-06"
+  ## - "017276_SIT_2026-03-04_10-21-06" # OneBox-ADC/timestamps.npy has a mid-session backward jump of about 0.333 s.
   - "017276_SIT_2026-03-04_14-14-44"
-  - "017276_SIT_2026-03-04_17-47-45"
+  ## - "017276_SIT_2026-03-04_17-47-45" # OneBox-ADC/timestamps.npy has a mid-session backward jump of about 76.5 samples.
   - "017276_SIT_2026-03-05_10-20-48"
   - "017276_SIT_2026-03-05_14-21-01"
   - "017276_SIT_2026-03-05_17-44-08"
   - "017276_SIT_2026-03-06_10-14-14"
-  - "017276_SIT_2026-03-06_14-30-26"
+  ## - "017276_SIT_2026-03-06_14-30-26" # OneBox-ADC/timestamps.npy has a mid-session backward jump of about 605 samples.
   - "017276_SIT_2026-03-06_14-58-02"
   - "017276_SIT_2026-03-06_19-19-27"
   - "017276_SIT_2026-03-07_13-44-19"
   - "017276_SIT_2026-03-07_16-32-51"
   - "017276_SIT_2026-03-07_19-14-57"
-  # - "017276_SIT_2026-03-08_13-24-10" # cable disconnected during recording ~40min and it seems that it affected the syncing
+  #### - "017276_SIT_2026-03-08_13-24-10" # cable disconnected during recording ~40min and it seems that it affected the syncing, I won't use this session for now
   - "017276_SIT_2026-03-08_16-29-07"
   - "017276_SIT_2026-03-08_19-34-55"
-  - "017276_SIT_2026-03-09_10-09-25"
+  ### - "017276_SIT_2026-03-09_10-09-25" # OneBox-ADC/timestamps.npy has a mid-session backward jump of about 0.882 s (~26,700 samples).
   - "017276_SIT_2026-03-09_14-35-02"
   - "017276_SIT_2026-03-09_18-44-04"
   - "017276_SIT_2026-03-10_10-28-17"
@@ -92,8 +90,8 @@ session_IDs:
   - "017276_SIT_2026-04-01_18-26-38"
   - "017276_SIT_2026-04-02_10-31-40"
   - "017276_SIT_2026-04-04_18-04-13"
-  - "017276_SIT_2026-04-08_19-27-38"
-  - "017276_SIT_2026-04-09_17-02-17"
+  #### - "017276_SIT_2026-04-08_19-27-38" # all stream timestamps are -1
+  #### - "017276_SIT_2026-04-09_17-02-17" # ProbeA/timestamps.npy values are all -1, so the reference ephys clock is unusable.
   - "017276_SIT_2026-04-10_18-29-58"
   - "017276_SIT_2026-04-12_15-59-34"
   - "017276_SIT_2026-04-12_18-11-48"
@@ -110,17 +108,24 @@ session_IDs:
   - "017276_SIT_2026-04-16_18-28-49"
   # missing initially from analysis
   - "017276_SIT_2026-03-13_12-24-41"
-  - "017276_SIT_2026-03-13_16-24-02"
+  ### - "017276_SIT_2026-03-13_16-24-02" # OneBox-ADC/timestamps.npy has multiple real backward jumps despite contiguous sample_numbers.npy, with the largest about 0.056 s.
   - "017276_SIT_2026-03-13_17-42-09"
   # - "017276_SIT_2026-04-01_10-40-33" # only 10 minutes, skip for now
-  - "017276_SIT_2026-04-02_14-45-44"
+  ### - "017276_SIT_2026-04-02_14-45-44" # ProbeA/timestamps.npy has a mid-session backward jump of about 0.176 s
   # - "017276_SIT_2026-04-04_16-36-31" #only 12min, skip for now
   # - "017276_SIT_2026-04-06_13-32-41" # only 12min, skip for now
-  - "017276_SIT_2026-04-09_10-15-30"
-  - "017276_SIT_2026-04-10_10-44-33"
+  #### - "017276_SIT_2026-04-09_10-15-30" # ProbeA/timestamps.npy values are all -1, so the reference ephys clock is unusable.
+  ### - "017276_SIT_2026-04-10_10-44-33" ### timestamps are all -1, skip for now
   - "017276_SIT_2026-04-14_09-41-06"
   - "017276_SIT_2026-04-14_17-58-15"
   - "017276_SIT_2026-04-17_08-37-06"
+  
+  # 017276 passive
+  # - "017276_SIT_passive_2026-04-16_19-36-14"
+  # - "017276_SIT_passive_2026-03-13_18-25-54"
+  # - "017276_SIT_passive_2026-03-02_18-47-19"
+  # - "017276_SIT_passive_2026-03-01_20-06-02"
+
 
   
 
@@ -330,3 +335,8 @@ vectors:
     step: 5
   units_to_exclude:
     '014393_ppcSIT_2025-04-23_20-27-09': ['2-300', '3-350']
+
+
+io_heavy_lock:
+  enabled: False
+  path: "/tmp/pplSIT_io_heavy.lock"
