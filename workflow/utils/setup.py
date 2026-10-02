@@ -15,10 +15,11 @@ channel_positions_2 = {  # after 04.2023 till 05.2024 inclusive
     4: (0.37, -0.37),
     5: (-0.37, -0.37)
 }
-channel_positions_3 = {  # after 04.2023 till 05.2024 inclusive (TODO insert correct positions)
-    3: (0., 0.5),
-    4: (0.37, -0.37),
-    5: (-0.37, -0.37)
+channel_positions_3 = {  # after 05.2024 (speaker 5 changed position from (-0.35355339, -0.35355339) to 
+                         # (-0.35355339, 0.35355339) at some unknown timepoint during this period)
+    3: (0.0, 0.5),
+    4: (0.35355339, -0.35355339),
+    5: (-0.35355339, 0.35355339)
 }
 
 # setup change dates
