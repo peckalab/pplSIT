@@ -43,12 +43,17 @@ for unit_id, spiketrain in spike_times.items():
     all_unit_metrics[unit_id] = unit_response_metrics_per_condition(spike_times[unit_id], sound_events[:, 0], idxs_states)
     
 # convert to condition-first dict + matrices
+metric_names = (
+    'mean_rate', 'ptp', 'rms', 'rms_norm', 'latency_ms', 'reliability',
+    'jitter_ms', 'fano_factor', 'normalized_ptp', 'ptp_evoked',
+    'ptp_baseline', 'ptp_ratio', 'snr_base_ptp', 'snr_base_std',
+)
 results = {}
 for condition_id in idxs_states.keys():
-    cond_mx = np.zeros([len(spike_times), 14])  # 14 metrics should be
+    cond_mx = np.zeros([len(spike_times), len(metric_names)])
     for i, (unit_id, metrics) in enumerate(all_unit_metrics.items()):
         if condition_id in metrics:
-            cond_mx[i] = np.array(list(metrics[condition_id].values()))
+            cond_mx[i] = np.array([metrics[condition_id][name] for name in metric_names])
 
     results[condition_id] = cond_mx.copy()
 
@@ -58,5 +63,4 @@ with h5py.File(snakemake.output[0], 'w') as f:
         grp = f.create_group(condition_id)
         ds = grp.create_dataset('metrics', data=metric_mx)
         ds.attrs['units_order'] = ','.join([key for key in spike_times])
-        ds.attrs['metric_names'] = 'mean_rate, ptp, rms, rms_norm, latency_ms, reliability, jitter_ms,\
-              fano_factor, normalized_ptp, ptp_evoked, ptp_baseline, ptp_ratio'
+        ds.attrs['metric_names'] = ', '.join(metric_names)
