@@ -14,6 +14,7 @@ blocks:  # blocks of pipeline to run
   PSTH_bootstrap: False
   PSTH_shuffle: False
   STRF_passive: False
+  sound_responses_bayesian_blocks: False
   spatial: False
   population: False
   coherence: False
@@ -123,6 +124,28 @@ sound_phase_lock:
   ipi_for_shuffle: 0.25
   
 # analysis configurations
+sound_responses_bayesian_blocks:
+  backend: cpu # cpu: hepstats reference; gpu: opt-in CuPy float64 implementation
+  conda_env: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/sound_responses_bayesian_blocks"
+  gpu_conda_env: "/mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/sound_responses_bayesian_blocks_gpu"
+  gpu_memory_mb: 4096 # device allocation pool budget; CUDA context uses additional memory
+  window_s: null # null uses session sound.latency (nominal onset-to-onset period)
+  p0_values: [0.05, 0.01, 0.001, 0.0001, 0.00001]
+  min_block_s: 0.001
+  edge_margin_s: 0.001
+  short_latency_s: 0.007
+  # Added to onset latency + actual stimulus duration; reproduces 50–70 ms
+  # after neural onset for the reference's 50 ms stimuli (strict bounds).
+  offset_search_relative_to_duration_s: [0.0, 0.020]
+  min_events: 20
+  min_spikes: 20
+  max_spikes: null # optional computation guard; exceeding it yields unavailable, not negative
+  psth_bin_s: 0.005 # diagnostic only; Bayesian blocks use unbinned spikes
+  include_pooled: true
+  conditions: null # null: each positive sound ID; custom mapping: name: [sound IDs]
+  unit_names: null # null: all units in units.h5
+  time_ranges_s: null # optional disjoint [start, stop] intervals in session seconds
+
 psth:
   micro:
     latency: 0.25

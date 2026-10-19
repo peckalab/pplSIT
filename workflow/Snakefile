@@ -50,6 +50,7 @@ include: "rules/descendants.smk"
 include: "rules/analysis/shuffle.smk"
 include: "rules/analysis/psth_bar.smk"
 include: "rules/analysis/strf_passive.smk"
+include: "rules/analysis/sound_responses_bayesian_blocks.smk"
 include: "rules/analysis/psth_bootstrap.smk"
 include: "rules/aeps.smk"
 include: "rules/analysis/spatial.smk"
@@ -91,6 +92,12 @@ target_names_dict = {
         #'analysis/MoSeq_W1-W4_GLM.h5',
     ],
     'descendants': ['descendants.h5'],
+    'sound_responses_bayesian_blocks': [
+        'analysis/sound_responses/bayesian_blocks/responses.h5',
+        'analysis/sound_responses/bayesian_blocks/summary.csv',
+        'analysis/sound_responses/bayesian_blocks/figures/responses.pdf',
+        'analysis/sound_responses/bayesian_blocks/figures/psth_bgr_tgt_bar.pdf',
+    ],
     'Audio':   [],
     'LFP':     [
         'LFP/lfp.ready',
@@ -202,6 +209,11 @@ target_names_dict = {
 }
 
 passive_target_names_dict = {
+    'sound_responses_bayesian_blocks': [
+        'analysis/sound_responses/bayesian_blocks/responses.h5',
+        'analysis/sound_responses/bayesian_blocks/summary.csv',
+        'analysis/sound_responses/bayesian_blocks/figures/responses.pdf',
+    ],
     'AEPs': [
         'AEP/aep.ready',
     ],

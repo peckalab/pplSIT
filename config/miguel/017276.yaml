@@ -226,6 +226,9 @@ lfp:
 
 
 # analysis configurations
+sound_responses_bayesian_blocks:
+  window_s: 0.24 # 240 ms after sound onset; specific to this optional analysis
+
 psth:
   micro:
     latency: 0.25
