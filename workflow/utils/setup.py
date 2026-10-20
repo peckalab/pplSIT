@@ -27,6 +27,16 @@ date1 = datetime.strptime('2023-03-31_23-59-00', "%Y-%m-%d_%H-%M-%S")
 date2 = datetime.strptime('2024-05-31_23-59-00', "%Y-%m-%d_%H-%M-%S")
 
 
+def get_channel_positions(session):
+    """Physical speaker coordinates in arena meters, independent of task."""
+    session_datetime = datetime.strptime(session[-19:], "%Y-%m-%d_%H-%M-%S")
+    if session_datetime < date1:
+        return dict(channel_positions_1)
+    if session_datetime < date2:
+        return dict(channel_positions_2)
+    return dict(channel_positions_3)
+
+
 def get_speaker_positions(source, session):
     animal = session.split('_')[0]
 
@@ -45,15 +55,7 @@ def get_speaker_positions(source, session):
     else:
         raise IOError('Config file not found')
 
-    session_datetime = datetime.strptime(session[-19:], "%Y-%m-%d_%H-%M-%S")
-
-    if session_datetime < date1:
-        ch_pos = channel_positions_1
-    elif session_datetime < date2:
-        ch_pos = channel_positions_2
-    else:
-        #print('TODO: update channel / speaker positions!')
-        ch_pos = channel_positions_3
+    ch_pos = get_channel_positions(session)
         
     chs_tgt = cfg['sound']['sounds']['target']['channels']
     chs_bgr = cfg['sound']['sounds']['background']['channels']
