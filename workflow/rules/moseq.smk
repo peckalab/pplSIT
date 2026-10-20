@@ -40,9 +40,9 @@ rule apply_moseq:
         "../scripts/apply_moseq_new_data.py"
 
 
-# TODO: add rule to synch moseq data to 100Hz
 rule synch_moseq_100Hz:
     input:
+        heading_implementation = workflow.source_path("../utils/moseq.py"),
         moseq_csv_path = join(config["dst_path"],"{animal}","{session}","moseq","moseq.csv"),
         events = join(config["src_path"],"{animal}","{session}","events.csv"),
         session_cfg = join(config["src_path"],"{animal}","{session}","{session}.json"),

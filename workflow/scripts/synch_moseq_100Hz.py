@@ -1,8 +1,13 @@
-from os.path import join
+from pathlib import Path
+import sys
 import pandas as pd
 import numpy as np
 import h5py
 import json
+
+# Snakemake copies this script; scriptdir points to its original directory.
+sys.path.insert(0, str(Path(snakemake.scriptdir).resolve().parent))
+from utils.moseq import interpolate_heading
 
 def px_to_meters(cfg, x, y):  # convert pixels to meters
     cfg_pos = cfg['position']
@@ -38,7 +43,10 @@ indices = [np.abs(timestamps_raw - time).argmin() for time in times]
 
 df_moseq_100Hz['time'] = times
 for column in df_moseq_30Hz.columns:
-    if "syllables" not in column:
+    if column == 'heading':
+        df_moseq_100Hz[column] = interpolate_heading(
+            times, timestamps_raw, df_moseq_30Hz[column], session_cfg['position'])
+    elif "syllables" not in column:
         df_moseq_100Hz[column] = np.interp(times,timestamps_raw,df_moseq_30Hz[column])
     else:
         # clip indices to be within the range of the original data (between 0 and len(df_moseq_30Hz[column]) - 1)
@@ -55,3 +63,11 @@ for col_idx, column in enumerate(df_moseq_100Hz.columns):
 with h5py.File(snakemake.output.moseq_h5_path_100Hz, 'w') as f:
     df_moseq_dataset = f.create_dataset('moseq',data=array_moseq_100Hz)
     df_moseq_dataset.attrs['headers'] = np.array(df_moseq_100Hz.columns.values)
+    if 'heading' in df_moseq_30Hz.columns:
+        df_moseq_dataset.attrs['heading_processing'] = 'arena_circular_v1'
+        df_moseq_dataset.attrs['heading_units'] = 'radians'
+        df_moseq_dataset.attrs['heading_coordinate_system'] = 'arena'
+        df_moseq_dataset.attrs['heading_convention'] = 'atan2(y, x); zero=+x'
+        df_moseq_dataset.attrs['heading_interpolation'] = 'unwrap_linear_wrap'
+        df_moseq_dataset.attrs['heading_flip_x'] = session_cfg['position']['flip_x']
+        df_moseq_dataset.attrs['heading_flip_y'] = session_cfg['position']['flip_y']
