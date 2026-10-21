@@ -217,7 +217,7 @@ the later spatial-tuning stage.
 
 ## Outputs and reuse
 
-All files live under a session's `analysis/sound_responses/bayesian_blocks/`:
+All files live under a session's `analysis/bayesian_blocks/`:
 
 - `fits.h5`: persistent segmentation cache, including **all** configured p0
   levels before short-block filtering or onset-based stopping. Each unit has
@@ -240,6 +240,12 @@ All files live under a session's `analysis/sound_responses/bayesian_blocks/`:
   A first-row PNG preview is saved alongside it. Original PSTH PDFs are unchanged.
   This plotting rule uses the base pipeline environment, like `psth_micro`,
   and does not rerun the Bayesian-block fit.
+
+Earlier versions used `analysis/sound_responses/bayesian_blocks/`. Existing
+outputs are not moved automatically. To reuse them, relocate that complete
+directory to `analysis/bayesian_blocks/` before running the updated workflow;
+otherwise Snakemake sees the new output paths as missing, including `fits.h5`.
+The block/configuration name remains `sound_responses_bayesian_blocks`.
 
 Snakemake runs `fit_sound_responses_bayesian_blocks` →
 `sound_responses_bayesian_blocks` → plotting rules. The first rule creates

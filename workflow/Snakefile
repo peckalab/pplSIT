@@ -94,10 +94,10 @@ target_names_dict = {
     ],
     'descendants': ['descendants.h5'],
     'sound_responses_bayesian_blocks': [
-        'analysis/sound_responses/bayesian_blocks/responses.h5',
-        'analysis/sound_responses/bayesian_blocks/summary.csv',
-        'analysis/sound_responses/bayesian_blocks/figures/responses.pdf',
-        'analysis/sound_responses/bayesian_blocks/figures/psth_bgr_tgt_bar.pdf',
+        'analysis/bayesian_blocks/responses.h5',
+        'analysis/bayesian_blocks/summary.csv',
+        'analysis/bayesian_blocks/figures/responses.pdf',
+        'analysis/bayesian_blocks/figures/psth_bgr_tgt_bar.pdf',
     ],
     'egocentric_geometry': [
         'analysis/spatial_tuning/geometry/geometry.h5',
@@ -216,9 +216,9 @@ target_names_dict = {
 
 passive_target_names_dict = {
     'sound_responses_bayesian_blocks': [
-        'analysis/sound_responses/bayesian_blocks/responses.h5',
-        'analysis/sound_responses/bayesian_blocks/summary.csv',
-        'analysis/sound_responses/bayesian_blocks/figures/responses.pdf',
+        'analysis/bayesian_blocks/responses.h5',
+        'analysis/bayesian_blocks/summary.csv',
+        'analysis/bayesian_blocks/figures/responses.pdf',
     ],
     'AEPs': [
         'AEP/aep.ready',

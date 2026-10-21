@@ -24,7 +24,7 @@ rule fit_sound_responses_bayesian_blocks:
                         for name in ('settings.py', 'segmentation.py', 'fits_session.py', 'metadata.py',
                                      'gpu.py', 'gpu_kernel.cu')]
     output:
-        h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'fits.h5')
+        h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'fits.h5')
     params:
         settings=lambda wc: fitting_config(config['sound_responses_bayesian_blocks'])
     threads: 1
@@ -38,12 +38,12 @@ rule fit_sound_responses_bayesian_blocks:
 
 rule sound_responses_bayesian_blocks:
     input:
-        fits=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'fits.h5'),
+        fits=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'fits.h5'),
         implementation=[os.path.join(workflow.basedir, 'utils', 'sound_responses', name)
                         for name in ('settings.py', 'bayesian_blocks.py', 'session.py', 'metadata.py')]
     output:
-        h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'responses.h5'),
-        csv=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'summary.csv')
+        h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'responses.h5'),
+        csv=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'summary.csv')
     params:
         settings=lambda wc: timing_config(config['sound_responses_bayesian_blocks'])
     threads: 1
@@ -55,10 +55,10 @@ rule sound_responses_bayesian_blocks:
 
 rule plot_sound_responses_bayesian_blocks:
     input:
-        h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'responses.h5'),
+        h5=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'responses.h5'),
         implementation=os.path.join(workflow.basedir, 'utils', 'sound_responses', 'plots.py')
     output:
-        pdf=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'figures', 'responses.pdf')
+        pdf=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'figures', 'responses.pdf')
     conda:
         config['sound_responses_bayesian_blocks']['conda_env']
     script:
@@ -69,13 +69,13 @@ rule plot_sound_responses_psth_micro_overlay:
     input:
         meta=os.path.join(config['dst_path'], '{animal}', '{session}', 'meta.h5'),
         units=os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5'),
-        responses=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'responses.h5'),
+        responses=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'responses.h5'),
         phase_lock=conditional_input,
         implementation=[os.path.join(workflow.basedir, 'utils', 'sound_responses', 'psth_overlay.py'),
                         os.path.join(workflow.basedir, 'utils', 'psth.py')]
     output:
-        pdf=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'figures', 'psth_bgr_tgt_bar.pdf'),
-        preview=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'sound_responses', 'bayesian_blocks', 'figures', 'psth_bgr_tgt_bar_preview.png')
+        pdf=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'figures', 'psth_bgr_tgt_bar.pdf'),
+        preview=os.path.join(config['dst_path'], '{animal}', '{session}', 'analysis', 'bayesian_blocks', 'figures', 'psth_bgr_tgt_bar_preview.png')
     params:
         micro=lambda wc: config['psth']['micro']
     # Uses the same base environment (including Numba) as the existing psth_micro rule.
