@@ -52,6 +52,7 @@ include: "rules/analysis/psth_bar.smk"
 include: "rules/analysis/strf_passive.smk"
 include: "rules/analysis/sound_responses_bayesian_blocks.smk"
 include: "rules/analysis/egocentric_geometry.smk"
+include: "rules/analysis/egocentric_tuning.smk"
 include: "rules/analysis/psth_bootstrap.smk"
 include: "rules/aeps.smk"
 include: "rules/analysis/spatial.smk"
@@ -103,6 +104,12 @@ target_names_dict = {
         'analysis/spatial_tuning/geometry/geometry.h5',
         'analysis/spatial_tuning/geometry/summary.csv',
         'analysis/spatial_tuning/geometry/figures/coverage.pdf',
+    ],
+    'egocentric_tuning': [
+        'analysis/spatial_tuning/egocentric/tuning.h5',
+        'analysis/spatial_tuning/egocentric/summary.csv',
+        'analysis/spatial_tuning/egocentric/comparisons.csv',
+        'analysis/spatial_tuning/egocentric/figures/tuning.pdf',
     ],
     'Audio':   [],
     'LFP':     [

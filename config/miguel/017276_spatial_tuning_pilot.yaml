@@ -1,0 +1,54 @@
+# Apply after config/miguel/017276.yaml with --configfile.
+# Pilot only; uses the normal processed-data destination and one visible GPU.
+# DLC config is a session-local copy to avoid modifying the shared model config.
+session_IDs:
+- 017276_SIT_2026-03-04_14-14-44
+blocks:
+  meta: false
+  DLC: false
+  MoSeq: false
+  descendants: false
+  Audio: false
+  LFP: false
+  neurosuite: false
+  kilosort: false
+  bombcell: false
+  units: false
+  AEPs: false
+  PSTH_bar: false
+  PSTH_bootstrap: false
+  PSTH_shuffle: false
+  STRF_passive: false
+  sound_responses_bayesian_blocks: true
+  egocentric_geometry: true
+  egocentric_tuning: true
+  spatial: false
+  population: false
+  coherence: false
+  manifold_states: false
+  metronome: false
+  video: false
+  CCR: false
+  raw_waveforms: false
+  unit_match: false
+  performance: false
+  PSTH_bnMAPs: false
+  sound_phase_lock: false
+  segments: false
+  activity_matrices: false
+  ensembles: false
+  covariance: false
+  vectors: false
+  state_decoder_unit_mx: false
+pack:
+  adc_sync:
+    repair_timestamps: true
+sound_responses_bayesian_blocks:
+  backend: gpu
+  window_s: 0.24
+egocentric_geometry:
+  references:
+  - head
+  - body
+  - moseq_heading
+dlc_config_path: /mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/017276/017276_SIT_2026-03-04_14-14-44/analysis/run_records/spatial_tuning_pilot_20261021/dlc-config/config.yaml

@@ -16,6 +16,7 @@ blocks:  # blocks of pipeline to run
   STRF_passive: False
   sound_responses_bayesian_blocks: False
   egocentric_geometry: False
+  egocentric_tuning: False
   spatial: False
   population: False
   coherence: False
@@ -105,6 +106,16 @@ egocentric_geometry:
   angular_bins: 12
   ignored_channels: [8] # synchronization, not a physical speaker
   speaker_positions_m: null # optional channel: [x, y] overrides of utils/setup.py
+
+# Optional neural tuning; consumes geometry and reusable Bayesian-block timing
+egocentric_tuning:
+  timing_condition: pooled # null uses each condition's own timing
+  conditions: null # all nonpooled response conditions
+  references: null # all references saved in geometry.h5
+  unit_names: null # all units saved in responses.h5
+  comparisons: null # automatic [A, B] for exactly two conditions; [] disables
+  n_bootstrap: 1000
+  seed: 0
 
 # LFP configuration
 lfp:
