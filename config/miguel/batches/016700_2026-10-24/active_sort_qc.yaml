@@ -1,0 +1,116 @@
+# Approved 016700 additions, 2026-10-24. Standalone config over config/default.yaml.
+# Sorting and Bombcell for all 11 approved active sessions.
+# Sound synchronization is a separate, timestamp-validated subset: active_sync.yaml.
+# Excluded: 016700_SIT_2025-12-08_09-27-06 -- unexpected two recording segments;
+# intended to be one recording. Do not assemble automatically.
+# Deferred: 016700_SIT_2025-12-16_09-00-06 -- non-increasing ADC timestamps.
+# A1 QC thresholds match the saved 017276 and 016700 Bombcell parameters.
+# PSTH settings are intentionally not selected here; no PSTH jobs are enabled.
+src_path: /mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw
+dst_path: /mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/processed/
+prj_path: /mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/projects/ICproject/
+template_manual_json: /mnt/nevermind.data-share/ag-grothe/AG_Pecka/data/raw/016700/manual.json
+pack:
+  drift_coeff: 1.6666e-05
+  adc_sync:
+    enabled: true
+    # Bounded in-memory repair; original timestamp files remain unchanged.
+    repair_timestamps: true
+    f_lo: 500.0
+    f_hi: 1500.0
+    scheduler_threads: 8
+    io_heavy: 1
+kilosort:
+  settings_path: /mnt/nevermind.data-share/ag-grothe/Miguel/pplSIT/config/miguel/batches/016700_2026-10-24/kilosort_settings.json
+  save_preprocessed: false
+  cuda_device: 3
+  jobs_per_gpu: 1
+  cuda_devices:
+  - 3
+  - 1
+units:
+  source: kilosort
+  label_source: bombcell
+bombcell:
+  threads: 32
+  resource_slots: 1
+  io_heavy: 1
+  unit_match_waveforms: true
+  force_unit_match_waveform_reextract: false
+  stage_raw_dat:
+    enabled: true
+    root: /tmp/bengala/pplSIT/bombcell_stage
+    cleanup: true
+    min_free_gb: 20
+  streams:
+  - ProbeA
+  param_overrides:
+    maxRPVviolations: 0.1
+    minSpatialDecaySlopeExp: 0.01
+    tauR_valuesMin: 0.002
+    tauR_valuesMax: 0.002
+unit_match:
+  conda_env: /mnt/nevermind.data-share/ag-grothe/AG_Pecka/envs/unit_match_py312
+  waveform_source: bombcell
+  spike_width: 82
+  raw_waveform_threads: 4
+  raw_waveform_workers: 4
+  raw_waveform_io_heavy: 4
+  methods:
+  - deepunitmatch
+  - unitmatchpy
+  deepunitmatch:
+    source_path: /mnt/nevermind.data-share/ag-grothe/AG_Pecka/apps/UnitMatch/UnitMatchPy
+    model_path: null
+    tmp_dir: /local/scratch/bengala/pplSIT/deepunitmatch_tmp/016700
+  sample_amount: 1000
+blocks:
+  AEPs: false
+  Audio: false
+  CCR: false
+  DLC: false
+  LFP: false
+  MoSeq: false
+  PSTH_bar: false
+  PSTH_bnMAPs: false
+  PSTH_bootstrap: false
+  PSTH_shuffle: false
+  STRF_passive: false
+  activity_matrices: false
+  bombcell: true
+  coherence: false
+  covariance: false
+  descendants: false
+  egocentric_geometry: false
+  egocentric_tuning: false
+  ensembles: false
+  kilosort: true
+  manifold_states: false
+  meta: false
+  metronome: false
+  neurosuite: false
+  performance: false
+  population: false
+  raw_waveforms: false
+  segments: false
+  sound_phase_lock: false
+  sound_responses_bayesian_blocks: false
+  spatial: false
+  state_decoder_unit_mx: false
+  unit_match: false
+  units: false
+  vectors: false
+  video: false
+copy_kilosort_legacy: false
+session_IDs:
+- 016700_SIT_2025-12-05_08-28-34
+- 016700_SIT_2025-12-05_16-46-42
+- 016700_SIT_2025-12-08_14-32-34
+- 016700_SIT_2025-12-08_17-44-22
+- 016700_SIT_2025-12-09_09-04-46
+- 016700_SIT_2025-12-17_13-52-28
+- 016700_SIT_2025-12-17_18-48-30
+- 016700_SIT_2025-12-18_09-26-29
+- 016700_SIT_2025-12-18_16-20-09
+- 016700_SIT_2025-12-18_19-07-27
+- 016700_SIT_2025-12-19_10-50-45

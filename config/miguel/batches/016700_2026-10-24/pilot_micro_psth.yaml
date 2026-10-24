@@ -1,0 +1,11 @@
+# Load after active_sort_qc.yaml and pilot_active.yaml.
+# Target analysis/psth_bgr_tgt_bar.pdf explicitly to run only the existing
+# micro-PSTH rule (all five micro PDFs) and its units.h5 prerequisite.
+# Match the usual 016700 micro-PSTH settings; no bootstrap analysis requested.
+psth:
+  micro:
+    latency: 0.25
+    bin_count: 151
+    shuf_iter_count: 100
+    figsize: 4
+    xlim: [0, 0.25]

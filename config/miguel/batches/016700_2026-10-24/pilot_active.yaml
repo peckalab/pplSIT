@@ -1,0 +1,12 @@
+# Single-session validation overlay: load AFTER the corresponding full batch config.
+session_IDs:
+- 016700_SIT_2025-12-17_13-52-28
+
+# This pilot passed the bounded timestamp-repair check.
+blocks:
+  meta: true
+
+# Pilot-only staging location; retain the inherited reserve and cleanup settings.
+bombcell:
+  stage_raw_dat:
+    root: /tmp/bengala/pplSIT/bombcell_stage

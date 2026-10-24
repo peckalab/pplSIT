@@ -1,0 +1,18 @@
+# Overlay after active_sort_qc.yaml; metadata/sync only for timestamp-validated sessions.
+# 016700_SIT_2025-12-09_09-04-46 remains in sorting/QC, but ADC has a 3.07 ms
+# backwards jump beyond the bounded-repair limit. Hold sound-aligned analyses.
+blocks:
+  meta: true
+  kilosort: false
+  bombcell: false
+session_IDs:
+- 016700_SIT_2025-12-05_08-28-34
+- 016700_SIT_2025-12-05_16-46-42
+- 016700_SIT_2025-12-08_14-32-34
+- 016700_SIT_2025-12-08_17-44-22
+- 016700_SIT_2025-12-17_13-52-28
+- 016700_SIT_2025-12-17_18-48-30
+- 016700_SIT_2025-12-18_09-26-29
+- 016700_SIT_2025-12-18_16-20-09
+- 016700_SIT_2025-12-18_19-07-27
+- 016700_SIT_2025-12-19_10-50-45
