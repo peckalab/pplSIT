@@ -124,6 +124,7 @@ rule sounds_sync_ephys:
         init=os.path.join(config["src_path"], "{animal}", "{session}", ".templates_initialized"),
     params:
         manual=os.path.join(config["src_path"], "{animal}", "{session}", "manual.json"),
+        repair_timestamps=lambda wc: config.get("pack", {}).get("adc_sync", {}).get("repair_timestamps", False),
     output:
         sync=os.path.join(config["dst_path"], "{animal}", "{session}", "sync", "sounds_sync.ephys.h5")
     threads:

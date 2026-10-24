@@ -34,7 +34,8 @@ rule dump_units:
         os.path.join(config['dst_path'], '{animal}', '{session}', 'units.h5')
     params:
         session="{session}",
-        animal="{animal}"
+        animal="{animal}",
+        repair_timestamps=lambda wc: config.get("pack", {}).get("adc_sync", {}).get("repair_timestamps", False)
     script:
         "../scripts/units.py"
 
